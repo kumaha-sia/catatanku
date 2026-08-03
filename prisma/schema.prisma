@@ -1,0 +1,302 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String
+  passwordHash String?
+  role         Role          @default(MEMBER)
+  familyId     String?
+  family       Family?       @relation(fields: [familyId], references: [id])
+  accounts     Account[]
+  transactions Transaction[]
+  categories   Category[]
+  debts        Debt[]
+  assets       Asset[]
+  investments  Investment[]
+  insights     Insight[]
+  chatSessions ChatSession[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([familyId])
+}
+
+model Family {
+  id         String     @id @default(cuid())
+  name       String
+  members    User[]
+  accounts   Account[]
+  categories Category[]
+  debts      Debt[]
+  assets     Asset[]
+  insights   Insight[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Account {
+  id           String        @id @default(cuid())
+  userId       String
+  familyId     String?
+  type         AccountType
+  name         String
+  balance      Decimal       @default(0) @db.Decimal(18, 2)
+  currency     String        @default("IDR")
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  family       Family?       @relation(fields: [familyId], references: [id])
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([familyId])
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  userId       String?
+  familyId     String?
+  type         CategoryType
+  name         String
+  budget       Decimal?      @db.Decimal(18, 2)
+  spent        Decimal       @default(0) @db.Decimal(18, 2)
+  parentId     String?
+  parent       Category?     @relation("CategoryTree", fields: [parentId], references: [id])
+  children     Category[]    @relation("CategoryTree")
+  transactions Transaction[]
+  user         User?         @relation(fields: [userId], references: [id])
+  family       Family?       @relation(fields: [familyId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([familyId])
+  @@index([parentId])
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  accountId   String
+  categoryId  String?
+  userId      String
+  type        TransactionType
+  amount      Decimal         @db.Decimal(18, 2)
+  description String
+  date        DateTime
+  receiptUrl  String?
+  ocrData     Json?
+  account     Account         @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  category    Category?       @relation(fields: [categoryId], references: [id])
+  user        User            @relation(fields: [userId], references: [id])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([accountId])
+  @@index([categoryId])
+  @@index([userId])
+  @@index([date])
+}
+
+model Debt {
+  id               String        @id @default(cuid())
+  userId           String
+  familyId         String?
+  type             DebtType
+  counterpartyName String
+  totalAmount      Decimal       @db.Decimal(18, 2)
+  paidAmount       Decimal       @default(0) @db.Decimal(18, 2)
+  remaining        Decimal       @db.Decimal(18, 2)
+  installments     Installment[]
+  user             User          @relation(fields: [userId], references: [id])
+  family           Family?       @relation(fields: [familyId], references: [id])
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([familyId])
+}
+
+model Installment {
+  id        String    @id @default(cuid())
+  debtId    String
+  amount    Decimal   @db.Decimal(18, 2)
+  dueDate   DateTime
+  paid      Boolean   @default(false)
+  paidAt    DateTime?
+  debt      Debt      @relation(fields: [debtId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@index([debtId])
+}
+
+model Asset {
+  id            String       @id @default(cuid())
+  userId        String
+  familyId      String?
+  type          AssetType
+  name          String
+  currentValue  Decimal      @db.Decimal(18, 2)
+  purchasePrice Decimal      @db.Decimal(18, 2)
+  metadata      Json?
+  user          User         @relation(fields: [userId], references: [id])
+  family        Family?      @relation(fields: [familyId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  investments   Investment[]
+
+  @@index([userId])
+  @@index([familyId])
+}
+
+model Investment {
+  id           String                  @id @default(cuid())
+  userId       String
+  assetId      String?
+  instrument   InvestmentInstrument
+  units        Decimal                 @db.Decimal(18, 4)
+  buyPrice     Decimal                 @db.Decimal(18, 2)
+  currentValue Decimal                 @db.Decimal(18, 2)
+  returnPct    Decimal                 @default(0) @db.Decimal(8, 4)
+  user         User                    @relation(fields: [userId], references: [id])
+  asset        Asset?                  @relation(fields: [assetId], references: [id])
+  transactions InvestmentTransaction[]
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+
+  @@index([userId])
+  @@index([assetId])
+}
+
+model InvestmentTransaction {
+  id           String           @id @default(cuid())
+  investmentId String
+  type         InvestmentTxType
+  units        Decimal          @db.Decimal(18, 4)
+  price        Decimal          @db.Decimal(18, 2)
+  date         DateTime
+  investment   Investment       @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  createdAt    DateTime         @default(now())
+
+  @@index([investmentId])
+}
+
+model Insight {
+  id        String          @id @default(cuid())
+  userId    String?
+  familyId  String?
+  type      InsightType
+  title     String
+  content   String
+  severity  InsightSeverity @default(INFO)
+  dismissed Boolean         @default(false)
+  user      User?           @relation(fields: [userId], references: [id])
+  family    Family?         @relation(fields: [familyId], references: [id])
+  createdAt DateTime        @default(now())
+
+  @@index([userId])
+  @@index([familyId])
+}
+
+model ChatSession {
+  id        String        @id @default(cuid())
+  userId    String
+  messages  ChatMessage[]
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([userId])
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  sessionId String
+  role      ChatRole
+  content   String
+  toolCalls Json?
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+
+  @@index([sessionId])
+}
+
+enum Role {
+  OWNER
+  MEMBER
+  VIEWER
+}
+
+enum AccountType {
+  BANK
+  CASH
+  E_WALLET
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+  SAVINGS
+  DEBT
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+enum DebtType {
+  DEBT
+  CREDIT
+}
+
+enum AssetType {
+  REAL_ESTATE
+  VEHICLE
+  INVESTMENT
+  OTHER
+}
+
+enum InvestmentInstrument {
+  STOCK
+  MUTUAL_FUND
+  CRYPTO
+  BOND
+  GOLD
+}
+
+enum InvestmentTxType {
+  BUY
+  SELL
+  DIVIDEND
+}
+
+enum InsightType {
+  SPENDING_PATTERN
+  BUDGET_ALERT
+  SAVINGS_PROGRESS
+  DEBT_TRACKING
+  ANOMALY
+  PREDICTION
+}
+
+enum InsightSeverity {
+  INFO
+  WARNING
+  CRITICAL
+  POSITIVE
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+  TOOL
+}
