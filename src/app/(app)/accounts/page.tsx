@@ -1,11 +1,10 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { DashboardContent } from "@/components/dashboard-content";
+import { AccountsContent } from "@/components/accounts-content";
 
-export default async function DashboardPage() {
+export default async function AccountsPage() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
-
-  return <DashboardContent userName={session.user?.name ?? ""} />;
+  return <AccountsContent />;
 }

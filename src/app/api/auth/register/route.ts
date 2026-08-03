@@ -9,6 +9,23 @@ const registerSchema = z.object({
   password: z.string().min(8),
 });
 
+const defaultCategories = [
+  { type: "INCOME", name: "Gaji" },
+  { type: "INCOME", name: "Bonus" },
+  { type: "INCOME", name: "Freelance" },
+  { type: "EXPENSE", name: "Makan" },
+  { type: "EXPENSE", name: "Transportasi" },
+  { type: "EXPENSE", name: "Belanja Harian" },
+  { type: "EXPENSE", name: "Hiburan" },
+  { type: "EXPENSE", name: "Kesehatan" },
+  { type: "EXPENSE", name: "Pendidikan" },
+  { type: "EXPENSE", name: "Tagihan" },
+  { type: "SAVINGS", name: "Dana Darurat" },
+  { type: "SAVINGS", name: "Liburan" },
+  { type: "SAVINGS", name: "Pendidikan Anak" },
+  { type: "DEBT", name: "Cicilan" },
+] as const;
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -47,6 +64,14 @@ export async function POST(req: Request) {
       data: { familyId: family.id },
     });
 
+    await prisma.category.createMany({
+      data: defaultCategories.map((c) => ({
+        userId: user.id,
+        type: c.type,
+        name: c.name,
+      })),
+    });
+
     return NextResponse.json({ id: user.id }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -55,9 +80,6 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    return NextResponse.json(
-      { message: "Terjadi kesalahan" },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: "Terjadi kesalahan" }, { status: 500 });
   }
 }
