@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { OcrUpload } from "@/components/ocr-upload";
 
 const typeColors: Record<string, string> = {
   INCOME: "text-green-600",
@@ -18,6 +19,7 @@ export function TransactionsContent() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showOcr, setShowOcr] = useState(false);
   const [accountId, setAccountId] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [type, setType] = useState("EXPENSE");
@@ -120,6 +122,9 @@ export function TransactionsContent() {
           <Button variant="outline" onClick={() => setShowImport(!showImport)}>
             Import CSV
           </Button>
+          <Button variant="outline" onClick={() => setShowOcr(!showOcr)}>
+            Scan Struk
+          </Button>
           <Button onClick={() => setShowForm(!showForm)}>
             {showForm ? "Batal" : "Tambah Transaksi"}
           </Button>
@@ -169,6 +174,20 @@ export function TransactionsContent() {
             </form>
           </CardContent>
         </Card>
+      )}
+
+      {showOcr && (
+        <OcrUpload
+          onExtracted={(data) => {
+            setShowForm(true);
+            setShowOcr(false);
+            setDescription(data.merchant ?? "");
+            if (data.date)
+              setDate(new Date(data.date).toISOString().split("T")[0]);
+            if (data.total) setAmount(String(data.total));
+            setType("EXPENSE");
+          }}
+        />
       )}
 
       {showForm && (

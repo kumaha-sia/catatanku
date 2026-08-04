@@ -15,6 +15,7 @@ const navItems = [
   { href: "/investments", label: "Investasi" },
   { href: "/insights", label: "Insight" },
   { href: "/chat", label: "Chat AI" },
+  { href: "/settings", label: "Pengaturan" },
 ] as const;
 
 export function AppNav() {
