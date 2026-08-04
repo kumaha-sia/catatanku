@@ -9,6 +9,10 @@ const navItems = [
   { href: "/accounts", label: "Rekening" },
   { href: "/transactions", label: "Transaksi" },
   { href: "/budgets", label: "Budget" },
+  { href: "/savings", label: "Tabungan" },
+  { href: "/debts", label: "Hutang" },
+  { href: "/assets", label: "Aset" },
+  { href: "/investments", label: "Investasi" },
 ] as const;
 
 export function AppNav() {
@@ -16,11 +20,11 @@ export function AppNav() {
 
   return (
     <nav className="border-b bg-background">
-      <div className="container mx-auto flex h-14 items-center gap-6 px-4">
+      <div className="container mx-auto flex h-14 items-center gap-4 px-4">
         <Link href="/dashboard" className="font-bold">
           Catatanku
         </Link>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-3">
           {navItems.map((item) => (
             <Link
               key={item.href}

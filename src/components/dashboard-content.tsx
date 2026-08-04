@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MonthlyChart } from "@/components/charts/monthly-chart";
 import { CategoryPieChart } from "@/components/charts/category-pie-chart";
+import { NetWorthChart } from "@/components/charts/networth-chart";
 import { formatCurrency } from "@/lib/utils";
 
 export function DashboardContent({ userName }: { userName: string }) {
@@ -12,6 +13,15 @@ export function DashboardContent({ userName }: { userName: string }) {
     queryFn: async () => {
       const res = await fetch("/api/dashboard");
       if (!res.ok) throw new Error("Gagal memuat dashboard");
+      return res.json();
+    },
+  });
+
+  const { data: netWorthData } = useQuery({
+    queryKey: ["networth"],
+    queryFn: async () => {
+      const res = await fetch("/api/networth?months=6");
+      if (!res.ok) throw new Error("Gagal");
       return res.json();
     },
   });
@@ -25,7 +35,19 @@ export function DashboardContent({ userName }: { userName: string }) {
         <p className="text-muted-foreground">Selamat datang, {userName}!</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Net Worth</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p
+              className={`text-2xl font-bold ${(netWorthData?.netWorth ?? 0) >= 0 ? "" : "text-red-600"}`}
+            >
+              {formatCurrency(netWorthData?.netWorth ?? 0)}
+            </p>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium">Total Saldo</CardTitle>
@@ -80,6 +102,15 @@ export function DashboardContent({ userName }: { userName: string }) {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Net Worth History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <NetWorthChart data={netWorthData?.history ?? []} />
+        </CardContent>
+      </Card>
     </div>
   );
 }
