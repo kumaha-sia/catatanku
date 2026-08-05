@@ -13,6 +13,8 @@ const navItems = [
   { href: "/debts", label: "Hutang" },
   { href: "/assets", label: "Aset" },
   { href: "/investments", label: "Investasi" },
+  { href: "/family/dashboard", label: "Keluarga" },
+  { href: "/family/members", label: "Anggota" },
   { href: "/insights", label: "Insight" },
   { href: "/chat", label: "Chat AI" },
   { href: "/settings", label: "Pengaturan" },
