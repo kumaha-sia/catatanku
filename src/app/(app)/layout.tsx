@@ -12,9 +12,9 @@ export default async function AppLayout({
   if (!session) redirect("/login");
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppNav />
-      <main>{children}</main>
+      <main className="pb-4">{children}</main>
     </div>
   );
 }
