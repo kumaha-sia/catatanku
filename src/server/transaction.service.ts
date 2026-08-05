@@ -44,34 +44,36 @@ export async function createTransaction(data: {
   receiptUrl?: string;
   ocrData?: unknown;
 }) {
-  const tx = await prisma.transaction.create({
-    data: {
-      userId: data.userId,
-      accountId: data.accountId,
-      categoryId: data.categoryId,
-      type: data.type,
-      amount: data.amount,
-      description: data.description,
-      date: data.date,
-      receiptUrl: data.receiptUrl,
-      ocrData: data.ocrData as Prisma.InputJsonValue | undefined,
-    },
-    include: { account: true, category: true },
+  return prisma.$transaction(async (tx) => {
+    const created = await tx.transaction.create({
+      data: {
+        userId: data.userId,
+        accountId: data.accountId,
+        categoryId: data.categoryId,
+        type: data.type,
+        amount: data.amount,
+        description: data.description,
+        date: data.date,
+        receiptUrl: data.receiptUrl,
+        ocrData: data.ocrData as Prisma.InputJsonValue | undefined,
+      },
+      include: { account: true, category: true },
+    });
+
+    if (data.type === "INCOME") {
+      await tx.account.update({
+        where: { id: data.accountId },
+        data: { balance: { increment: data.amount } },
+      });
+    } else if (data.type === "EXPENSE") {
+      await tx.account.update({
+        where: { id: data.accountId },
+        data: { balance: { decrement: data.amount } },
+      });
+    }
+
+    return created;
   });
-
-  if (data.type === "INCOME") {
-    await prisma.account.update({
-      where: { id: data.accountId },
-      data: { balance: { increment: data.amount } },
-    });
-  } else if (data.type === "EXPENSE") {
-    await prisma.account.update({
-      where: { id: data.accountId },
-      data: { balance: { decrement: data.amount } },
-    });
-  }
-
-  return tx;
 }
 
 export async function updateTransaction(
@@ -86,72 +88,76 @@ export async function updateTransaction(
     date: Date;
   }>,
 ) {
-  const existing = await prisma.transaction.findFirst({
-    where: { id, userId },
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.transaction.findFirst({
+      where: { id, userId },
+    });
+    if (!existing) throw new Error("Transaksi tidak ditemukan");
+
+    const oldAmount = Number(existing.amount);
+    if (existing.type === "INCOME") {
+      await tx.account.update({
+        where: { id: existing.accountId },
+        data: { balance: { decrement: oldAmount } },
+      });
+    } else if (existing.type === "EXPENSE") {
+      await tx.account.update({
+        where: { id: existing.accountId },
+        data: { balance: { increment: oldAmount } },
+      });
+    }
+
+    const updated = await tx.transaction.update({
+      where: { id },
+      data: {
+        accountId: data.accountId,
+        categoryId: data.categoryId,
+        type: data.type,
+        amount: data.amount,
+        description: data.description,
+        date: data.date,
+      },
+    });
+
+    const newAmount = Number(updated.amount);
+    if (updated.type === "INCOME") {
+      await tx.account.update({
+        where: { id: updated.accountId },
+        data: { balance: { increment: newAmount } },
+      });
+    } else if (updated.type === "EXPENSE") {
+      await tx.account.update({
+        where: { id: updated.accountId },
+        data: { balance: { decrement: newAmount } },
+      });
+    }
+
+    return updated;
   });
-  if (!existing) throw new Error("Transaksi tidak ditemukan");
-
-  const oldAmount = Number(existing.amount);
-  if (existing.type === "INCOME") {
-    await prisma.account.update({
-      where: { id: existing.accountId },
-      data: { balance: { decrement: oldAmount } },
-    });
-  } else if (existing.type === "EXPENSE") {
-    await prisma.account.update({
-      where: { id: existing.accountId },
-      data: { balance: { increment: oldAmount } },
-    });
-  }
-
-  const updated = await prisma.transaction.update({
-    where: { id },
-    data: {
-      accountId: data.accountId,
-      categoryId: data.categoryId,
-      type: data.type,
-      amount: data.amount,
-      description: data.description,
-      date: data.date,
-    },
-  });
-
-  const newAmount = Number(updated.amount);
-  if (updated.type === "INCOME") {
-    await prisma.account.update({
-      where: { id: updated.accountId },
-      data: { balance: { increment: newAmount } },
-    });
-  } else if (updated.type === "EXPENSE") {
-    await prisma.account.update({
-      where: { id: updated.accountId },
-      data: { balance: { decrement: newAmount } },
-    });
-  }
-
-  return updated;
 }
 
 export async function deleteTransaction(id: string, userId: string) {
-  const existing = await prisma.transaction.findFirst({
-    where: { id, userId },
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.transaction.findFirst({
+      where: { id, userId },
+    });
+    if (!existing) throw new Error("Transaksi tidak ditemukan");
+
+    const oldAmount = Number(existing.amount);
+    if (existing.type === "INCOME") {
+      await tx.account.update({
+        where: { id: existing.accountId },
+        data: { balance: { decrement: oldAmount } },
+      });
+    } else if (existing.type === "EXPENSE") {
+      await tx.account.update({
+        where: { id: existing.accountId },
+        data: { balance: { increment: oldAmount } },
+      });
+    }
+
+    return tx.transaction.delete({ where: { id } });
   });
-  if (!existing) throw new Error("Transaksi tidak ditemukan");
-
-  const oldAmount = Number(existing.amount);
-  if (existing.type === "INCOME") {
-    await prisma.account.update({
-      where: { id: existing.accountId },
-      data: { balance: { decrement: oldAmount } },
-    });
-  } else if (existing.type === "EXPENSE") {
-    await prisma.account.update({
-      where: { id: existing.accountId },
-      data: { balance: { increment: oldAmount } },
-    });
-  }
-
-  return prisma.transaction.delete({ where: { id } });
 }
 
 export async function getMonthlySummary(userId: string, month: Date) {
