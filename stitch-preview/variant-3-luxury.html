@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Catatanku - Dashboard</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&amp;family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-container": "#858480",
+                      "on-tertiary-fixed": "#1c1c19",
+                      "on-surface-variant": "#444748",
+                      "on-primary-fixed": "#1c1b1b",
+                      "on-background": "#1d1c17",
+                      "tertiary-fixed": "#e5e2dd",
+                      "tertiary": "#000000",
+                      "on-tertiary-fixed-variant": "#474743",
+                      "primary": "#000000",
+                      "surface-tint": "#5f5e5e",
+                      "on-secondary-fixed": "#341100",
+                      "error-container": "#ffdad6",
+                      "on-error-container": "#93000a",
+                      "secondary-fixed-dim": "#ffb690",
+                      "primary-container": "#1c1b1b",
+                      "secondary-container": "#fd761a",
+                      "surface-container": "#f2ede5",
+                      "secondary": "#9d4300",
+                      "surface-container-highest": "#e7e2da",
+                      "on-secondary-fixed-variant": "#783200",
+                      "inverse-primary": "#c8c6c5",
+                      "background": "#fef9f0",
+                      "error": "#ba1a1a",
+                      "on-primary": "#ffffff",
+                      "on-secondary-container": "#5c2400",
+                      "on-surface": "#1d1c17",
+                      "inverse-on-surface": "#f5f0e8",
+                      "primary-fixed": "#e5e2e1",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed-variant": "#474646",
+                      "outline-variant": "#c4c7c7",
+                      "surface-container-low": "#f8f3eb",
+                      "outline": "#747878",
+                      "surface-variant": "#e7e2da",
+                      "tertiary-fixed-dim": "#c8c6c2",
+                      "on-tertiary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "surface-bright": "#fef9f0",
+                      "secondary-fixed": "#ffdbca",
+                      "inverse-surface": "#32302b",
+                      "tertiary-container": "#1c1c19",
+                      "surface": "#fef9f0",
+                      "primary-fixed-dim": "#c8c6c5",
+                      "on-secondary": "#ffffff",
+                      "surface-container-high": "#ede7df",
+                      "on-primary-container": "#858383",
+                      "surface-dim": "#ded9d1"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-padding": "24px",
+                      "unit": "8px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "40px",
+                      "gutter": "20px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "Bodoni Moda"
+                      ],
+                      "display-hero-mobile": [
+                              "Bodoni Moda"
+                      ],
+                      "display-hero": [
+                              "Bodoni Moda"
+                      ],
+                      "headline-md": [
+                              "Bodoni Moda"
+                      ],
+                      "body-md": [
+                              "Hanken Grotesk"
+                      ],
+                      "label-sm": [
+                              "Hanken Grotesk"
+                      ],
+                      "body-lg": [
+                              "Hanken Grotesk"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-hero-mobile": [
+                              "36px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-hero": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "13px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .noise-bg {
+            position: relative;
+        }
+        .noise-bg::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .bento-shadow {
+            box-shadow: 0 4px 20px rgba(18, 18, 18, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background noise-bg font-body-md text-body-md antialiased overflow-x-hidden">
+<!-- SideNavBar -->
+<nav class="hidden md:flex bg-surface border-r border-outline-variant shadow-sm fixed left-0 top-0 h-full w-20 hover:w-64 transition-all duration-300 ease-in-out z-50 flex-col py-8 overflow-hidden group">
+<!-- Logo Area -->
+<div class="px-6 mb-12 flex items-center shrink-0">
+<span class="material-symbols-outlined text-primary text-3xl">account_balance_wallet</span>
+<div class="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+<h1 class="font-headline-md text-headline-md text-primary m-0">Catatanku</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant m-0">Premium Wealth</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 flex flex-col gap-2 px-3">
+<!-- Active Tab: Beranda -->
+<a class="flex items-center px-3 py-3 rounded-xl bg-surface-container-high text-secondary font-bold transition-all duration-200 ease-in-out whitespace-nowrap" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Beranda</span>
+</a>
+<a class="flex items-center px-3 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-all duration-200 ease-in-out whitespace-nowrap" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Transaksi</span>
+</a>
+<a class="flex items-center px-3 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-all duration-200 ease-in-out whitespace-nowrap" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Anggaran</span>
+</a>
+<a class="flex items-center px-3 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-all duration-200 ease-in-out whitespace-nowrap" href="#">
+<span class="material-symbols-outlined">savings</span>
+<span class="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Tabungan</span>
+</a>
+<a class="flex items-center px-3 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-all duration-200 ease-in-out whitespace-nowrap" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Hutang</span>
+</a>
+<a class="flex items-center px-3 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-all duration-200 ease-in-out whitespace-nowrap" href="#">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Investasi</span>
+</a>
+</div>
+<!-- Bottom Link -->
+<div class="px-3 mt-auto">
+<a class="flex items-center px-3 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-all duration-200 ease-in-out whitespace-nowrap" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Pengaturan</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="md:ml-20 min-h-screen flex flex-col transition-all duration-300 ease-in-out">
+<!-- TopAppBar -->
+<header class="bg-background/80 backdrop-blur-md docked full-width top-0 sticky flex justify-between items-center w-full px-margin-desktop py-4 z-40">
+<!-- Title/Context (Empty or contextual title here, relying on side nav for brand) -->
+<div class="font-headline-md text-headline-md font-medium text-primary md:hidden">
+                Catatanku
+            </div>
+<div class="hidden md:block"></div>
+<!-- Actions -->
+<div class="flex items-center gap-6">
+<!-- Search -->
+<div class="relative hidden sm:block focus-within:border-secondary transition-colors border-b border-outline w-64 pb-1">
+<span class="material-symbols-outlined absolute left-0 bottom-1 text-on-surface-variant text-sm">search</span>
+<input class="w-full bg-transparent border-none focus:ring-0 pl-7 text-sm text-on-surface placeholder:text-on-surface-variant p-0 h-6" placeholder="Cari transaksi..." type="text"/>
+</div>
+<button class="text-on-surface-variant hover:text-secondary transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-secondary-container rounded-full border border-background"></span>
+</button>
+<button class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
+<img alt="Profil Pengguna" class="w-full h-full object-cover" data-alt="A detailed headshot portrait of an elegant business professional in a high-key bright minimalist setting. Warm, natural lighting highlights the face against a clean, soft beige background. The overall aesthetic is polished, sophisticated, and fits a luxury lifestyle editorial style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAl_ZUwnAWUqH6BmQHaLFWQy7aT0jLT29_nh7dtfR9UT1K7yMtAtE8cpWeJoWbcSKbhyCKZjXY4Msco0Sl987P1ZgGBYIjYskgKMGpbxwLOZC2UEvKMaINAhVSyX4a22XJAJjpHiXIWKntJBSfaLf6TyoRPnz7EAOk6PwQus8FP7ztV3QsW1r3O3_OXk9iAXs0UHbv1s0cTUXfHVU8tojxn48xfbyH28YxRq-QyC4fWVmMGTVH5LJFkSylVa5dILzRTpWTQjdmTc8U"/>
+</button>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 px-margin-desktop py-12 max-w-[1440px] mx-auto w-full">
+<!-- Grid Layout (12 columns) -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Hero Section (Full Width) -->
+<section class="col-span-1 md:col-span-12 mb-8">
+<h2 class="font-label-sm text-label-sm uppercase text-on-surface-variant mb-2">Total Kekayaan Bersih</h2>
+<div class="font-display-hero text-display-hero text-primary flex items-baseline gap-4">
+                        Rp 45.250.000
+                        <span class="font-body-md text-body-md text-secondary-container bg-secondary-container/10 px-3 py-1 rounded-full flex items-center">
+<span class="material-symbols-outlined text-sm mr-1">arrow_upward</span>
+                            12.5%
+                        </span>
+</div>
+</section>
+<!-- Financial Trend Line Chart (6 cols) -->
+<section class="col-span-1 md:col-span-8 bg-surface-container-lowest rounded-xl border border-outline-variant p-container-padding bento-shadow flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-label-sm text-label-sm uppercase text-on-surface-variant">Arus Kas (6 Bulan Terakhir)</h3>
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">more_horiz</span></button>
+</div>
+<div class="flex-1 min-h-[250px] relative w-full h-full border-b border-l border-outline-variant/30 flex items-end p-4">
+<!-- Abstract placeholder for chart -->
+<div class="absolute inset-0 flex flex-col justify-between py-4 pointer-events-none opacity-20">
+<div class="w-full h-px bg-outline-variant"></div>
+<div class="w-full h-px bg-outline-variant"></div>
+<div class="w-full h-px bg-outline-variant"></div>
+</div>
+<svg class="w-full h-full text-secondary" preserveaspectratio="none" viewbox="0 0 100 40">
+<path d="M0,35 Q10,20 20,25 T40,15 T60,20 T80,5 T100,10" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path>
+</svg>
+</div>
+</section>
+<!-- Small Stat Cards Stack (4 cols) -->
+<section class="col-span-1 md:col-span-4 flex flex-col gap-gutter">
+<!-- Stat 1 -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-container-padding bento-shadow flex-1 flex flex-col justify-center">
+<h3 class="font-label-sm text-label-sm uppercase text-on-surface-variant mb-4">Total Akun Terhubung</h3>
+<div class="flex items-center justify-between">
+<span class="font-headline-md text-headline-md text-primary">4 Akun</span>
+<span class="material-symbols-outlined text-outline">account_balance</span>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-container-padding bento-shadow flex-1 flex flex-col justify-center">
+<h3 class="font-label-sm text-label-sm uppercase text-on-surface-variant mb-4">Target Tabungan (Mobil)</h3>
+<div class="flex items-end gap-2 mb-2">
+<span class="font-headline-md text-headline-md text-primary">65%</span>
+<span class="font-body-md text-body-md text-on-surface-variant pb-1">tercapai</span>
+</div>
+<div class="w-full h-1 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container w-[65%]"></div>
+</div>
+</div>
+</section>
+<!-- Income vs Expense Donut / Stats (4 cols) -->
+<section class="col-span-1 md:col-span-5 bg-surface-container-lowest rounded-xl border border-outline-variant p-container-padding bento-shadow">
+<h3 class="font-label-sm text-label-sm uppercase text-on-surface-variant mb-6">Pemasukan vs Pengeluaran</h3>
+<div class="flex justify-center items-center h-48 relative mb-6">
+<!-- Abstract Donut -->
+<svg class="w-40 h-40" viewbox="0 0 36 36">
+<!-- Background Circle -->
+<path class="text-surface-variant" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="2"></path>
+<!-- Expense (Secondary) -->
+<path class="text-secondary-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="35, 100" stroke-width="2"></path>
+<!-- Income (Primary) -->
+<path class="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="65, 100" stroke-dashoffset="-35" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-headline-md text-headline-md">Bulan Ini</span>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-center text-sm">
+<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary"></span> Pemasukan</div>
+<span class="font-medium text-primary">Rp 25.000.000</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-secondary-container"></span> Pengeluaran</div>
+<span class="font-medium text-primary">Rp 8.500.000</span>
+</div>
+</div>
+</section>
+<!-- Transactions (7 cols) -->
+<section class="col-span-1 md:col-span-7 bg-surface-container-lowest rounded-xl border border-outline-variant p-container-padding bento-shadow">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-label-sm text-label-sm uppercase text-on-surface-variant">Transaksi Terakhir</h3>
+<a class="font-label-sm text-label-sm text-primary hover:text-secondary transition-colors underline decoration-1 underline-offset-4" href="#">Lihat Semua</a>
+</div>
+<div class="flex flex-col gap-0">
+<!-- Item 1 -->
+<div class="flex items-center py-4 border-b border-surface-variant last:border-0 group">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center mr-4 text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-weight: 200;">shopping_bag</span>
+</div>
+<div class="flex-1">
+<div class="font-body-md text-body-md font-medium text-primary group-hover:text-secondary transition-colors">Plaza Senayan</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">Belanja • 12 Okt 2023</div>
+</div>
+<div class="text-right">
+<div class="font-body-md text-body-md font-medium text-primary">- Rp 1.250.000</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">Kartu Kredit</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center py-4 border-b border-surface-variant last:border-0 group">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center mr-4 text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-weight: 200;">restaurant</span>
+</div>
+<div class="flex-1">
+<div class="font-body-md text-body-md font-medium text-primary group-hover:text-secondary transition-colors">Namaaz Dining</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">Makanan • 10 Okt 2023</div>
+</div>
+<div class="text-right">
+<div class="font-body-md text-body-md font-medium text-primary">- Rp 850.000</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">Debit BCA</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center py-4 border-b border-surface-variant last:border-0 group">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center mr-4 text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-weight: 200;">arrow_downward</span>
+</div>
+<div class="flex-1">
+<div class="font-body-md text-body-md font-medium text-primary group-hover:text-secondary transition-colors">Gaji Bulanan</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">Pendapatan • 01 Okt 2023</div>
+</div>
+<div class="text-right">
+<div class="font-body-md text-body-md font-medium text-secondary-container">+ Rp 25.000.000</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">Transfer Bank</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</body></html>

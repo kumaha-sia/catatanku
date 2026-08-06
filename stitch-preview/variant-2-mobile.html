@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Catatanku - Dashboard Keuangan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "primary-fixed": "#ffdbca",
+                      "on-secondary-container": "#004666",
+                      "on-error": "#ffffff",
+                      "on-primary-fixed": "#341100",
+                      "surface-dim": "#cbdbf5",
+                      "inverse-primary": "#ffb690",
+                      "secondary-fixed": "#c9e6ff",
+                      "primary-fixed-dim": "#ffb690",
+                      "on-tertiary-fixed-variant": "#005321",
+                      "error-container": "#ffdad6",
+                      "tertiary": "#006e2f",
+                      "surface-bright": "#f8f9ff",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed": "#001e2f",
+                      "surface": "#f8f9ff",
+                      "on-surface": "#0b1c30",
+                      "on-primary-container": "#582200",
+                      "on-tertiary-container": "#003b16",
+                      "background": "#f8f9ff",
+                      "secondary-container": "#39b8fd",
+                      "on-surface-variant": "#584237",
+                      "outline-variant": "#e0c0b1",
+                      "surface-tint": "#9d4300",
+                      "surface-container-highest": "#d3e4fe",
+                      "primary-container": "#f97316",
+                      "on-tertiary-fixed": "#002109",
+                      "surface-container-high": "#dce9ff",
+                      "primary": "#9d4300",
+                      "inverse-surface": "#213145",
+                      "surface-container": "#e5eeff",
+                      "surface-variant": "#d3e4fe",
+                      "on-background": "#0b1c30",
+                      "tertiary-fixed": "#6bff8f",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed-dim": "#4ae176",
+                      "surface-container-low": "#eff4ff",
+                      "on-secondary-fixed-variant": "#004c6e",
+                      "on-primary-fixed-variant": "#783200",
+                      "inverse-on-surface": "#eaf1ff",
+                      "secondary-fixed-dim": "#89ceff",
+                      "outline": "#8c7164",
+                      "secondary": "#006591",
+                      "tertiary-container": "#00b251",
+                      "on-tertiary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "4px",
+                      "xs": "4px",
+                      "container-margin": "20px",
+                      "md": "16px",
+                      "sm": "8px",
+                      "gutter": "12px",
+                      "lg": "24px",
+                      "xl": "32px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "label-sm": [
+                              "Hanken Grotesk"
+                      ],
+                      "title-md": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-lg-mobile": [
+                              "Hanken Grotesk"
+                      ],
+                      "display-lg": [
+                              "Hanken Grotesk"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "title-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-lg": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
+        .pt-safe {
+            padding-top: env(safe-area-inset-top, 20px);
+        }
+        
+        /* Progress Bar Animation */
+        @keyframes fillProgress {
+            from { width: 0; }
+        }
+        .progress-animate {
+            animation: fillProgress 1s ease-out forwards;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen relative">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md shadow-sm transition-transform duration-300" id="top-app-bar">
+<div class="flex justify-between items-center px-container-margin h-16 w-full pt-safe">
+<div class="flex items-center gap-sm">
+<img alt="Profil Pengguna" class="w-10 h-10 rounded-full object-cover shadow-sm border border-surface-container-high" data-alt="A close up, highly detailed professional headshot portrait of an Indonesian man in his 30s. He has short neat black hair, wearing a casual modern navy blue polo shirt. The lighting is soft and flattering, typical of a modern corporate or fintech app avatar. The background is a clean, abstract soft light blue gradient, complementing a modern light-mode interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtCH-zIJqtHxprHYEf6lJUR5gU8x0JZ2t8fAWfqSjU8JdSW2RPSp6uzRyBifI1nmxL8xglaQi3AHu8W57Smr49sMwgoUJCKfqthENP6OZGU11ofoFQ4FHY_2x-2y9i5XDYV9LW8JXfvPmQrVn20M2G1w8FgD85Kw2q-Omct_qT8AaG-COYmWjpPS_3Q7ZZ2N95kldT2RJf77auOKbiwzSMnrfPNWZ1TWuS5G5yxcCQNoFpSyRFa74hxD87fT79VAQ8EjQjb0OGYAM"/>
+<div class="flex flex-col">
+<span class="text-on-surface-variant font-label-sm text-label-sm">Halo,</span>
+<span class="font-title-md text-title-md text-primary">Budi!</span>
+</div>
+</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary dark:text-primary-fixed-dim absolute left-1/2 -translate-x-1/2">
+                Catatanku
+            </div>
+<button aria-label="Notifications" class="w-10 h-10 rounded-full flex items-center justify-center text-primary bg-surface-container hover:bg-surface-variant/50 transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-[80px] pb-[100px] px-container-margin max-w-[1200px] mx-auto md:px-lg lg:px-xl w-full flex flex-col gap-lg">
+<!-- Net Worth Card (Level 1 Elevation) -->
+<section class="bg-white rounded-[24px] p-md shadow-[0px_4px_20px_0px_rgba(0,0,0,0.05)] relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-primary to-[#ffb690] opacity-10"></div>
+<!-- Decorative blur -->
+<div class="absolute -right-10 -top-10 w-32 h-32 bg-primary-container rounded-full blur-[40px] opacity-20"></div>
+<div class="relative z-10 flex flex-col gap-xs">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm">Total Saldo</span>
+<button aria-label="Visibility toggle" class="text-primary hover:bg-surface-container p-1 rounded-full transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+</div>
+<div class="font-display-lg text-display-lg text-on-surface break-words tracking-tight">
+                    Rp 45.250.000
+                </div>
+<div class="flex items-center gap-1 text-tertiary bg-tertiary-container/20 w-fit px-2 py-1 rounded-full mt-2">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+<span class="font-label-sm text-label-sm">+2.5% bulan ini</span>
+</div>
+</div>
+</section>
+<!-- Quick Stats (Bento Grid Style) -->
+<section class="grid grid-cols-2 gap-sm md:gap-md">
+<!-- Pemasukan -->
+<div class="bg-white rounded-xl p-md shadow-[0px_4px_20px_0px_rgba(0,0,0,0.05)] flex flex-col gap-sm border-l-4 border-tertiary">
+<div class="w-8 h-8 rounded-full bg-tertiary-container/30 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[18px]" data-icon="arrow_downward">arrow_downward</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Pemasukan</span>
+<span class="font-title-md text-title-md text-on-surface">Rp 12.5M</span>
+</div>
+</div>
+<!-- Pengeluaran -->
+<div class="bg-white rounded-xl p-md shadow-[0px_4px_20px_0px_rgba(0,0,0,0.05)] flex flex-col gap-sm border-l-4 border-error">
+<div class="w-8 h-8 rounded-full bg-error-container/50 flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-[18px]" data-icon="arrow_upward">arrow_upward</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Pengeluaran</span>
+<span class="font-title-md text-title-md text-on-surface">Rp 8.2M</span>
+</div>
+</div>
+</section>
+<!-- Trend Chart (Visual Representation) -->
+<section class="bg-white rounded-xl p-md shadow-[0px_4px_20px_0px_rgba(0,0,0,0.05)] flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<h2 class="font-title-md text-title-md text-on-surface">Tren Keuangan</h2>
+<button class="text-primary font-label-sm text-label-sm hover:underline">Lihat Detail</button>
+</div>
+<!-- Mini Bar Chart Mockup -->
+<div class="flex items-end justify-between h-[120px] gap-2 pt-4 border-b border-surface-container">
+<!-- Data bars -->
+<div class="flex flex-col items-center gap-1 w-full group">
+<div class="w-full bg-surface-container rounded-t-md h-full flex items-end relative overflow-hidden group-hover:bg-surface-variant transition-colors">
+<div class="w-full bg-tertiary rounded-t-md h-[40%]"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant">Sen</span>
+</div>
+<div class="flex flex-col items-center gap-1 w-full group">
+<div class="w-full bg-surface-container rounded-t-md h-full flex items-end relative overflow-hidden group-hover:bg-surface-variant transition-colors">
+<div class="w-full bg-error rounded-t-md h-[70%]"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant">Sel</span>
+</div>
+<div class="flex flex-col items-center gap-1 w-full group">
+<div class="w-full bg-surface-container rounded-t-md h-full flex items-end relative overflow-hidden group-hover:bg-surface-variant transition-colors">
+<div class="w-full bg-tertiary rounded-t-md h-[60%]"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant">Rab</span>
+</div>
+<div class="flex flex-col items-center gap-1 w-full group">
+<div class="w-full bg-surface-container rounded-t-md h-full flex items-end relative overflow-hidden group-hover:bg-surface-variant transition-colors">
+<div class="w-full bg-tertiary rounded-t-md h-[90%]"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant">Kam</span>
+</div>
+<div class="flex flex-col items-center gap-1 w-full group">
+<div class="w-full bg-surface-container rounded-t-md h-full flex items-end relative overflow-hidden group-hover:bg-surface-variant transition-colors">
+<div class="w-full bg-error rounded-t-md h-[30%]"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant">Jum</span>
+</div>
+<div class="flex flex-col items-center gap-1 w-full group">
+<div class="w-full bg-surface-container rounded-t-md h-full flex items-end relative overflow-hidden group-hover:bg-surface-variant transition-colors">
+<div class="w-full bg-tertiary rounded-t-md h-[50%]"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant text-primary font-bold">Sab</span>
+</div>
+<div class="flex flex-col items-center gap-1 w-full group">
+<div class="w-full bg-surface-container rounded-t-md h-full flex items-end relative overflow-hidden group-hover:bg-surface-variant transition-colors">
+<div class="w-full bg-error rounded-t-md h-[20%]"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant">Min</span>
+</div>
+</div>
+<!-- Legend -->
+<div class="flex gap-4 justify-center mt-2">
+<div class="flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="text-[10px] text-on-surface-variant">Masuk</span>
+</div>
+<div class="flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<span class="text-[10px] text-on-surface-variant">Keluar</span>
+</div>
+</div>
+</section>
+<!-- Category Spending (Progress Bars) -->
+<section class="bg-white rounded-xl p-md shadow-[0px_4px_20px_0px_rgba(0,0,0,0.05)] flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<h2 class="font-title-md text-title-md text-on-surface">Pengeluaran Kategori</h2>
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant bg-surface-container hover:bg-surface-variant/50 transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="more_horiz">more_horiz</span>
+</button>
+</div>
+<div class="flex flex-col gap-sm">
+<!-- Makanan -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[14px]" data-icon="restaurant">restaurant</span>
+</div>
+<span class="font-body-md text-body-md">Makanan</span>
+</div>
+<span class="font-title-md text-title-md text-on-surface">Rp 3.5M</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full progress-animate" style="width: 70%"></div>
+</div>
+</div>
+<!-- Transportasi -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container/30 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[14px]" data-icon="directions_car">directions_car</span>
+</div>
+<span class="font-body-md text-body-md">Transportasi</span>
+</div>
+<span class="font-title-md text-title-md text-on-surface">Rp 1.2M</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full progress-animate" style="width: 30%"></div>
+</div>
+</div>
+<!-- Rumah Tangga -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-tertiary-container/30 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[14px]" data-icon="home">home</span>
+</div>
+<span class="font-body-md text-body-md">Rumah Tangga</span>
+</div>
+<span class="font-title-md text-title-md text-on-surface">Rp 2.0M</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary rounded-full progress-animate" style="width: 45%"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Transactions List -->
+<section class="flex flex-col gap-md">
+<div class="flex justify-between items-center px-2">
+<h2 class="font-title-md text-title-md text-on-surface">Transaksi Terakhir</h2>
+<button class="text-primary font-label-sm text-label-sm hover:underline">Lihat Semua</button>
+</div>
+<div class="flex flex-col gap-2">
+<!-- Item 1 -->
+<div class="bg-white rounded-xl p-sm flex items-center gap-sm shadow-[0px_4px_20px_0px_rgba(0,0,0,0.05)] hover:bg-surface-container/20 transition-colors cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-error-container/30 flex items-center justify-center text-error shrink-0">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Warung Padang Sederhana</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Hari ini, 12:30 • Makanan</span>
+</div>
+<span class="font-title-md text-title-md text-error whitespace-nowrap">-Rp 45.000</span>
+</div>
+<!-- Item 2 -->
+<div class="bg-white rounded-xl p-sm flex items-center gap-sm shadow-[0px_4px_20px_0px_rgba(0,0,0,0.05)] hover:bg-surface-container/20 transition-colors cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-tertiary-container/30 flex items-center justify-center text-tertiary shrink-0">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Gaji Bulanan</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Kemarin, 09:00 • Pemasukan</span>
+</div>
+<span class="font-title-md text-title-md text-tertiary whitespace-nowrap">+Rp 12.500.000</span>
+</div>
+<!-- Item 3 -->
+<div class="bg-white rounded-xl p-sm flex items-center gap-sm shadow-[0px_4px_20px_0px_rgba(0,0,0,0.05)] hover:bg-surface-container/20 transition-colors cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-secondary-container/30 flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined" data-icon="local_gas_station">local_gas_station</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">SPBU Pertamina</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">2 Hari lalu, 18:45 • Transportasi</span>
+</div>
+<span class="font-title-md text-title-md text-error whitespace-nowrap">-Rp 150.000</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button (FAB) -->
+<button aria-label="Tambah Transaksi Baru" class="fixed right-container-margin bottom-[90px] w-14 h-14 bg-gradient-to-br from-primary to-[#ffb690] text-on-primary rounded-[16px] shadow-[0px_8px_30px_0px_rgba(0,0,0,0.2)] flex items-center justify-center z-50 hover:scale-105 active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined text-[28px]" data-icon="add">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 py-3 bg-surface dark:bg-surface-container-low pb-safe shadow-[0px_-4px_20px_0px_rgba(0,0,0,0.05)] rounded-t-xl" id="bottom-nav-bar">
+<!-- Active Tab: Beranda -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim font-bold hover:opacity-80 active:scale-90 transition-all duration-200 w-16 group" href="#">
+<div class="w-12 h-8 rounded-full bg-primary-container/20 flex items-center justify-center mb-1 group-hover:bg-primary-container/30 transition-colors">
+<span class="material-symbols-outlined" data-icon="home" data-weight="fill" style="font-variation-settings: 'FILL' 1;">home</span>
+</div>
+<span class="font-label-sm text-label-sm">Beranda</span>
+</a>
+<!-- Inactive Tab: Transaksi -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:opacity-80 active:scale-90 transition-all duration-200 w-16 group" href="#">
+<div class="w-12 h-8 rounded-full flex items-center justify-center mb-1 group-hover:bg-surface-variant/50 transition-colors">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+</div>
+<span class="font-label-sm text-label-sm">Transaksi</span>
+</a>
+<!-- Inactive Tab: Anggaran (Space for FAB if needed, but keeping standard layout) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:opacity-80 active:scale-90 transition-all duration-200 w-16 group" href="#">
+<div class="w-12 h-8 rounded-full flex items-center justify-center mb-1 group-hover:bg-surface-variant/50 transition-colors">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<span class="font-label-sm text-label-sm">Anggaran</span>
+</a>
+<!-- Inactive Tab: Investasi -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:opacity-80 active:scale-90 transition-all duration-200 w-16 group" href="#">
+<div class="w-12 h-8 rounded-full flex items-center justify-center mb-1 group-hover:bg-surface-variant/50 transition-colors">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+</div>
+<span class="font-label-sm text-label-sm">Investasi</span>
+</a>
+<!-- Inactive Tab: Keluarga -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:opacity-80 active:scale-90 transition-all duration-200 w-16 group" href="#">
+<div class="w-12 h-8 rounded-full flex items-center justify-center mb-1 group-hover:bg-surface-variant/50 transition-colors">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+</div>
+<span class="font-label-sm text-label-sm">Keluarga</span>
+</a>
+</nav>
+<!-- Simple JS for Scroll effect on Header -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const header = document.getElementById('top-app-bar');
+            let lastScrollY = window.scrollY;
+
+            window.addEventListener('scroll', () => {
+                // Optional: add slight shadow intensity on scroll
+                if (window.scrollY > 10) {
+                    header.classList.add('shadow-md');
+                    header.classList.remove('shadow-sm');
+                } else {
+                    header.classList.add('shadow-sm');
+                    header.classList.remove('shadow-md');
+                }
+                lastScrollY = window.scrollY;
+            });
+        });
+    </script>
+</body></html>
