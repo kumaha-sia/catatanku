@@ -2,8 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { MonthlyChart } from "@/components/charts/monthly-chart";
-import { CategoryPieChart } from "@/components/charts/category-pie-chart";
-import { NetWorthChart } from "@/components/charts/networth-chart";
 import { formatCurrency } from "@/lib/utils";
 
 export function DashboardContent({ userName }: { userName: string }) {
@@ -27,143 +25,212 @@ export function DashboardContent({ userName }: { userName: string }) {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-screen-lg px-4 py-6">
-        <div className="mb-6 h-8 w-48 animate-pulse rounded-lg bg-muted" />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <main className="mx-auto max-w-[1200px] px-5 py-6 md:px-10">
+        <div className="mb-6 h-8 w-48 animate-pulse rounded-lg bg-surface-container" />
+        <div className="grid grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 animate-pulse rounded-2xl bg-muted" />
+            <div
+              key={i}
+              className="h-24 animate-pulse rounded-xl bg-surface-container"
+            />
           ))}
         </div>
-      </div>
+      </main>
     );
   }
 
-  const greeting = getGreeting();
-
   return (
-    <div className="mx-auto max-w-screen-lg space-y-6 px-4 py-6">
-      <div className="float-in">
-        <p className="text-sm text-muted-foreground">{greeting},</p>
-        <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
-          {userName}
-        </h1>
-      </div>
-
-      <div className="float-in stagger-1">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 p-5 text-white shadow-2xl shadow-orange-500/30 sm:p-6">
-          <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
-          <div className="pointer-events-none absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
-          <p className="text-sm font-medium text-white/80">Net Worth</p>
-          <p className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">
-            {formatCurrency(netWorthData?.netWorth ?? 0)}
-          </p>
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-white/10 px-3 py-2 backdrop-blur-sm">
-              <p className="text-[10px] font-medium text-white/70">Aset</p>
-              <p className="text-sm font-bold">
-                {formatCurrency(netWorthData?.totalAssets ?? 0)}
-              </p>
+    <main className="mx-auto max-w-[1200px] px-5 py-6 md:px-10">
+      <div className="grid grid-cols-4 gap-4 md:grid-cols-12">
+        {/* Left Column */}
+        <div className="col-span-4 flex flex-col gap-6 md:col-span-8">
+          {/* Net Worth Card */}
+          <section className="net-worth-gradient relative overflow-hidden rounded-xl p-4 text-white">
+            <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary-container/20 blur-3xl" />
+            <h2 className="font-body-md text-secondary-fixed-dim">
+              Total Kekayaan Bersih
+            </h2>
+            <div className="font-currency-display text-currency-display">
+              {formatCurrency(netWorthData?.netWorth ?? 0)}
             </div>
-            <div className="rounded-xl bg-white/10 px-3 py-2 backdrop-blur-sm">
-              <p className="text-[10px] font-medium text-white/70">Hutang</p>
-              <p className="text-sm font-bold">
-                {formatCurrency(netWorthData?.totalLiabilities ?? 0)}
-              </p>
+            <div className="mt-2 flex items-center gap-1">
+              <span className="material-symbols-outlined text-sm text-tertiary-container">
+                trending_up
+              </span>
+              <span className="font-label-md text-tertiary-container">
+                {netWorthData?.netWorth >= 0 ? "+" : ""}
+                {((netWorthData?.netWorth ?? 0) / 1000000).toFixed(1)}% bulan
+                ini
+              </span>
             </div>
-          </div>
+          </section>
+
+          {/* Income/Expense Cards */}
+          <section className="grid grid-cols-2 gap-4">
+            <div className="soft-shadow flex flex-col gap-2 rounded-xl bg-surface-container-lowest p-4">
+              <div className="flex items-center gap-2">
+                <div className="rounded-md bg-income-green/10 p-2 text-income-green">
+                  <span className="material-symbols-outlined">
+                    arrow_downward
+                  </span>
+                </div>
+                <span className="font-body-md text-secondary">Pemasukan</span>
+              </div>
+              <div className="font-headline-md text-headline-md text-on-surface">
+                {formatCurrency(data?.summary?.income ?? 0)}
+              </div>
+            </div>
+            <div className="soft-shadow flex flex-col gap-2 rounded-xl bg-surface-container-lowest p-4">
+              <div className="flex items-center gap-2">
+                <div className="rounded-md bg-expense-red/10 p-2 text-expense-red">
+                  <span className="material-symbols-outlined">
+                    arrow_upward
+                  </span>
+                </div>
+                <span className="font-body-md text-secondary">Pengeluaran</span>
+              </div>
+              <div className="font-headline-md text-headline-md text-on-surface">
+                {formatCurrency(data?.summary?.expense ?? 0)}
+              </div>
+            </div>
+          </section>
+
+          {/* Trends Chart */}
+          <section className="soft-shadow flex h-64 flex-col gap-4 rounded-xl bg-surface-container-lowest p-4">
+            <h3 className="font-headline-md text-headline-md">Tren Keuangan</h3>
+            <MonthlyChart data={data?.monthlyData ?? []} />
+          </section>
+        </div>
+
+        {/* Right Column / Sidebar */}
+        <div className="col-span-4 flex flex-col gap-6">
+          {/* Category Progress */}
+          <section className="soft-shadow flex flex-col gap-4 rounded-xl bg-surface-container-lowest p-4">
+            <h3 className="font-headline-md text-headline-md">
+              Pengeluaran per Kategori
+            </h3>
+            <div className="flex flex-col gap-3">
+              {(data?.breakdown ?? [])
+                .slice(0, 5)
+                .map((item: { name: string; value: number }, i: number) => {
+                  const maxVal = Math.max(
+                    ...(data?.breakdown ?? []).map(
+                      (b: { value: number }) => b.value,
+                    ),
+                    1,
+                  );
+                  const pct = (item.value / maxVal) * 100;
+                  const emojis: Record<string, string> = {
+                    Makan: "🍔",
+                    Transportasi: "🚗",
+                    "Belanja Harian": "🛍️",
+                    Hiburan: "🎬",
+                    Kesehatan: "💊",
+                    Pendidikan: "📚",
+                    Tagihan: "📄",
+                    "Dana Darurat": "🏦",
+                    Liburan: "✈️",
+                  };
+                  return (
+                    <div key={i} className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-body-md">
+                          {emojis[item.name] || "💰"} {item.name}
+                        </span>
+                        <span className="font-label-md">
+                          {formatCurrency(item.value)}
+                        </span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-surface-container">
+                        <div
+                          className="h-full rounded-full bg-primary-container transition-all"
+                          style={{ width: `${Math.min(pct, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              {(!data?.breakdown || data.breakdown.length === 0) && (
+                <p className="font-body-md text-secondary">
+                  Belum ada pengeluaran bulan ini
+                </p>
+              )}
+            </div>
+          </section>
+
+          {/* Recent Transactions */}
+          <section className="soft-shadow flex flex-col gap-4 rounded-xl bg-surface-container-lowest p-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-headline-md text-headline-md">
+                Transaksi Terakhir
+              </h3>
+              <a
+                className="font-label-md text-primary-container hover:underline"
+                href="/transactions"
+              >
+                Lihat Semua
+              </a>
+            </div>
+            <div className="flex flex-col gap-4">
+              {(data?.recentTransactions ?? [])
+                .slice(0, 5)
+                .map(
+                  (tx: {
+                    id: string;
+                    type: string;
+                    description: string;
+                    amount: { toNumber: () => number };
+                    date: string;
+                    category: { name: string } | null;
+                  }) => (
+                    <div
+                      key={tx.id}
+                      className="flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`rounded-md p-2 ${
+                            tx.type === "INCOME"
+                              ? "bg-tertiary-container/10 text-tertiary-container"
+                              : "bg-primary-container/10 text-primary-container"
+                          }`}
+                        >
+                          <span className="material-symbols-outlined">
+                            {tx.type === "INCOME" ? "work" : "receipt_long"}
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-body-md font-semibold">
+                            {tx.description}
+                          </span>
+                          <span className="font-label-md text-xs text-secondary">
+                            {new Date(tx.date).toLocaleDateString("id-ID", {
+                              day: "numeric",
+                              month: "short",
+                            })}
+                            {tx.category ? ` · ${tx.category.name}` : ""}
+                          </span>
+                        </div>
+                      </div>
+                      <span
+                        className={`font-label-md ${tx.type === "INCOME" ? "text-income-green" : "text-expense-red"}`}
+                      >
+                        {tx.type === "INCOME" ? "+" : "-"}
+                        {formatCurrency(tx.amount.toNumber())}
+                      </span>
+                    </div>
+                  ),
+                )}
+              {(!data?.recentTransactions ||
+                data.recentTransactions.length === 0) && (
+                <p className="font-body-md text-secondary">
+                  Belum ada transaksi
+                </p>
+              )}
+            </div>
+          </section>
         </div>
       </div>
-
-      <div className="float-in stagger-2 grid grid-cols-2 gap-3">
-        <SummaryCard
-          label="Pemasukan"
-          value={data?.summary?.income ?? 0}
-          color="text-emerald-600 dark:text-emerald-400"
-          bg="bg-emerald-50 dark:bg-emerald-950/30"
-          icon="↑"
-        />
-        <SummaryCard
-          label="Pengeluaran"
-          value={data?.summary?.expense ?? 0}
-          color="text-red-500 dark:text-red-400"
-          bg="bg-red-50 dark:bg-red-950/30"
-          icon="↓"
-        />
-        <SummaryCard
-          label="Total Saldo"
-          value={data?.totalBalance ?? 0}
-          color="text-orange-600 dark:text-orange-400"
-          bg="bg-orange-50 dark:bg-orange-950/30"
-          icon="💰"
-        />
-        <SummaryCard
-          label="Tabungan Bersih"
-          value={(data?.summary?.income ?? 0) - (data?.summary?.expense ?? 0)}
-          color="text-blue-600 dark:text-blue-400"
-          bg="bg-blue-50 dark:bg-blue-950/30"
-          icon="🏦"
-        />
-      </div>
-
-      <div className="float-in stagger-3 rounded-2xl border border-border/50 bg-card p-4 shadow-sm">
-        <h2 className="mb-3 text-sm font-bold text-foreground/80">
-          Tren 6 Bulan
-        </h2>
-        <MonthlyChart data={data?.monthlyData ?? []} />
-      </div>
-
-      <div className="float-in stagger-4 grid gap-3 md:grid-cols-2">
-        <div className="rounded-2xl border border-border/50 bg-card p-4 shadow-sm">
-          <h2 className="mb-3 text-sm font-bold text-foreground/80">
-            Pengeluaran per Kategori
-          </h2>
-          <CategoryPieChart data={data?.breakdown ?? []} />
-        </div>
-        <div className="rounded-2xl border border-border/50 bg-card p-4 shadow-sm">
-          <h2 className="mb-3 text-sm font-bold text-foreground/80">
-            Net Worth History
-          </h2>
-          <NetWorthChart data={netWorthData?.history ?? []} />
-        </div>
-      </div>
-    </div>
+    </main>
   );
-}
-
-function SummaryCard({
-  label,
-  value,
-  color,
-  bg,
-  icon,
-}: {
-  label: string;
-  value: number;
-  color: string;
-  bg: string;
-  icon: string;
-}) {
-  return (
-    <div className={`rounded-2xl ${bg} p-4 transition-all hover:scale-[1.02]`}>
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-muted-foreground">
-          {label}
-        </span>
-        <span className="text-lg">{icon}</span>
-      </div>
-      <p
-        className={`mt-1 text-lg font-extrabold tracking-tight sm:text-xl ${color}`}
-      >
-        {formatCurrency(value)}
-      </p>
-    </div>
-  );
-}
-
-function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 11) return "Selamat pagi";
-  if (hour < 15) return "Selamat siang";
-  if (hour < 18) return "Selamat sore";
-  return "Selamat malam";
 }

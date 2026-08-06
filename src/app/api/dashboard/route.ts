@@ -63,6 +63,13 @@ export async function GET(req: NextRequest) {
     };
   });
 
+  const recentTransactions = await prisma.transaction.findMany({
+    where: { userId: session.user.id },
+    include: { account: true, category: true },
+    orderBy: { date: "desc" },
+    take: 5,
+  });
+
   return NextResponse.json({
     totalBalance,
     summary: {
@@ -72,5 +79,6 @@ export async function GET(req: NextRequest) {
     },
     monthlyData,
     breakdown,
+    recentTransactions,
   });
 }

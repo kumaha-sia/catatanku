@@ -13,8 +13,6 @@ export const viewport: Viewport = {
   themeColor: "#f97316",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({
@@ -24,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <body className="min-h-dvh bg-background font-sans antialiased">
+      <body className="min-h-screen bg-surface font-body-md antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>
