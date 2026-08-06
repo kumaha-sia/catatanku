@@ -9,11 +9,6 @@
   * {
     @apply border-outline-variant;
   }
-
-  body {
-    @apply bg-[#fef9f0] text-on-surface antialiased;
-    font-family: "Hanken Grotesk", system-ui, sans-serif;
-  }
 }
 
 @layer utilities {

@@ -14,7 +14,8 @@ export default async function AppLayout({
   return (
     <div className="min-h-screen bg-[#fef9f0]">
       <AppNav />
-      <main className="pb-20 md:pb-4 md:pl-56">{children}</main>
+      {/* pt-14 = fixed header height, pb-24 = bottom nav + FAB space, md:pl-56 = sidebar width */}
+      <main className="pb-24 pt-14 md:pb-4 md:pl-56">{children}</main>
     </div>
   );
 }

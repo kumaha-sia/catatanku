@@ -30,8 +30,8 @@ export function AppNav() {
 
   return (
     <>
-      {/* Mobile Top Bar - STICKY */}
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-surface-variant bg-[#fef9f0]/90 px-5 py-3 backdrop-blur-md md:hidden">
+      {/* Mobile Top Bar - FIXED */}
+      <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-surface-variant bg-[#fef9f0] px-5 shadow-sm md:hidden">
         <div className="flex items-center gap-2">
           <span
             className="material-symbols-outlined text-on-surface"
@@ -92,7 +92,7 @@ export function AppNav() {
       </aside>
 
       {/* Mobile Bottom Nav - FIXED */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-surface-variant/50 bg-surface/95 px-4 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur-md md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t border-surface-variant bg-[#fef9f0] px-4 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-2px_10px_rgba(0,0,0,0.08)] md:hidden">
         {navItems.slice(0, 2).map((item) => {
           const active =
             pathname === item.href || pathname.startsWith(item.href + "/");

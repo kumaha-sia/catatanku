@@ -22,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <body className="min-h-screen bg-surface font-body-md antialiased">
+      <body className="font-body-md bg-[#fef9f0] text-on-surface antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>
