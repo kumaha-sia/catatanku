@@ -8,58 +8,92 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: system-ui; background: #0f172a; color: white; padding: 40px 20px; }
     h1 { text-align: center; font-size: 32px; margin-bottom: 8px; }
-    p { text-align: center; color: #94a3b8; margin-bottom: 40px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto; }
+    p.sub { text-align: center; color: #94a3b8; margin-bottom: 40px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px; max-width: 1400px; margin: 0 auto; }
     .card { background: #1e293b; border-radius: 16px; overflow: hidden; transition: transform 0.2s; }
     .card:hover { transform: translateY(-4px); }
-    .card iframe { width: 100%; height: 500px; border: none; }
+    .card a { display: block; text-decoration: none; color: inherit; }
+    .card iframe { width: 100%; height: 500px; border: none; pointer-events: none; }
     .card-info { padding: 20px; }
     .card-info h2 { font-size: 20px; margin-bottom: 4px; }
-    .card-info span { color: #f97316; font-size: 14px; font-weight: 600; }
-    .card-info p { color: #94a3b8; font-size: 14px; margin-top: 8px; text-align: left; }
-    .badge { display: inline-block; background: #f97316; color: white; padding: 2px 8px; border-radius: 999px; font-size: 12px; margin-right: 4px; }
+    .card-info .tags { margin-bottom: 8px; }
+    .card-info span.badge { display: inline-block; background: #f97316; color: white; padding: 2px 8px; border-radius: 999px; font-size: 12px; margin-right: 4px; }
+    .card-info p { color: #94a3b8; font-size: 14px; text-align: left; }
+    .highlight { border: 2px solid #f97316; }
   </style>
 </head>
 <body>
   <h1>Catatanku Design Variants</h1>
-  <p>Pilih design yang paling cocok. Klik card untuk buka full preview.</p>
+  <p class="sub">Klik card untuk buka full preview di tab baru</p>
   
   <div class="grid">
-    <a href="variant-1-sidebar.html" target="_blank" class="card" style="text-decoration:none;color:inherit">
-      <iframe src="variant-1-sidebar.html" loading="lazy"></iframe>
+    <div class="card highlight">
+      <a href="beranda-catatanku.html" target="_blank">
+        <iframe src="beranda-catatanku.html" loading="lazy"></iframe>
+      </a>
+      <div class="card-info">
+        <h2>⭐ Beranda Catatanku (Baru)</h2>
+        <div class="tags">
+          <span class="badge">Recommended</span>
+          <span class="badge">Bodoni + Hanken</span>
+        </div>
+        <p>Design terbaru dari Stitch. Typography Bodoni Moda untuk headline, Hanken Grotesk untuk body. Warm surface colors.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <a href="variant-1-sidebar.html" target="_blank">
+        <iframe src="variant-1-sidebar.html" loading="lazy"></iframe>
+      </a>
       <div class="card-info">
         <h2>Variant 1: Sidebar Navigation</h2>
-        <span class="badge">Desktop</span> <span class="badge">Sidebar</span>
-        <p>Left sidebar dengan icon + label, main content area luas. Cocok untuk desktop. Sidebar collapse di mobile.</p>
+        <div class="tags">
+          <span class="badge">Desktop</span>
+          <span class="badge">Sidebar</span>
+        </div>
+        <p>Left sidebar dengan icon + label. Main content area luas.</p>
       </div>
     </a>
+    </div>
     
-    <a href="variant-2-mobile.html" target="_blank" class="card" style="text-decoration:none;color:inherit">
-      <iframe src="variant-2-mobile.html" loading="lazy"></iframe>
+    <div class="card">
+      <a href="variant-2-mobile.html" target="_blank">
+        <iframe src="variant-2-mobile.html" loading="lazy"></iframe>
+      </a>
       <div class="card-info">
         <h2>Variant 2: Mobile Fintech</h2>
-        <span class="badge">Mobile</span> <span class="badge">FAB</span>
-        <p>GoPay/DANA style. Bottom nav, floating action button, compact cards. Optimal untuk mobile.</p>
+        <div class="tags">
+          <span class="badge">Mobile</span>
+          <span class="badge">FAB</span>
+        </div>
+        <p>GoPay/DANA style. Bottom nav, floating action button.</p>
       </div>
-    </a>
+    </div>
     
-    <a href="variant-3-luxury.html" target="_blank" class="card" style="text-decoration:none;color:inherit">
-      <iframe src="variant-3-luxury.html" loading="lazy"></iframe>
+    <div class="card">
+      <a href="variant-3-luxury.html" target="_blank">
+        <iframe src="variant-3-luxury.html" loading="lazy"></iframe>
+      </a>
       <div class="card-info">
         <h2>Variant 3: Luxury Editorial</h2>
-        <span class="badge">Premium</span> <span class="badge">Bento Grid</span>
-        <p>Editorial magazine style. Bento grid layout, large typography, grain texture. Sidebar icon-only yang expand on hover.</p>
+        <div class="tags">
+          <span class="badge">Premium</span>
+          <span class="badge">Bento Grid</span>
+        </div>
+        <p>Editorial magazine style. Bento grid, large typography.</p>
       </div>
-    </a>
+    </div>
     
-    <a href="dashboard.html" target="_blank" class="card" style="text-decoration:none;color:inherit">
-      <iframe src="dashboard.html" loading="lazy"></iframe>
+    <div class="card">
+      <a href="dashboard.html" target="_blank">
+        <iframe src="dashboard.html" loading="lazy"></iframe>
+      </a>
       <div class="card-info">
         <h2>Original: Stitch Default</h2>
-        <span class="badge">Original</span>
-        <p>Design awal dari Stitch. Bottom nav mobile, 2-column desktop.</p>
+        <div class="tags"><span class="badge">Original</span></div>
+        <p>Design awal dari Stitch.</p>
       </div>
-    </a>
+    </div>
   </div>
 </body>
 </html>
