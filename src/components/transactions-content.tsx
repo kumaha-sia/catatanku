@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 export function TransactionsContent() {
@@ -302,14 +301,6 @@ export function TransactionsContent() {
           </p>
         </div>
       )}
-
-      {/* FAB Mobile */}
-      <Link
-        href="/transactions/new"
-        className="fixed bottom-24 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary-container text-on-primary shadow-lg transition-all hover:bg-primary hover:shadow-xl active:scale-95 md:hidden"
-      >
-        <span className="material-symbols-outlined text-[28px]">add</span>
-      </Link>
     </main>
   );
 }
