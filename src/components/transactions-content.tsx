@@ -50,13 +50,13 @@ export function TransactionsContent() {
     },
   });
 
-  // Filter transactions
   const filtered = transactions.filter(
     (tx: {
       description: string;
       category: { name: string } | null;
       date: string;
       categoryId: string | null;
+      type: string;
     }) => {
       if (search) {
         const q = search.toLowerCase();
@@ -72,10 +72,8 @@ export function TransactionsContent() {
         const selDate = selectedDate.toISOString().split("T")[0];
         if (txDate !== selDate) return false;
       }
-      if (activeFilter !== "ALL") {
-        if (tx.categoryId !== activeFilter) return false;
-      }
-      // Filter by current month
+      if (activeFilter !== "ALL" && tx.categoryId !== activeFilter)
+        return false;
       const txDate = new Date(tx.date);
       if (
         txDate.getMonth() !== currentMonth.getMonth() ||
@@ -89,7 +87,6 @@ export function TransactionsContent() {
 
   const grouped = groupByDate(filtered);
 
-  // Calculate totals
   const totalIncome = filtered
     .filter((tx: { type: string }) => tx.type === "INCOME")
     .reduce(
@@ -111,251 +108,257 @@ export function TransactionsContent() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto w-full max-w-[1200px] space-y-6 px-5 py-6 md:px-10">
-        <div className="h-8 w-48 animate-pulse rounded-lg bg-surface-container" />
-        <div className="h-12 animate-pulse rounded-xl bg-surface-container" />
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="h-20 animate-pulse rounded-xl bg-surface-container"
-          />
-        ))}
+      <main className="flex-1 overflow-y-auto">
+        <div className="mx-auto w-full max-w-[1200px] space-y-6 px-5 py-4 md:px-10">
+          <div className="h-8 w-48 animate-pulse rounded-lg bg-surface-container" />
+          <div className="h-12 animate-pulse rounded-xl bg-surface-container" />
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="h-20 animate-pulse rounded-xl bg-surface-container"
+            />
+          ))}
+        </div>
       </main>
     );
   }
 
   return (
     <>
-      <main className="mx-auto w-full max-w-[1200px] space-y-6 px-5 py-6 md:px-10">
-        {/* Page Title & Month Navigation */}
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() =>
-              setCurrentMonth(
-                new Date(
-                  currentMonth.getFullYear(),
-                  currentMonth.getMonth() - 1,
-                  1,
-                ),
-              )
-            }
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-high text-on-surface transition-colors hover:bg-surface-container-highest"
-          >
-            <span className="material-symbols-outlined">chevron_left</span>
-          </button>
-          <div className="text-center">
-            <h1 className="font-headline-md text-[28px] font-semibold tracking-tight text-on-surface">
-              Semua Catatan
-            </h1>
-            <p className="mt-1 text-[12px] font-semibold uppercase tracking-[0.05em] text-on-surface-variant">
-              {currentMonth.toLocaleDateString("id-ID", {
-                month: "long",
-                year: "numeric",
-              })}
-            </p>
-          </div>
-          <button
-            onClick={() =>
-              setCurrentMonth(
-                new Date(
-                  currentMonth.getFullYear(),
-                  currentMonth.getMonth() + 1,
-                  1,
-                ),
-              )
-            }
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-high text-on-surface transition-colors hover:bg-surface-container-highest"
-          >
-            <span className="material-symbols-outlined">chevron_right</span>
-          </button>
-        </div>
-
-        {/* Search & Date Filter */}
-        <div className="flex gap-3">
-          <div className="relative flex-1">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-variant">
-              search
-            </span>
-            <input
-              className="w-full rounded-lg bg-[#f5f0e5] py-2 pl-10 pr-3 text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Cari transaksi..."
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <div className="w-48">
-            <DatePicker
-              value={selectedDate}
-              onChange={setSelectedDate}
-              placeholder="Pilih tanggal"
-            />
-          </div>
-        </div>
-
-        {/* Category Chips */}
-        <div className="no-scrollbar -mx-5 overflow-x-auto px-5 pb-1 md:-mx-10 md:px-10">
-          <div className="flex w-max gap-3">
+      {/* Main Scrollable Canvas - matches Stitch structure */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="mx-auto w-full max-w-[1200px] px-5 pb-[180px] md:px-10">
+          {/* Page Title & Month Navigation */}
+          <div className="flex items-center justify-between pb-6 pt-3">
             <button
-              onClick={() => setActiveFilter("ALL")}
-              className={`rounded-full px-6 py-1.5 text-[12px] font-semibold transition-transform active:scale-95 ${
-                activeFilter === "ALL"
-                  ? "bg-primary text-on-primary shadow-sm"
-                  : "bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest"
-              }`}
+              onClick={() =>
+                setCurrentMonth(
+                  new Date(
+                    currentMonth.getFullYear(),
+                    currentMonth.getMonth() - 1,
+                    1,
+                  ),
+                )
+              }
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-high text-on-surface transition-colors hover:bg-surface-container-highest"
             >
-              Semua
+              <span className="material-symbols-outlined">chevron_left</span>
             </button>
-            {expenseCategories.map((cat: { id: string; name: string }) => (
+            <div className="text-center">
+              <h1 className="font-headline-md text-[28px] font-semibold tracking-tight text-on-surface">
+                Semua Catatan
+              </h1>
+              <p className="mt-1 text-[12px] font-semibold uppercase tracking-[0.05em] text-on-surface-variant">
+                {currentMonth.toLocaleDateString("id-ID", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </p>
+            </div>
+            <button
+              onClick={() =>
+                setCurrentMonth(
+                  new Date(
+                    currentMonth.getFullYear(),
+                    currentMonth.getMonth() + 1,
+                    1,
+                  ),
+                )
+              }
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-high text-on-surface transition-colors hover:bg-surface-container-highest"
+            >
+              <span className="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+
+          {/* Search & Date Filter */}
+          <div className="mb-6 flex gap-3">
+            <div className="relative flex-1">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-variant">
+                search
+              </span>
+              <input
+                className="w-full rounded-lg bg-[#f5f0e5] py-2 pl-10 pr-3 text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="Cari transaksi..."
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <button className="flex items-center gap-2 rounded-lg bg-[#f5f0e5] px-3 py-2 text-on-surface transition-colors hover:bg-surface-container-highest">
+              <span className="material-symbols-outlined text-[18px]">
+                calendar_month
+              </span>
+              <span className="hidden text-[12px] font-semibold md:inline">
+                Pilih tanggal
+              </span>
+            </button>
+          </div>
+
+          {/* Category Chips */}
+          <div className="no-scrollbar mb-8 overflow-x-auto pb-1">
+            <div className="flex w-max gap-3">
               <button
-                key={cat.id}
-                onClick={() =>
-                  setActiveFilter(activeFilter === cat.id ? "ALL" : cat.id)
-                }
-                className={`rounded-full px-6 py-1.5 text-[12px] font-semibold transition-transform active:scale-95 ${
-                  activeFilter === cat.id
-                    ? "bg-primary text-on-primary shadow-sm"
+                onClick={() => setActiveFilter("ALL")}
+                className={`rounded-full px-6 py-1.5 text-[12px] font-semibold shadow-sm transition-transform active:scale-95 ${
+                  activeFilter === "ALL"
+                    ? "bg-primary text-on-primary"
                     : "bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest"
                 }`}
               >
-                {cat.name}
+                Semua
               </button>
-            ))}
+              {expenseCategories.map((cat: { id: string; name: string }) => (
+                <button
+                  key={cat.id}
+                  onClick={() =>
+                    setActiveFilter(activeFilter === cat.id ? "ALL" : cat.id)
+                  }
+                  className={`rounded-full px-6 py-1.5 text-[12px] font-semibold transition-transform active:scale-95 ${
+                    activeFilter === cat.id
+                      ? "bg-primary text-on-primary shadow-sm"
+                      : "bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest"
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Transactions List */}
-        <div className="flex flex-col gap-6 pb-32">
-          {Object.entries(grouped).map(([dateKey, txs]) => {
-            const dayTxs = txs as Array<{
-              id: string;
-              type: string;
-              description: string;
-              amount: { toNumber: () => number };
-              date: string;
-              category: { name: string } | null;
-              categoryId: string | null;
-            }>;
-            const totalDay = dayTxs.reduce(
-              (sum, tx) =>
-                sum +
-                (tx.type === "INCOME"
-                  ? tx.amount.toNumber()
-                  : -tx.amount.toNumber()),
-              0,
-            );
-            const d = new Date(dateKey);
+          {/* Transactions List */}
+          <div className="flex flex-col gap-6">
+            {Object.entries(grouped).map(([dateKey, txs]) => {
+              const dayTxs = txs as Array<{
+                id: string;
+                type: string;
+                description: string;
+                amount: { toNumber: () => number };
+                date: string;
+                category: { name: string } | null;
+                categoryId: string | null;
+              }>;
+              const totalDay = dayTxs.reduce(
+                (sum, tx) =>
+                  sum +
+                  (tx.type === "INCOME"
+                    ? tx.amount.toNumber()
+                    : -tx.amount.toNumber()),
+                0,
+              );
+              const d = new Date(dateKey);
 
-            return (
-              <section key={dateKey}>
-                {/* Day Header */}
-                <div className="group relative mb-4 overflow-hidden rounded-xl bg-inverse-surface p-4 text-inverse-on-surface shadow-sm">
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 transition-opacity group-hover:opacity-100" />
-                  <div className="relative z-10 flex items-end justify-between">
-                    <div className="flex items-end gap-3">
-                      <span className="font-headline-md text-[28px] font-semibold leading-none">
-                        {d.getDate()}
-                      </span>
-                      <div className="flex flex-col pb-[2px]">
-                        <span className="text-[12px] font-semibold uppercase tracking-wider text-inverse-on-surface/80">
-                          {d.toLocaleDateString("id-ID", { weekday: "long" })}
+              return (
+                <section key={dateKey}>
+                  {/* Day Header */}
+                  <div className="group relative mb-4 overflow-hidden rounded-xl bg-inverse-surface p-4 text-inverse-on-surface shadow-sm">
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 transition-opacity group-hover:opacity-100" />
+                    <div className="relative z-10 flex items-end justify-between">
+                      <div className="flex items-end gap-3">
+                        <span className="font-headline-md text-[28px] font-semibold leading-none">
+                          {d.getDate()}
                         </span>
-                        <span className="text-[10px] font-bold text-inverse-on-surface/60">
-                          {d.toLocaleDateString("id-ID", {
-                            month: "long",
-                            year: "numeric",
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                    <div
-                      className={`relative z-10 text-base font-bold ${totalDay >= 0 ? "text-secondary-fixed" : "text-inverse-primary"}`}
-                    >
-                      {totalDay >= 0 ? "+" : ""}
-                      {formatCurrency(Math.abs(totalDay))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Transaction Rows */}
-                <div className="flex flex-col gap-2">
-                  {dayTxs.map((tx) => (
-                    <div
-                      key={tx.id}
-                      className="group flex items-center gap-3 rounded-lg border border-outline-variant/30 bg-surface-container-lowest p-3 transition-colors hover:border-outline-variant"
-                    >
-                      <div
-                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xl ${
-                          tx.type === "INCOME"
-                            ? "bg-secondary-container/40"
-                            : "bg-surface-container"
-                        }`}
-                      >
-                        {tx.type === "INCOME"
-                          ? "💼"
-                          : (categoryEmojis[tx.category?.name ?? ""] ?? "💰")}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="truncate text-base font-medium text-on-surface">
-                          {tx.description}
-                        </h3>
-                        <div className="mt-1 flex items-center gap-2">
-                          <span
-                            className={`rounded px-2 py-[2px] text-[10px] font-bold uppercase tracking-wider ${
-                              tx.type === "INCOME"
-                                ? "bg-secondary-container/50 text-on-secondary-container"
-                                : "bg-surface-container-high text-on-surface-variant"
-                            }`}
-                          >
-                            {tx.type === "INCOME"
-                              ? "Income"
-                              : (tx.category?.name ?? "Tanpa kategori")}
+                        <div className="flex flex-col pb-[2px]">
+                          <span className="text-[12px] font-semibold uppercase tracking-wider text-inverse-on-surface/80">
+                            {d.toLocaleDateString("id-ID", { weekday: "long" })}
                           </span>
-                          <span className="text-[11px] text-on-surface-variant/60">
-                            {new Date(tx.date).toLocaleTimeString("id-ID", {
-                              hour: "2-digit",
-                              minute: "2-digit",
+                          <span className="text-[10px] font-bold text-inverse-on-surface/60">
+                            {d.toLocaleDateString("id-ID", {
+                              month: "long",
+                              year: "numeric",
                             })}
                           </span>
                         </div>
                       </div>
                       <div
-                        className={`shrink-0 text-base font-medium ${tx.type === "INCOME" ? "text-secondary" : "text-on-surface"}`}
+                        className={`relative z-10 text-base font-bold ${totalDay >= 0 ? "text-secondary-fixed" : "text-inverse-primary"}`}
                       >
-                        {tx.type === "INCOME" ? "+" : "-"}
-                        {formatCurrency(tx.amount.toNumber())}
+                        {totalDay >= 0 ? "+" : ""}
+                        {formatCurrency(Math.abs(totalDay))}
                       </div>
-                      <button
-                        onClick={() => {
-                          if (confirm("Hapus transaksi ini?"))
-                            deleteMutation.mutate(tx.id);
-                        }}
-                        className="ml-2 flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant/40 opacity-0 transition-colors hover:bg-error-container/20 hover:text-error group-hover:opacity-100 md:opacity-100"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">
-                          delete
-                        </span>
-                      </button>
                     </div>
-                  ))}
-                </div>
-              </section>
-            );
-          })}
+                  </div>
 
-          {Object.keys(grouped).length === 0 && (
-            <div className="py-16 text-center">
-              <span className="material-symbols-outlined text-[48px] text-on-surface-variant/30">
-                receipt_long
-              </span>
-              <p className="mt-4 text-base font-medium text-on-surface-variant">
-                Belum ada transaksi
-              </p>
-              <p className="text-sm text-on-surface-variant/60">
-                Tekan + untuk mulai mencatat
-              </p>
-            </div>
-          )}
+                  {/* Transaction Rows */}
+                  <div className="flex flex-col gap-2">
+                    {dayTxs.map((tx) => (
+                      <div
+                        key={tx.id}
+                        className="group flex items-center gap-3 rounded-lg border border-outline-variant/30 bg-surface-container-lowest p-3 transition-colors hover:border-outline-variant"
+                      >
+                        <div
+                          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xl ${
+                            tx.type === "INCOME"
+                              ? "bg-secondary-container/40"
+                              : "bg-surface-container"
+                          }`}
+                        >
+                          {tx.type === "INCOME"
+                            ? "💼"
+                            : (categoryEmojis[tx.category?.name ?? ""] ?? "💰")}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="truncate text-base font-medium text-on-surface">
+                            {tx.description}
+                          </h3>
+                          <div className="mt-1 flex items-center gap-2">
+                            <span
+                              className={`rounded px-2 py-[2px] text-[10px] font-bold uppercase tracking-wider ${
+                                tx.type === "INCOME"
+                                  ? "bg-secondary-container/50 text-on-secondary-container"
+                                  : "bg-surface-container-high text-on-surface-variant"
+                              }`}
+                            >
+                              {tx.type === "INCOME"
+                                ? "Income"
+                                : (tx.category?.name ?? "Tanpa kategori")}
+                            </span>
+                            <span className="text-[11px] text-on-surface-variant/60">
+                              {new Date(tx.date).toLocaleTimeString("id-ID", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                        <div
+                          className={`shrink-0 text-base font-medium ${tx.type === "INCOME" ? "text-secondary" : "text-on-surface"}`}
+                        >
+                          {tx.type === "INCOME" ? "+" : "-"}
+                          {formatCurrency(tx.amount.toNumber())}
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (confirm("Hapus transaksi ini?"))
+                              deleteMutation.mutate(tx.id);
+                          }}
+                          className="ml-2 flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant/40 opacity-0 transition-colors hover:bg-error-container/20 hover:text-error group-hover:opacity-100 md:opacity-100"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">
+                            delete
+                          </span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+
+            {Object.keys(grouped).length === 0 && (
+              <div className="py-16 text-center">
+                <span className="material-symbols-outlined text-[48px] text-on-surface-variant/30">
+                  receipt_long
+                </span>
+                <p className="mt-4 text-base font-medium text-on-surface-variant">
+                  Belum ada transaksi
+                </p>
+                <p className="text-sm text-on-surface-variant/60">
+                  Tekan + untuk mulai mencatat
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </main>
 

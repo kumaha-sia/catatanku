@@ -12,10 +12,10 @@ export default async function AppLayout({
   if (!session) redirect("/login");
 
   return (
-    <div className="min-h-screen bg-[#fef9f0]">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-[#fef9f0]">
       <AppNav />
-      {/* pt-14 = fixed header height, pb-24 = bottom nav + summary bar space, md:pl-56 = sidebar width */}
-      <main className="pb-24 pt-14 md:pb-4 md:pl-56">{children}</main>
+      {/* flex-1 overflow-y-auto makes only this area scroll */}
+      <div className="flex-1 overflow-y-auto pt-14 md:pl-56">{children}</div>
     </div>
   );
 }
