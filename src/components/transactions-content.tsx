@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { DatePicker } from "@/components/ui/date-picker";
 
 export function TransactionsContent() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("ALL");
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ["transactions"],
