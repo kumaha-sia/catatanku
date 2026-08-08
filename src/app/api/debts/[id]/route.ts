@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
-import { updateDebt, deleteDebt } from "@/server/debt.service";
+import { getDebtById, updateDebt, deleteDebt } from "@/server/debt.service";
 
 const updateSchema = z.object({
   type: z.enum(["DEBT", "CREDIT"]).optional(),
@@ -10,6 +10,19 @@ const updateSchema = z.object({
   totalAmount: z.number().positive().optional(),
   paidAmount: z.number().min(0).optional(),
 });
+
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { id } = await params;
+  const debt = await getDebtById(id, session.user.id);
+  if (!debt) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json(debt);
+}
 
 export async function PUT(
   req: NextRequest,

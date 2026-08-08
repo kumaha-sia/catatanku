@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Decimal } from "@prisma/client/runtime/library";
 
 const mockPrisma = {
+  $transaction: vi.fn(async (fn: Function) => fn(mockPrisma)),
   debt: {
     findMany: vi.fn(),
     findFirst: vi.fn(),

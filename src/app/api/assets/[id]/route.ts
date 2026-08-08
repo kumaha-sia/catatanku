@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
-import { updateAsset, deleteAsset } from "@/server/asset.service";
+import { getAssetById, updateAsset, deleteAsset } from "@/server/asset.service";
 
 const schema = z.object({
   type: z.enum(["REAL_ESTATE", "VEHICLE", "INVESTMENT", "OTHER"]).optional(),
@@ -11,6 +11,19 @@ const schema = z.object({
   purchasePrice: z.number().min(0).optional(),
   metadata: z.unknown().optional(),
 });
+
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { id } = await params;
+  const asset = await getAssetById(id, session.user.id);
+  if (!asset) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json(asset);
+}
 
 export async function PUT(
   req: NextRequest,

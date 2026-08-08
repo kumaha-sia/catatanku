@@ -9,6 +9,26 @@ export async function getFamilyByUser(userId: string) {
   return user?.family ?? null;
 }
 
+export async function createFamily(userId: string, name: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new Error("Pengguna tidak ditemukan");
+  if (user.familyId) throw new Error("Sudah memiliki keluarga");
+
+  const family = await prisma.family.create({
+    data: {
+      name,
+      members: { connect: { id: userId } },
+    },
+  });
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { familyId: family.id, role: "OWNER" },
+  });
+
+  return family;
+}
+
 export async function getFamilyMembers(familyId: string) {
   return prisma.user.findMany({
     where: { familyId },

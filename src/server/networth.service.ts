@@ -34,22 +34,16 @@ export async function getNetWorthHistory(userId: string, months = 12) {
   const history = [];
 
   for (let i = months - 1; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const endOfMonth = new Date(
-      d.getFullYear(),
-      d.getMonth() + 1,
+      now.getFullYear(),
+      now.getMonth() - i + 1,
       0,
       23,
       59,
       59,
     );
 
-    const accounts = await prisma.account.aggregate({
-      where: { userId },
-      _sum: { balance: true },
-    });
-
-    const transactions = await prisma.transaction.aggregate({
+    const income = await prisma.transaction.aggregate({
       where: {
         userId,
         type: "INCOME",
@@ -67,12 +61,16 @@ export async function getNetWorthHistory(userId: string, months = 12) {
       _sum: { amount: true },
     });
 
-    const balance =
-      Number(transactions._sum.amount ?? 0) - Number(expenses._sum.amount ?? 0);
+    const netWorth =
+      Number(income._sum.amount ?? 0) - Number(expenses._sum.amount ?? 0);
 
+    const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
     history.push({
-      month: d.toLocaleDateString("id-ID", { month: "short", year: "2-digit" }),
-      netWorth: balance,
+      month: monthDate.toLocaleDateString("id-ID", {
+        month: "short",
+        year: "2-digit",
+      }),
+      netWorth,
     });
   }
 

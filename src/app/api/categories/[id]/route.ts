@@ -2,7 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
-import { updateCategory, deleteCategory } from "@/server/category.service";
+import {
+  getCategoryById,
+  updateCategory,
+  deleteCategory,
+} from "@/server/category.service";
 
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
@@ -10,6 +14,20 @@ const updateSchema = z.object({
   budget: z.number().optional(),
   parentId: z.string().optional(),
 });
+
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { id } = await params;
+  const category = await getCategoryById(id, session.user.id);
+  if (!category)
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json(category);
+}
 
 export async function PUT(
   req: NextRequest,
@@ -41,9 +59,12 @@ export async function DELETE(
   const session = await getServerSession(authOptions);
   if (!session?.user?.id)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id } = await params;
-  const result = await deleteCategory(id, session.user.id);
-  if (result.count === 0)
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ success: true });
+  try {
+    const { id } = await params;
+    const result = await deleteCategory(id, session.user.id);
+    return NextResponse.json(result);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Gagal menghapus kategori";
+    return NextResponse.json({ error: msg }, { status: 400 });
+  }
 }

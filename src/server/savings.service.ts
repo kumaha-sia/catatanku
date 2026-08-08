@@ -6,44 +6,58 @@ export async function getSavingsByUser(userId: string) {
     orderBy: { name: "asc" },
   });
 
-  const result = await Promise.all(
-    savings.map(async (s) => {
-      const transactions = await prisma.transaction.aggregate({
-        where: {
-          userId,
-          categoryId: s.id,
-          type: "INCOME",
-        },
-        _sum: { amount: true },
-      });
+  if (savings.length === 0) return [];
 
-      const withdrawn = await prisma.transaction.aggregate({
-        where: {
-          userId,
-          categoryId: s.id,
-          type: "EXPENSE",
-        },
-        _sum: { amount: true },
-      });
+  const categoryIds = savings.map((s) => s.id);
 
-      const saved = Number(transactions._sum.amount ?? 0);
-      const withdrawnAmount = Number(withdrawn._sum.amount ?? 0);
-      const balance = saved - withdrawnAmount;
-      const target = Number(s.budget ?? 0);
-      const pct = target > 0 ? Math.min((balance / target) * 100, 100) : 0;
+  const incomeByCategory = await prisma.transaction.groupBy({
+    by: ["categoryId"],
+    where: {
+      userId,
+      categoryId: { in: categoryIds },
+      type: "INCOME",
+    },
+    _sum: { amount: true },
+  });
 
-      return {
-        id: s.id,
-        name: s.name,
-        target,
-        saved: balance,
-        pct,
-        remaining: target > 0 ? Math.max(0, target - balance) : 0,
-      };
-    }),
+  const expenseByCategory = await prisma.transaction.groupBy({
+    by: ["categoryId"],
+    where: {
+      userId,
+      categoryId: { in: categoryIds },
+      type: "EXPENSE",
+    },
+    _sum: { amount: true },
+  });
+
+  const incomeMap = new Map(
+    incomeByCategory
+      .filter((r) => r.categoryId)
+      .map((r) => [r.categoryId!, Number(r._sum.amount ?? 0)]),
   );
 
-  return result;
+  const expenseMap = new Map(
+    expenseByCategory
+      .filter((r) => r.categoryId)
+      .map((r) => [r.categoryId!, Number(r._sum.amount ?? 0)]),
+  );
+
+  return savings.map((s) => {
+    const saved = incomeMap.get(s.id) ?? 0;
+    const withdrawnAmount = expenseMap.get(s.id) ?? 0;
+    const balance = saved - withdrawnAmount;
+    const target = Number(s.budget ?? 0);
+    const pct = target > 0 ? Math.min((balance / target) * 100, 100) : 0;
+
+    return {
+      id: s.id,
+      name: s.name,
+      target,
+      saved: balance,
+      pct,
+      remaining: target > 0 ? Math.max(0, target - balance) : 0,
+    };
+  });
 }
 
 export async function setSavingsTarget(

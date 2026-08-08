@@ -9,6 +9,13 @@ export async function getInvestmentsByUser(userId: string) {
   });
 }
 
+export async function getInvestmentById(id: string, userId: string) {
+  return prisma.investment.findFirst({
+    where: { id, userId },
+    include: { transactions: { orderBy: { date: "desc" } } },
+  });
+}
+
 export async function createInvestment(data: {
   userId: string;
   instrument: InvestmentInstrument;

@@ -19,15 +19,48 @@ export async function runInsightEngine(userId: string, month?: Date) {
     budgets,
   });
 
-  await prisma.insight.create({
-    data: {
+  const startOfMonth = new Date(
+    reference.getFullYear(),
+    reference.getMonth(),
+    1,
+  );
+  const endOfMonth = new Date(
+    reference.getFullYear(),
+    reference.getMonth() + 1,
+    0,
+    23,
+    59,
+    59,
+  );
+
+  const existing = await prisma.insight.findFirst({
+    where: {
       userId,
       type: "SPENDING_PATTERN",
       title: "Ringkasan keuangan bulanan",
-      content: insightText,
-      severity: summary.balance >= 0 ? "POSITIVE" : "WARNING",
+      createdAt: { gte: startOfMonth, lte: endOfMonth },
     },
   });
+
+  if (existing) {
+    await prisma.insight.update({
+      where: { id: existing.id },
+      data: {
+        content: insightText,
+        severity: summary.balance >= 0 ? "POSITIVE" : "WARNING",
+      },
+    });
+  } else {
+    await prisma.insight.create({
+      data: {
+        userId,
+        type: "SPENDING_PATTERN",
+        title: "Ringkasan keuangan bulanan",
+        content: insightText,
+        severity: summary.balance >= 0 ? "POSITIVE" : "WARNING",
+      },
+    });
+  }
 
   return insightText;
 }

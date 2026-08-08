@@ -33,6 +33,13 @@ export async function getTransactionsByUser(
   });
 }
 
+export async function getTransactionById(id: string, userId: string) {
+  return prisma.transaction.findFirst({
+    where: { id, userId },
+    include: { account: true, category: true },
+  });
+}
+
 export async function createTransaction(data: {
   userId: string;
   accountId: string;
@@ -43,8 +50,35 @@ export async function createTransaction(data: {
   date: Date;
   receiptUrl?: string;
   ocrData?: unknown;
+  targetAccountId?: string;
 }) {
   return prisma.$transaction(async (tx) => {
+    const account = await tx.account.findFirst({
+      where: { id: data.accountId, userId: data.userId },
+    });
+    if (!account) throw new Error("Rekening sumber tidak ditemukan");
+
+    if (data.categoryId) {
+      const category = await tx.category.findFirst({
+        where: { id: data.categoryId, userId: data.userId },
+      });
+      if (!category) throw new Error("Kategori tidak ditemukan");
+    }
+
+    let targetAccount: { id: string } | null = null;
+    if (data.type === "TRANSFER") {
+      if (!data.targetAccountId) {
+        throw new Error("Rekening tujuan wajib untuk transfer");
+      }
+      targetAccount = await tx.account.findFirst({
+        where: { id: data.targetAccountId, userId: data.userId },
+      });
+      if (!targetAccount) throw new Error("Rekening tujuan tidak ditemukan");
+      if (data.targetAccountId === data.accountId) {
+        throw new Error("Rekening sumber dan tujuan tidak boleh sama");
+      }
+    }
+
     const created = await tx.transaction.create({
       data: {
         userId: data.userId,
@@ -70,6 +104,15 @@ export async function createTransaction(data: {
         where: { id: data.accountId },
         data: { balance: { decrement: data.amount } },
       });
+    } else if (data.type === "TRANSFER") {
+      await tx.account.update({
+        where: { id: data.accountId },
+        data: { balance: { decrement: data.amount } },
+      });
+      await tx.account.update({
+        where: { id: data.targetAccountId! },
+        data: { balance: { increment: data.amount } },
+      });
     }
 
     return created;
@@ -86,6 +129,7 @@ export async function updateTransaction(
     amount: number;
     description: string;
     date: Date;
+    targetAccountId: string;
   }>,
 ) {
   return prisma.$transaction(async (tx) => {

@@ -9,6 +9,13 @@ export async function getCategoriesByUser(userId: string) {
   });
 }
 
+export async function getCategoryById(id: string, userId: string) {
+  return prisma.category.findFirst({
+    where: { id, userId },
+    include: { children: true },
+  });
+}
+
 export async function createCategory(data: {
   userId: string;
   name: string;
@@ -44,9 +51,27 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(id: string, userId: string) {
-  return prisma.category.deleteMany({
+  const category = await prisma.category.findFirst({
     where: { id, userId },
   });
+  if (!category) throw new Error("Kategori tidak ditemukan");
+
+  const transactionCount = await prisma.transaction.count({
+    where: { categoryId: id },
+  });
+
+  if (transactionCount > 0) {
+    await prisma.transaction.updateMany({
+      where: { categoryId: id },
+      data: { categoryId: null },
+    });
+  }
+
+  await prisma.category.deleteMany({
+    where: { id, userId },
+  });
+
+  return { success: true, affectedTransactions: transactionCount };
 }
 
 export async function getBudgetStatus(userId: string, month: Date) {

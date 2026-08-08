@@ -9,6 +9,13 @@ export async function getDebtsByUser(userId: string) {
   });
 }
 
+export async function getDebtById(id: string, userId: string) {
+  return prisma.debt.findFirst({
+    where: { id, userId },
+    include: { installments: { orderBy: { dueDate: "asc" } } },
+  });
+}
+
 export async function createDebt(data: {
   userId: string;
   type: DebtType;
@@ -73,29 +80,31 @@ export async function addInstallment(
 }
 
 export async function payInstallment(installmentId: string, userId: string) {
-  const installment = await prisma.installment.findFirst({
-    where: { id: installmentId },
-    include: { debt: true },
+  return prisma.$transaction(async (tx) => {
+    const installment = await tx.installment.findFirst({
+      where: { id: installmentId },
+      include: { debt: true },
+    });
+    if (!installment || installment.debt.userId !== userId) {
+      throw new Error("Cicilan tidak ditemukan");
+    }
+
+    const updated = await tx.installment.update({
+      where: { id: installmentId },
+      data: { paid: true, paidAt: new Date() },
+    });
+
+    const newPaidAmount =
+      Number(installment.debt.paidAmount) + Number(installment.amount);
+    const newRemaining = Number(installment.debt.totalAmount) - newPaidAmount;
+
+    await tx.debt.update({
+      where: { id: installment.debt.id },
+      data: { paidAmount: newPaidAmount, remaining: newRemaining },
+    });
+
+    return updated;
   });
-  if (!installment || installment.debt.userId !== userId) {
-    throw new Error("Cicilan tidak ditemukan");
-  }
-
-  const updated = await prisma.installment.update({
-    where: { id: installmentId },
-    data: { paid: true, paidAt: new Date() },
-  });
-
-  const newPaidAmount =
-    Number(installment.debt.paidAmount) + Number(installment.amount);
-  const newRemaining = Number(installment.debt.totalAmount) - newPaidAmount;
-
-  await prisma.debt.update({
-    where: { id: installment.debt.id },
-    data: { paidAmount: newPaidAmount, remaining: newRemaining },
-  });
-
-  return updated;
 }
 
 export async function getDebtSummary(userId: string) {

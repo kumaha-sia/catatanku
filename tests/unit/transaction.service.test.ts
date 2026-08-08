@@ -13,8 +13,12 @@ const mockPrisma = {
     groupBy: vi.fn(),
   },
   account: {
+    findFirst: vi.fn(),
     update: vi.fn(),
     aggregate: vi.fn(),
+  },
+  category: {
+    findFirst: vi.fn(),
   },
 };
 
@@ -96,6 +100,7 @@ describe("getTransactionsByUser", () => {
 describe("createTransaction", () => {
   it("creates transaction and increments balance for INCOME", async () => {
     const mockTx = { id: "tx1", type: "INCOME", amount: new Decimal(5000) };
+    mockPrisma.account.findFirst.mockResolvedValue({ id: "acc1" });
     mockPrisma.transaction.create.mockResolvedValue(mockTx);
     mockPrisma.account.update.mockResolvedValue({});
 
@@ -117,6 +122,7 @@ describe("createTransaction", () => {
 
   it("creates transaction and decrements balance for EXPENSE", async () => {
     const mockTx = { id: "tx2", type: "EXPENSE", amount: new Decimal(2000) };
+    mockPrisma.account.findFirst.mockResolvedValue({ id: "acc1" });
     mockPrisma.transaction.create.mockResolvedValue(mockTx);
     mockPrisma.account.update.mockResolvedValue({});
 
@@ -135,11 +141,28 @@ describe("createTransaction", () => {
     });
   });
 
-  it("does not update balance for TRANSFER", async () => {
-    mockPrisma.transaction.create.mockResolvedValue({
-      id: "tx3",
-      type: "TRANSFER",
-    });
+  it("throws if account not found", async () => {
+    mockPrisma.account.findFirst.mockResolvedValue(null);
+
+    await expect(
+      createTransaction({
+        userId: "user1",
+        accountId: "acc1",
+        type: "EXPENSE",
+        amount: 1000,
+        description: "Test",
+        date: new Date(),
+      }),
+    ).rejects.toThrow("Rekening sumber tidak ditemukan");
+  });
+
+  it("handles TRANSFER with targetAccountId", async () => {
+    const mockTx = { id: "tx3", type: "TRANSFER", amount: new Decimal(1000) };
+    mockPrisma.account.findFirst
+      .mockResolvedValueOnce({ id: "acc1" })
+      .mockResolvedValueOnce({ id: "acc2" });
+    mockPrisma.transaction.create.mockResolvedValue(mockTx);
+    mockPrisma.account.update.mockResolvedValue({});
 
     await createTransaction({
       userId: "user1",
@@ -148,9 +171,33 @@ describe("createTransaction", () => {
       amount: 1000,
       description: "Transfer",
       date: new Date(),
+      targetAccountId: "acc2",
     });
 
-    expect(mockPrisma.account.update).not.toHaveBeenCalled();
+    expect(mockPrisma.account.update).toHaveBeenCalledTimes(2);
+    expect(mockPrisma.account.update).toHaveBeenCalledWith({
+      where: { id: "acc1" },
+      data: { balance: { decrement: 1000 } },
+    });
+    expect(mockPrisma.account.update).toHaveBeenCalledWith({
+      where: { id: "acc2" },
+      data: { balance: { increment: 1000 } },
+    });
+  });
+
+  it("throws if TRANSFER without targetAccountId", async () => {
+    mockPrisma.account.findFirst.mockResolvedValue({ id: "acc1" });
+
+    await expect(
+      createTransaction({
+        userId: "user1",
+        accountId: "acc1",
+        type: "TRANSFER",
+        amount: 1000,
+        description: "Transfer",
+        date: new Date(),
+      }),
+    ).rejects.toThrow("Rekening tujuan wajib untuk transfer");
   });
 });
 

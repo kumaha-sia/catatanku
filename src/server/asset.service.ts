@@ -8,6 +8,12 @@ export async function getAssetsByUser(userId: string) {
   });
 }
 
+export async function getAssetById(id: string, userId: string) {
+  return prisma.asset.findFirst({
+    where: { id, userId },
+  });
+}
+
 export async function createAsset(data: {
   userId: string;
   type: AssetType;
