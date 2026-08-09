@@ -179,4 +179,19 @@ describe("getBudgetStatus", () => {
       pct: 0,
     });
   });
+
+  it("returns pct 0 when budget is 0", async () => {
+    const categories = [{ id: "c1", name: "Lainnya", budget: 0 }];
+    const spentByCategory = [{ categoryId: "c1", _sum: { amount: 1000000 } }];
+
+    mockPrisma.category.findMany.mockResolvedValue(categories);
+    mockPrisma.transaction.groupBy.mockResolvedValue(spentByCategory);
+
+    const result = await getBudgetStatus("user1", new Date("2026-08-01"));
+
+    expect(result[0].budget).toBe(0);
+    expect(result[0].spent).toBe(1000000);
+    expect(result[0].remaining).toBe(-1000000);
+    expect(result[0].pct).toBe(0);
+  });
 });

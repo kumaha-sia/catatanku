@@ -61,4 +61,20 @@ describe("getBudgetVsActual", () => {
     expect(result[0].spent).toBe(0);
     expect(result[0].pct).toBe(0);
   });
+
+  it("returns pct 0 when budget is 0", async () => {
+    mockPrisma.category.findMany.mockResolvedValue([
+      { id: "cat1", name: "Lainnya", budget: new Decimal(0) },
+    ]);
+    mockPrisma.transaction.groupBy.mockResolvedValue([
+      { categoryId: "cat1", _sum: { amount: new Decimal(500000) } },
+    ]);
+
+    const result = await getBudgetVsActual("user1", new Date("2026-08-01"));
+
+    expect(result[0].budget).toBe(0);
+    expect(result[0].spent).toBe(500000);
+    expect(result[0].remaining).toBe(-500000);
+    expect(result[0].pct).toBe(0);
+  });
 });

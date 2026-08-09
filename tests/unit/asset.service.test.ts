@@ -92,6 +92,61 @@ describe("updateAsset", () => {
       data: { currentValue: 600000000 },
     });
   });
+
+  it("updates purchasePrice field", async () => {
+    mockPrisma.asset.updateMany.mockResolvedValue({ count: 1 });
+
+    await updateAsset("a1", "user1", { purchasePrice: 500000000 });
+
+    expect(mockPrisma.asset.updateMany).toHaveBeenCalledWith({
+      where: { id: "a1", userId: "user1" },
+      data: { purchasePrice: 500000000 },
+    });
+  });
+
+  it("updates metadata field", async () => {
+    mockPrisma.asset.updateMany.mockResolvedValue({ count: 1 });
+    const metadata = { address: "Jl. Sudirman", luas: 200 };
+
+    await updateAsset("a1", "user1", { metadata });
+
+    expect(mockPrisma.asset.updateMany).toHaveBeenCalledWith({
+      where: { id: "a1", userId: "user1" },
+      data: { metadata },
+    });
+  });
+
+  it("updates multiple fields at once", async () => {
+    mockPrisma.asset.updateMany.mockResolvedValue({ count: 1 });
+
+    await updateAsset("a1", "user1", {
+      name: "Rumah Baru",
+      currentValue: 700000000,
+      purchasePrice: 500000000,
+      type: "REAL_ESTATE",
+    });
+
+    expect(mockPrisma.asset.updateMany).toHaveBeenCalledWith({
+      where: { id: "a1", userId: "user1" },
+      data: {
+        name: "Rumah Baru",
+        currentValue: 700000000,
+        purchasePrice: 500000000,
+        type: "REAL_ESTATE",
+      },
+    });
+  });
+
+  it("skips undefined fields", async () => {
+    mockPrisma.asset.updateMany.mockResolvedValue({ count: 1 });
+
+    await updateAsset("a1", "user1", { name: "Updated" });
+
+    const call = mockPrisma.asset.updateMany.mock.calls[0][0];
+    expect(call.data).not.toHaveProperty("currentValue");
+    expect(call.data).not.toHaveProperty("purchasePrice");
+    expect(call.data).not.toHaveProperty("metadata");
+  });
 });
 
 describe("deleteAsset", () => {

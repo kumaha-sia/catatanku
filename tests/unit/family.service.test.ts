@@ -13,6 +13,7 @@ const mockPrisma = {
   },
   transaction: {
     aggregate: vi.fn(),
+    groupBy: vi.fn(),
   },
   account: {
     aggregate: vi.fn(),
@@ -32,6 +33,7 @@ const {
   removeMember,
   updateMemberRole,
   getFamilySummary,
+  getFamilySharedBudgets,
 } = await import("@/server/family.service");
 
 beforeEach(() => {
@@ -42,6 +44,7 @@ beforeEach(() => {
   mockPrisma.user.update.mockReset();
   mockPrisma.family.create.mockReset();
   mockPrisma.transaction.aggregate.mockReset();
+  mockPrisma.transaction.groupBy.mockReset();
   mockPrisma.account.aggregate.mockReset();
 });
 
@@ -289,5 +292,66 @@ describe("getFamilySummary", () => {
     expect(result).toHaveProperty("totalExpense");
     expect(result).toHaveProperty("totalBalance");
     expect(result).toHaveProperty("netSavings");
+  });
+});
+
+describe("getFamilySharedBudgets", () => {
+  it("returns family budgets with spent amounts", async () => {
+    const categories = [
+      { id: "c1", name: "Makan", budget: new Decimal(2000000) },
+      { id: "c2", name: "Transport", budget: new Decimal(500000) },
+    ];
+    const spent = [
+      { categoryId: "c1", _sum: { amount: new Decimal(1500000) } },
+    ];
+
+    mockPrisma.category.findMany.mockResolvedValue(categories);
+    mockPrisma.transaction.groupBy.mockResolvedValue(spent);
+
+    const result = await getFamilySharedBudgets("f1", new Date("2026-08-01"));
+
+    expect(result).toHaveLength(2);
+    expect(result[0]).toEqual({
+      id: "c1",
+      name: "Makan",
+      budget: 2000000,
+      spent: 1500000,
+      remaining: 500000,
+      pct: 75,
+    });
+    expect(result[1]).toEqual({
+      id: "c2",
+      name: "Transport",
+      budget: 500000,
+      spent: 0,
+      remaining: 500000,
+      pct: 0,
+    });
+  });
+
+  it("returns empty array when no family budgets", async () => {
+    mockPrisma.category.findMany.mockResolvedValue([]);
+    mockPrisma.transaction.groupBy.mockResolvedValue([]);
+
+    const result = await getFamilySharedBudgets("f1", new Date("2026-08-01"));
+
+    expect(result).toEqual([]);
+  });
+
+  it("handles over-budget categories", async () => {
+    const categories = [
+      { id: "c1", name: "Makan", budget: new Decimal(1000000) },
+    ];
+    const spent = [
+      { categoryId: "c1", _sum: { amount: new Decimal(1500000) } },
+    ];
+
+    mockPrisma.category.findMany.mockResolvedValue(categories);
+    mockPrisma.transaction.groupBy.mockResolvedValue(spent);
+
+    const result = await getFamilySharedBudgets("f1", new Date("2026-08-01"));
+
+    expect(result[0].remaining).toBe(-500000);
+    expect(result[0].pct).toBe(150);
   });
 });

@@ -98,6 +98,45 @@ describe("getSavingsByUser", () => {
 
     expect(result[0].pct).toBe(100);
   });
+
+  it("handles negative balance (withdrawn > saved)", async () => {
+    const savings = [
+      { id: "s1", name: "Dana Darurat", budget: new Decimal(10000000) },
+    ];
+    mockPrisma.category.findMany.mockResolvedValue(savings);
+    mockPrisma.transaction.groupBy
+      .mockResolvedValueOnce([
+        { categoryId: "s1", _sum: { amount: new Decimal(3000000) } },
+      ])
+      .mockResolvedValueOnce([
+        { categoryId: "s1", _sum: { amount: new Decimal(5000000) } },
+      ]);
+
+    const result = await getSavingsByUser("user1");
+
+    expect(result[0].saved).toBe(-2000000);
+    expect(result[0].pct).toBe(-20);
+    expect(result[0].remaining).toBe(12000000);
+  });
+
+  it("returns pct 0 and remaining 0 when target is 0", async () => {
+    const savings = [
+      { id: "s1", name: "Tabungan Umum", budget: new Decimal(0) },
+    ];
+    mockPrisma.category.findMany.mockResolvedValue(savings);
+    mockPrisma.transaction.groupBy
+      .mockResolvedValueOnce([
+        { categoryId: "s1", _sum: { amount: new Decimal(1000000) } },
+      ])
+      .mockResolvedValueOnce([]);
+
+    const result = await getSavingsByUser("user1");
+
+    expect(result[0].target).toBe(0);
+    expect(result[0].saved).toBe(1000000);
+    expect(result[0].pct).toBe(0);
+    expect(result[0].remaining).toBe(0);
+  });
 });
 
 describe("setSavingsTarget", () => {

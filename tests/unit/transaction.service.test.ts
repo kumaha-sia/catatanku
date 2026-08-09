@@ -202,7 +202,7 @@ describe("createTransaction", () => {
 });
 
 describe("updateTransaction", () => {
-  it("reverses old balance and applies new balance", async () => {
+  it("reverses old EXPENSE balance and applies new EXPENSE balance", async () => {
     const existing = {
       id: "tx1",
       userId: "user1",
@@ -224,6 +224,41 @@ describe("updateTransaction", () => {
 
     expect(result).toEqual(updated);
     expect(mockPrisma.account.update).toHaveBeenCalledTimes(2);
+    expect(mockPrisma.account.update).toHaveBeenCalledWith({
+      where: { id: "acc1" },
+      data: { balance: { increment: 1000 } },
+    });
+  });
+
+  it("reverses old INCOME balance and applies new INCOME balance", async () => {
+    const existing = {
+      id: "tx1",
+      userId: "user1",
+      type: "INCOME",
+      amount: new Decimal(5000),
+      accountId: "acc1",
+    };
+    const updated = {
+      ...existing,
+      type: "INCOME",
+      amount: new Decimal(8000),
+      accountId: "acc1",
+    };
+    mockPrisma.transaction.findFirst.mockResolvedValue(existing);
+    mockPrisma.transaction.update.mockResolvedValue(updated);
+    mockPrisma.account.update.mockResolvedValue({});
+
+    await updateTransaction("tx1", "user1", { amount: 8000 });
+
+    expect(mockPrisma.account.update).toHaveBeenCalledTimes(2);
+    expect(mockPrisma.account.update).toHaveBeenCalledWith({
+      where: { id: "acc1" },
+      data: { balance: { decrement: 5000 } },
+    });
+    expect(mockPrisma.account.update).toHaveBeenCalledWith({
+      where: { id: "acc1" },
+      data: { balance: { increment: 8000 } },
+    });
   });
 
   it("throws if transaction not found", async () => {
@@ -236,7 +271,7 @@ describe("updateTransaction", () => {
 });
 
 describe("deleteTransaction", () => {
-  it("reverses balance and deletes transaction", async () => {
+  it("reverses INCOME balance and deletes transaction", async () => {
     const existing = {
       id: "tx1",
       userId: "user1",
@@ -256,6 +291,26 @@ describe("deleteTransaction", () => {
     });
     expect(mockPrisma.transaction.delete).toHaveBeenCalledWith({
       where: { id: "tx1" },
+    });
+  });
+
+  it("reverses EXPENSE balance (increment) and deletes transaction", async () => {
+    const existing = {
+      id: "tx2",
+      userId: "user1",
+      type: "EXPENSE",
+      amount: new Decimal(3000),
+      accountId: "acc1",
+    };
+    mockPrisma.transaction.findFirst.mockResolvedValue(existing);
+    mockPrisma.transaction.delete.mockResolvedValue(existing);
+    mockPrisma.account.update.mockResolvedValue({});
+
+    await deleteTransaction("tx2", "user1");
+
+    expect(mockPrisma.account.update).toHaveBeenCalledWith({
+      where: { id: "acc1" },
+      data: { balance: { increment: 3000 } },
     });
   });
 
