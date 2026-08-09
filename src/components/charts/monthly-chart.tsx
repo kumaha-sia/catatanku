@@ -33,13 +33,13 @@ export function MonthlyChart({ data }: { data: MonthlyData[] }) {
         <Bar
           dataKey="income"
           name="Pemasukan"
-          fill="#16a34a"
+          fill="#3e6a00"
           radius={[4, 4, 0, 0]}
         />
         <Bar
           dataKey="expense"
           name="Pengeluaran"
-          fill="#dc2626"
+          fill="#ba1a1a"
           radius={[4, 4, 0, 0]}
         />
       </BarChart>

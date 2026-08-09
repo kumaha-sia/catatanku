@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getTotalBalance } from "@/server/account.service";
 import { getMonthlySummary } from "@/server/transaction.service";
+import { getBudgetVsActual } from "@/server/budget.service";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -63,6 +64,50 @@ export async function GET(req: NextRequest) {
     };
   });
 
+  const budgetVsActual = await getBudgetVsActual(session.user.id, month);
+  const totalBudget = budgetVsActual.reduce((sum, b) => sum + b.budget, 0);
+  const totalSpent = budgetVsActual.reduce((sum, b) => sum + b.spent, 0);
+  const budgetPct =
+    totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
+
+  const budgets = budgetVsActual.slice(0, 3).map((b) => ({
+    id: b.id,
+    name: b.name,
+    budget: b.budget,
+    spent: b.spent,
+  }));
+
+  const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
+  const endOfMonth = new Date(
+    month.getFullYear(),
+    month.getMonth() + 1,
+    0,
+    23,
+    59,
+    59,
+  );
+
+  const expenseTransactions = await prisma.transaction.findMany({
+    where: {
+      userId: session.user.id,
+      type: "EXPENSE",
+      date: { gte: startOfMonth, lte: endOfMonth },
+    },
+    select: { date: true, amount: true },
+  });
+
+  const dayTotals = [0, 0, 0, 0, 0, 0, 0];
+  for (const tx of expenseTransactions) {
+    const dayOfWeek = new Date(tx.date).getDay();
+    dayTotals[dayOfWeek] += Number(tx.amount);
+  }
+
+  const dayLabels = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+  const dayBreakdown = dayLabels.map((day, i) => ({
+    day,
+    amount: dayTotals[i],
+  }));
+
   const recentTransactions = await prisma.transaction.findMany({
     where: { userId: session.user.id },
     include: { account: true, category: true },
@@ -76,9 +121,12 @@ export async function GET(req: NextRequest) {
       income: Number(summary.income),
       expense: Number(summary.expense),
       balance: Number(summary.balance),
+      budgetPct,
     },
     monthlyData,
     breakdown,
+    budgets,
+    dayBreakdown,
     recentTransactions,
   });
 }

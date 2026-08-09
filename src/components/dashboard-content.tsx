@@ -5,21 +5,34 @@ import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
 import { MonthlyChart } from "@/components/charts/monthly-chart";
 
+interface DashboardData {
+  totalBalance: number;
+  summary: {
+    income: number;
+    expense: number;
+    balance: number;
+    budgetPct: number;
+  };
+  monthlyData: Array<{ month: string; income: number; expense: number }>;
+  breakdown: Array<{ name: string; value: number }>;
+  budgets: Array<{ id: string; name: string; budget: number; spent: number }>;
+  dayBreakdown: Array<{ day: string; amount: number }>;
+  recentTransactions: Array<{
+    id: string;
+    type: string;
+    description: string;
+    amount: { toNumber: () => number };
+    date: string;
+    category: { name: string } | null;
+  }>;
+}
+
 export function DashboardContent({ userName }: { userName: string }) {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<DashboardData>({
     queryKey: ["dashboard"],
     queryFn: async () => {
       const res = await fetch("/api/dashboard");
       if (!res.ok) throw new Error("Gagal memuat dashboard");
-      return res.json();
-    },
-  });
-
-  const { data: netWorthData } = useQuery({
-    queryKey: ["networth"],
-    queryFn: async () => {
-      const res = await fetch("/api/networth?months=6");
-      if (!res.ok) throw new Error("Gagal");
       return res.json();
     },
   });
@@ -195,44 +208,42 @@ export function DashboardContent({ userName }: { userName: string }) {
             </button>
           </div>
           <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-            {(data?.budgets ?? [])
-              .slice(0, 3)
-              .map(
-                (
-                  b: {
-                    id: string;
-                    name: string;
-                    budget: number;
-                    spent: number;
-                  },
-                  i: number,
-                ) => (
-                  <div
-                    key={b.id}
-                    className={`rounded-xl border-2 p-4 ${i === 0 ? "border-primary-container" : "border-surface-variant"} bg-surface-container-lowest`}
-                  >
-                    <div className="mb-2 flex items-center gap-2">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-variant">
-                        <span
-                          className="material-symbols-outlined text-on-surface"
-                          style={{ fontSize: 14 }}
-                        >
-                          home
-                        </span>
-                      </div>
-                      <span className="text-sm font-semibold text-on-surface">
-                        {b.name}
+            {(data?.budgets ?? []).slice(0, 3).map(
+              (
+                b: {
+                  id: string;
+                  name: string;
+                  budget: number;
+                  spent: number;
+                },
+                i: number,
+              ) => (
+                <div
+                  key={b.id}
+                  className={`rounded-xl border-2 p-4 ${i === 0 ? "border-primary-container" : "border-surface-variant"} bg-surface-container-lowest`}
+                >
+                  <div className="mb-2 flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-variant">
+                      <span
+                        className="material-symbols-outlined text-on-surface"
+                        style={{ fontSize: 14 }}
+                      >
+                        home
                       </span>
                     </div>
-                    <p className="font-headline-md text-[28px] font-bold text-on-surface">
-                      {formatCurrency(b.budget)}
-                    </p>
-                    <p className="mt-1 text-[10px] font-bold uppercase text-on-surface-variant">
-                      {b.spent > 0 ? "Ada pengeluaran" : "Belum ada"}
-                    </p>
+                    <span className="text-sm font-semibold text-on-surface">
+                      {b.name}
+                    </span>
                   </div>
-                ),
-              )}
+                  <p className="font-headline-md text-[28px] font-bold text-on-surface">
+                    {formatCurrency(b.budget)}
+                  </p>
+                  <p className="mt-1 text-[10px] font-bold uppercase text-on-surface-variant">
+                    {b.spent > 0 ? "Ada pengeluaran" : "Belum ada"}
+                  </p>
+                </div>
+              ),
+            )}
             {(!data?.budgets || data.budgets.length === 0) && (
               <div className="rounded-xl border-2 border-dashed border-surface-variant p-4 text-center">
                 <p className="text-sm text-on-surface-variant">
@@ -270,7 +281,7 @@ export function DashboardContent({ userName }: { userName: string }) {
               </p>
               <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#e2ead3] px-2 py-0.5 text-[10px] font-bold text-on-secondary-fixed-variant">
                 <span className="h-2 w-2 rounded-full bg-secondary" /> saving{" "}
-                {data?.summary?.income > 0
+                {data?.summary?.income && data.summary.income > 0
                   ? Math.round(
                       ((data.summary.income - data.summary.expense) /
                         data.summary.income) *
