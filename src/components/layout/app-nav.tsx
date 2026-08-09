@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useTransactionModal } from "@/components/transaction-modal";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: "home" },
@@ -27,6 +28,7 @@ const sidebarItems = [
 
 export function AppNav() {
   const pathname = usePathname();
+  const { open: openTxModal } = useTransactionModal();
 
   return (
     <>
@@ -122,14 +124,14 @@ export function AppNav() {
         })}
 
         {/* FAB */}
-        <Link
-          href="/transactions/new"
+        <button
+          onClick={openTxModal}
           className="relative -top-5 flex flex-col items-center justify-center transition-all active:scale-95"
         >
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-container text-on-primary shadow-lg transition-all hover:bg-primary hover:shadow-xl">
             <span className="material-symbols-outlined text-[28px]">add</span>
           </div>
-        </Link>
+        </button>
 
         {navItems.slice(2).map((item) => {
           const active =
