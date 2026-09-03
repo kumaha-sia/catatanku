@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { AppLayout } from "@/components/layout/app-layout";
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -33,7 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <AppLayout>{children}</AppLayout>
         </ThemeProvider>
       </body>
     </html>
