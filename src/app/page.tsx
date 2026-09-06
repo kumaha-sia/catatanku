@@ -1,7 +1,7 @@
 import { getAccounts } from "@/actions/account"
 import { getTransactions } from "@/actions/transaction"
 import { formatRupiah } from "@/lib/utils"
-import { ArrowDownLeft, ArrowUpRight, Wallet } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight, Wallet, CreditCard, Sparkles } from "lucide-react"
 
 export default async function Home() {
   const accounts = await getAccounts()
@@ -9,9 +9,8 @@ export default async function Home() {
 
   const totalBalance = accounts.reduce((acc, account) => acc + account.balance, 0)
   
-  // Calculate this month's income and expense
   const now = new Date()
-  const currentMonthTransactions = await getTransactions() // in a real app, pass filter params
+  const currentMonthTransactions = await getTransactions() 
   
   let totalIncome = 0
   let totalExpense = 0
@@ -24,62 +23,94 @@ export default async function Home() {
   })
 
   return (
-    <div className="space-y-6">
-      <header className="flex items-center justify-between">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 mt-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Beranda</h1>
-          <p className="text-muted-foreground">Ringkasan keuangan Anda bulan ini.</p>
+          <p className="text-sm font-medium text-primary mb-1 flex items-center gap-2">
+            <Sparkles className="w-4 h-4" /> Selamat datang kembali
+          </p>
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Ringkasan Anda</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="text-right">
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Bulan Ini</p>
+            <p className="text-sm font-semibold">{now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}</p>
+          </div>
         </div>
       </header>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-6 relative overflow-hidden">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <h3 className="tracking-tight text-sm font-medium">Total Saldo</h3>
-            <Wallet className="w-4 h-4 text-muted-foreground" />
+      {/* Hero Card - Total Balance */}
+      <div className="relative overflow-hidden rounded-3xl p-8 text-white shadow-2xl shadow-primary/20 bg-gradient-to-br from-primary via-primary/80 to-emerald-900 border border-primary/20">
+        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+        <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-40 h-40 bg-black/10 rounded-full blur-2xl"></div>
+        
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="space-y-2">
+            <p className="text-primary-foreground/80 font-medium flex items-center gap-2">
+              <CreditCard className="w-5 h-5 opacity-70" /> Total Kekayaan Bersih
+            </p>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight">{formatRupiah(totalBalance)}</h2>
           </div>
-          <div className="text-3xl font-bold">{formatRupiah(totalBalance)}</div>
-          <div className="absolute right-0 bottom-0 opacity-10 translate-x-1/4 translate-y-1/4">
-            <Wallet className="w-24 h-24" />
-          </div>
-        </div>
-        <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <h3 className="tracking-tight text-sm font-medium">Pemasukan</h3>
-            <ArrowUpRight className="w-4 h-4 text-emerald-500" />
-          </div>
-          <div className="text-2xl font-bold text-emerald-500">{formatRupiah(totalIncome)}</div>
-        </div>
-        <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <h3 className="tracking-tight text-sm font-medium">Pengeluaran</h3>
-            <ArrowDownLeft className="w-4 h-4 text-rose-500" />
-          </div>
-          <div className="text-2xl font-bold text-rose-500">{formatRupiah(totalExpense)}</div>
         </div>
       </div>
 
-      <div className="mt-8">
-        <h2 className="text-xl font-bold tracking-tight mb-4">Transaksi Terakhir</h2>
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="rounded-3xl border bg-card text-card-foreground shadow-sm p-6 flex items-center gap-6 group hover:shadow-md transition-all">
+          <div className="p-4 rounded-2xl bg-emerald-500/10 text-emerald-500 group-hover:scale-110 transition-transform">
+            <ArrowUpRight className="w-8 h-8" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground mb-1">Pemasukan Bulan Ini</p>
+            <h3 className="text-2xl font-bold tracking-tight">{formatRupiah(totalIncome)}</h3>
+          </div>
+        </div>
+        
+        <div className="rounded-3xl border bg-card text-card-foreground shadow-sm p-6 flex items-center gap-6 group hover:shadow-md transition-all">
+          <div className="p-4 rounded-2xl bg-rose-500/10 text-rose-500 group-hover:scale-110 transition-transform">
+            <ArrowDownLeft className="w-8 h-8" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground mb-1">Pengeluaran Bulan Ini</p>
+            <h3 className="text-2xl font-bold tracking-tight">{formatRupiah(totalExpense)}</h3>
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold tracking-tight">Transaksi Terakhir</h2>
+          <button className="text-sm font-medium text-primary hover:underline">Lihat Semua</button>
+        </div>
+        
         {transactions.length === 0 ? (
-          <div className="text-center py-10 bg-muted/20 rounded-xl border border-dashed">
-            <p className="text-muted-foreground">Belum ada transaksi.</p>
+          <div className="text-center py-16 bg-muted/30 rounded-3xl border border-dashed flex flex-col items-center">
+            <div className="bg-background p-4 rounded-full shadow-sm mb-4">
+              <Wallet className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <p className="text-muted-foreground font-medium">Belum ada transaksi</p>
+            <p className="text-xs text-muted-foreground mt-1">Mulai catat keuangan Anda sekarang.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {transactions.map(t => (
-              <div key={t.id} className="flex items-center justify-between p-4 bg-card rounded-xl border shadow-sm">
-                <div className="flex items-center space-x-4">
-                  <div className={`p-3 rounded-full ${t.type === 'INCOME' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+              <div key={t.id} className="group flex items-center justify-between p-5 bg-card hover:bg-muted/30 rounded-2xl border shadow-sm transition-colors cursor-pointer">
+                <div className="flex items-center gap-5">
+                  <div className={`p-3.5 rounded-xl ${t.type === 'INCOME' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
                     {t.type === 'INCOME' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownLeft className="w-5 h-5" />}
                   </div>
                   <div>
-                    <p className="font-semibold">{t.category?.name || "Lainnya"}</p>
-                    <p className="text-xs text-muted-foreground">{t.account.name} • {t.date.toLocaleDateString('id-ID')}</p>
+                    <p className="font-bold text-base">{t.category?.name || "Lainnya"}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-muted text-muted-foreground">{t.account.name}</span>
+                      <span className="text-xs text-muted-foreground">{t.date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+                    </div>
                   </div>
                 </div>
-                <div className={`font-bold ${t.type === 'INCOME' ? 'text-emerald-500' : 'text-rose-500'}`}>
-                  {t.type === 'INCOME' ? '+' : '-'}{formatRupiah(t.amount)}
+                <div className="text-right">
+                  <div className={`font-extrabold text-lg tracking-tight ${t.type === 'INCOME' ? 'text-emerald-500' : 'text-foreground'}`}>
+                    {t.type === 'INCOME' ? '+' : '-'}{formatRupiah(t.amount)}
+                  </div>
+                  {t.note && <p className="text-xs text-muted-foreground mt-1 truncate max-w-[120px]">{t.note}</p>}
                 </div>
               </div>
             ))}

@@ -7,25 +7,32 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#f4f0e6',
-        surface: '#fdfbf7',
-        terracotta: '#d97757',
-        olive: '#7e9c70',
-        mustard: '#f6d365',
-        charcoal: '#2b2b2a'
+        background: '#F7F7F4',
+        surface: '#FFFFFF',
+        'surface-muted': '#F1F2EE',
+        'text-primary': '#171B22',
+        'text-secondary': '#5C6470',
+        border: '#E4E6E1',
+        primary: '#0C6B58',
+        'primary-soft': '#E5F2EF',
+        accent: '#FFB43A',
+        income: '#12B76A',
+        expense: '#E5484D',
+        transfer: '#2E90FA',
+        warning: '#F79009',
+        error: '#D92D20',
       },
       fontFamily: {
-        serif: ['Georgia', 'Times New Roman', 'serif'],
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'Inter', '-apple-system', 'sans-serif'],
+        serif: ['Plus Jakarta Sans', 'serif'], // Override serif since we want a modern look everywhere now
       },
       animation: {
-        'fade-in': 'fadeIn 0.4s ease-out',
-        'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+        'fade-in': 'fadeIn 0.3s ease-out',
+        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
       },
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0' },
-          '10%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
         slideUp: {
