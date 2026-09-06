@@ -59,38 +59,54 @@ export const AddTransactionSheet = () => {
         </div>
 
         {/* Selectors (Category & Wallet) */}
-        <div className="space-y-3">
+        <div className="space-y-4">
+          
+          {/* Categories Horizontal Scroll */}
           {type !== 'TRANSFER' && (
-            <button className="w-full flex items-center justify-between p-4 rounded-xl border border-border hover:bg-surface-muted transition-colors text-left">
-              <div>
-                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Kategori</p>
-                <p className="font-medium text-text-primary">Pilih Kategori...</p>
+            <div>
+              <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 px-1">Kategori</p>
+              <div className="flex overflow-x-auto gap-3 pb-2 px-1 hide-scrollbar -mx-1">
+                {type === 'EXPENSE' ? (
+                  <>
+                    <CategoryChip icon="🍜" label="Makanan" active />
+                    <CategoryChip icon="🚗" label="Transport" />
+                    <CategoryChip icon="🛒" label="Belanja" />
+                    <CategoryChip icon="💡" label="Tagihan" />
+                    <CategoryChip icon="🎮" label="Hiburan" />
+                  </>
+                ) : (
+                  <>
+                    <CategoryChip icon="💼" label="Gaji" active />
+                    <CategoryChip icon="💰" label="Bonus" />
+                    <CategoryChip icon="📈" label="Investasi" />
+                  </>
+                )}
               </div>
-              <ChevronRight size={20} className="text-text-secondary" />
-            </button>
+            </div>
           )}
 
-          <div className="flex gap-3">
-            <button className="flex-1 flex items-center justify-between p-4 rounded-xl border border-border hover:bg-surface-muted transition-colors text-left">
-              <div>
-                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">
-                  {type === 'TRANSFER' ? 'Dari Dompet' : 'Dompet'}
-                </p>
-                <p className="font-medium text-text-primary">Tunai</p>
-              </div>
-              <ChevronRight size={20} className="text-text-secondary" />
-            </button>
-
-            {type === 'TRANSFER' && (
-              <button className="flex-1 flex items-center justify-between p-4 rounded-xl border border-border hover:bg-surface-muted transition-colors text-left">
-                <div>
-                  <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Ke Dompet</p>
-                  <p className="font-medium text-text-primary">Pilih...</p>
-                </div>
-                <ChevronRight size={20} className="text-text-secondary" />
-              </button>
-            )}
+          {/* Wallets Horizontal Scroll */}
+          <div>
+            <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 px-1">
+              {type === 'TRANSFER' ? 'Dari Dompet' : 'Dompet'}
+            </p>
+            <div className="flex overflow-x-auto gap-3 pb-2 px-1 hide-scrollbar -mx-1">
+              <WalletChip name="Tunai" type="Pribadi" active />
+              <WalletChip name="BCA Andi" type="Pribadi" />
+              <WalletChip name="Dompet Keluarga" type="Bersama" />
+            </div>
           </div>
+
+          {type === 'TRANSFER' && (
+            <div>
+              <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 px-1">Ke Dompet</p>
+              <div className="flex overflow-x-auto gap-3 pb-2 px-1 hide-scrollbar -mx-1">
+                <WalletChip name="Tunai" type="Pribadi" />
+                <WalletChip name="BCA Andi" type="Pribadi" />
+                <WalletChip name="Dompet Keluarga" type="Bersama" active />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Save Button */}
@@ -109,3 +125,27 @@ export const AddTransactionSheet = () => {
     </BottomSheet>
   );
 };
+
+const CategoryChip = ({ icon, label, active = false }: { icon: string, label: string, active?: boolean }) => (
+  <button 
+    className={`flex flex-col items-center gap-2 min-w-[72px] p-2 rounded-xl border-2 transition-all ${
+      active ? 'border-primary bg-primary/5' : 'border-transparent hover:bg-surface-muted'
+    }`}
+  >
+    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${active ? 'bg-primary/20 shadow-sm' : 'bg-surface-muted'}`}>
+      {icon}
+    </div>
+    <span className={`text-xs font-bold ${active ? 'text-primary' : 'text-text-secondary'}`}>{label}</span>
+  </button>
+);
+
+const WalletChip = ({ name, type, active = false }: { name: string, type: string, active?: boolean }) => (
+  <button 
+    className={`flex flex-col justify-center min-w-[120px] p-3 rounded-xl border-2 transition-all text-left ${
+      active ? 'border-primary bg-primary/5 shadow-sm' : 'border-border bg-surface hover:bg-surface-muted'
+    }`}
+  >
+    <span className={`text-sm font-bold truncate w-full ${active ? 'text-primary' : 'text-text-primary'}`}>{name}</span>
+    <span className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${active ? 'text-primary/70' : 'text-text-secondary'}`}>{type}</span>
+  </button>
+);

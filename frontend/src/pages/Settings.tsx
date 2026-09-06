@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Globe, Moon, Shield, Bell, Download, Trash2, HelpCircle, ChevronRight, Smartphone } from 'lucide-react';
+import { User, Globe, Moon, Shield, Bell, Download, Trash2, HelpCircle, ChevronRight, Smartphone, Wallet, Tags } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
 export const Settings = () => {
@@ -18,6 +18,23 @@ export const Settings = () => {
             icon={<User size={20} className="text-primary" />}
             title="Andi"
             subtitle="andi@email.com"
+          />
+        </div>
+      </section>
+
+      {/* Management Section */}
+      <section>
+        <h2 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 px-1">Manajemen</h2>
+        <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm divide-y divide-border">
+          <SettingsItem 
+            icon={<Wallet size={20} className="text-text-secondary" />}
+            title="Daftar Dompet"
+            subtitle="Atur dompet pribadi & keluarga"
+          />
+          <SettingsItem 
+            icon={<Tags size={20} className="text-text-secondary" />}
+            title="Kategori Transaksi"
+            subtitle="Buat atau ubah kategori"
           />
         </div>
       </section>

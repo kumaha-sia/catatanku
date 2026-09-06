@@ -12,6 +12,7 @@ import { Budgets } from './pages/Budgets';
 import { Goals } from './pages/Goals';
 import { Family } from './pages/Family';
 import { Settings } from './pages/Settings';
+import { Reports } from './pages/Reports';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +43,7 @@ function App() {
             <Route path="goals" element={<Goals />} />
             <Route path="family" element={<Family />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="reports" element={<Reports />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

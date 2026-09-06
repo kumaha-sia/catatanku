@@ -14,13 +14,9 @@ export const Dashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-2 text-text-secondary text-sm font-medium mb-1">
-            <Lock size={14} className="text-text-secondary" />
-            <span>offline · 2 menunggu sync</span>
-          </div>
           <h1 className="text-2xl font-bold">Halo, Andi 👋</h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3">
           <button className="w-10 h-10 rounded-full bg-surface-muted flex items-center justify-center text-text-secondary relative">
             <Bell size={20} />
             <div className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full" />

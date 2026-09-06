@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Receipt, Target, PieChart, Wallet, Users, Settings, Plus, LogOut } from 'lucide-react';
+import { Home, Receipt, Target, PieChart, Wallet, Users, Settings, Plus, LogOut, Bell } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useUIStore } from '../store/uiStore';
 import { AddTransactionSheet } from './AddTransactionSheet';
@@ -15,14 +15,20 @@ export const Layout = () => {
     <div className="flex flex-col md:flex-row h-screen w-full bg-background overflow-hidden font-sans text-text-primary">
       
       {/* Mobile Top Bar */}
-      <div className="md:hidden flex justify-between items-center px-4 py-3 bg-surface border-b border-border z-10 sticky top-0">
+      <div className="md:hidden flex justify-between items-center px-4 py-3 bg-surface border-b border-border z-20 sticky top-0">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-surface font-bold text-sm">F</div>
+          <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center text-surface font-bold text-sm shadow-sm">F</div>
           <h1 className="font-bold tracking-tight text-text-primary">FinBareng</h1>
         </div>
-        <button onClick={() => navigate('/settings')} className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-text-secondary">
-          <Settings size={18} />
-        </button>
+        <div className="flex items-center gap-3">
+          <button className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-text-secondary relative">
+            <Bell size={18} />
+            <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full border border-surface" />
+          </button>
+          <button onClick={() => navigate('/settings')} className="w-8 h-8 rounded-full bg-primary text-surface flex items-center justify-center font-bold text-sm shadow-sm">
+            A
+          </button>
+        </div>
       </div>
 
       {/* Desktop Sidebar */}
@@ -47,6 +53,7 @@ export const Layout = () => {
             <nav className="space-y-1">
               <NavItem to="/budgets" icon={<Target size={20} />} label="Budgets" />
               <NavItem to="/goals" icon={<PieChart size={20} />} label="Goals" />
+              <NavItem to="/reports" icon={<PieChart size={20} />} label="Laporan & Analitik" />
             </nav>
           </div>
 
@@ -98,7 +105,7 @@ export const Layout = () => {
         </div>
 
         <MobileNavItem to="/budgets" icon={<Target size={24} />} label="Anggaran" />
-        <MobileNavItem to="/family" icon={<Users size={24} />} label="Laporan" />
+        <MobileNavItem to="/reports" icon={<PieChart size={24} />} label="Laporan" />
       </nav>
 
       <AddTransactionSheet />
