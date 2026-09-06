@@ -4,9 +4,10 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts';
+import { BottomSheet } from '../components/BottomSheet';
 
 // Dummy data for cashflow
-const cashflowData = [
+const cashflowDataYearly = [
   { name: 'Jan', income: 15000000, expense: 12000000 },
   { name: 'Feb', income: 16500000, expense: 14000000 },
   { name: 'Mar', income: 15000000, expense: 11500000 },
@@ -14,6 +15,13 @@ const cashflowData = [
   { name: 'Mei', income: 15500000, expense: 13000000 },
   { name: 'Jun', income: 17000000, expense: 12500000 },
   { name: 'Jul', income: 16000000, expense: 14500000 },
+];
+
+const cashflowDataMonthly = [
+  { name: 'Mgg 1', income: 5000000, expense: 3200000 },
+  { name: 'Mgg 2', income: 0, expense: 2100000 },
+  { name: 'Mgg 3', income: 2000000, expense: 4500000 },
+  { name: 'Mgg 4', income: 8000000, expense: 3800000 },
 ];
 
 // Dummy data for categories
@@ -35,6 +43,24 @@ const formatIDR = (value: number) => {
 export const Reports = () => {
   const [activeTab, setActiveTab] = useState<'ME' | 'FAMILY'>('ME');
   const [reportType, setReportType] = useState<'CASHFLOW' | 'CATEGORY'>('CASHFLOW');
+  
+  // Period filter states
+  const [isPeriodOpen, setIsPeriodOpen] = useState(false);
+  const [periodType, setPeriodType] = useState<'MONTH' | 'YEAR'>('YEAR');
+  const [periodValue, setPeriodValue] = useState('2026');
+  const [tempPeriodType, setTempPeriodType] = useState<'MONTH' | 'YEAR'>('YEAR');
+
+  const cashflowData = periodType === 'YEAR' ? cashflowDataYearly : cashflowDataMonthly;
+
+  const handleSavePeriod = () => {
+    setPeriodType(tempPeriodType);
+    if (tempPeriodType === 'YEAR') {
+      setPeriodValue('2026');
+    } else {
+      setPeriodValue('Agustus 2026');
+    }
+    setIsPeriodOpen(false);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in pb-8">
@@ -42,9 +68,12 @@ export const Reports = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-text-primary">Laporan & Analitik</h1>
-        <button className="flex items-center gap-2 px-3 py-1.5 bg-surface rounded-lg font-semibold text-xs shadow-sm border border-border">
+        <button 
+          onClick={() => { setTempPeriodType(periodType); setIsPeriodOpen(true); }}
+          className="flex items-center gap-2 px-3 py-1.5 bg-surface rounded-lg font-semibold text-xs shadow-sm border border-border text-text-secondary hover:text-primary transition-colors"
+        >
           <Calendar size={14} />
-          Tahun 2026
+          {periodType === 'YEAR' ? 'Tahun ' : ''}{periodValue}
         </button>
       </div>
 
@@ -133,12 +162,7 @@ export const Reports = () => {
 
         {reportType === 'CATEGORY' && (
           <>
-            <div className="mb-2">
-              <button className="flex items-center gap-2 px-3 py-1.5 bg-surface-muted rounded-lg font-semibold text-xs border border-border">
-                Agustus 2026 <ChevronDown size={14} />
-              </button>
-            </div>
-            <div className="flex flex-col md:flex-row items-center justify-center gap-8">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-8 mt-4">
               <div className="h-64 w-full md:w-1/2">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -181,6 +205,57 @@ export const Reports = () => {
         )}
 
       </div>
+
+      {/* Period Selection Bottom Sheet */}
+      <BottomSheet isOpen={isPeriodOpen} onClose={() => setIsPeriodOpen(false)} title="Pilih Periode Laporan">
+        <div className="space-y-6 pt-2">
+          
+          <div className="flex p-1 bg-surface-muted rounded-xl">
+            <button 
+              onClick={() => setTempPeriodType('MONTH')}
+              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${tempPeriodType === 'MONTH' ? 'bg-surface text-text-primary shadow-sm border border-border/50' : 'text-text-secondary'}`}
+            >
+              Bulanan
+            </button>
+            <button 
+              onClick={() => setTempPeriodType('YEAR')}
+              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${tempPeriodType === 'YEAR' ? 'bg-surface text-text-primary shadow-sm border border-border/50' : 'text-text-secondary'}`}
+            >
+              Tahunan
+            </button>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 block px-1">
+              Pilih {tempPeriodType === 'MONTH' ? 'Bulan' : 'Tahun'}
+            </label>
+            <select className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-semibold text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary appearance-none">
+              {tempPeriodType === 'MONTH' ? (
+                <>
+                  <option>Agustus 2026</option>
+                  <option>Juli 2026</option>
+                  <option>Juni 2026</option>
+                  <option>Mei 2026</option>
+                </>
+              ) : (
+                <>
+                  <option>2026</option>
+                  <option>2025</option>
+                  <option>2024</option>
+                </>
+              )}
+            </select>
+          </div>
+
+          <button 
+            onClick={handleSavePeriod}
+            className="w-full py-4 bg-primary text-surface rounded-xl font-bold text-lg shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all mt-4"
+          >
+            Terapkan
+          </button>
+        </div>
+      </BottomSheet>
+
     </div>
   );
 };
