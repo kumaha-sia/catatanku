@@ -5,6 +5,9 @@ import { AuthGuard } from './components/AuthGuard';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 
+import { Transactions } from './pages/Transactions';
+import { Budgets } from './pages/Budgets';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -27,9 +30,8 @@ function App() {
             </AuthGuard>
           }>
             <Route index element={<Dashboard />} />
-            {/* Placeholder routes for future implementation */}
-            <Route path="transactions" element={<div className="p-10 font-serif text-2xl">Transactions (Coming Soon)</div>} />
-            <Route path="budgets" element={<div className="p-10 font-serif text-2xl">Budgets (Coming Soon)</div>} />
+            <Route path="transactions" element={<Transactions />} />
+            <Route path="budgets" element={<Budgets />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
