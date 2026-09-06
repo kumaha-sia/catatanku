@@ -1,9 +1,11 @@
 import React from 'react';
 import { User, Globe, Moon, Shield, Bell, Download, Trash2, HelpCircle, ChevronRight, Smartphone, Wallet, Tags } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { useNavigate } from 'react-router-dom';
 
 export const Settings = () => {
   const logout = useAuthStore((state) => state.logout);
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-6 animate-fade-in pb-8">
@@ -30,11 +32,13 @@ export const Settings = () => {
             icon={<Wallet size={20} className="text-text-secondary" />}
             title="Daftar Dompet"
             subtitle="Atur dompet pribadi & keluarga"
+            onClick={() => navigate('/wallets')}
           />
           <SettingsItem 
             icon={<Tags size={20} className="text-text-secondary" />}
             title="Kategori Transaksi"
             subtitle="Buat atau ubah kategori"
+            onClick={() => navigate('/categories')}
           />
         </div>
       </section>
@@ -132,15 +136,20 @@ const SettingsItem = ({
   title, 
   subtitle, 
   value, 
-  hideArrow = false 
+  hideArrow = false,
+  onClick
 }: { 
   icon: React.ReactNode, 
   title: React.ReactNode, 
   subtitle?: string, 
   value?: string,
-  hideArrow?: boolean
+  hideArrow?: boolean,
+  onClick?: () => void
 }) => (
-  <button className="w-full flex items-center justify-between p-4 hover:bg-surface-muted transition-colors cursor-pointer group text-left">
+  <button 
+    onClick={onClick}
+    className="w-full flex items-center justify-between p-4 hover:bg-surface-muted transition-colors cursor-pointer group text-left"
+  >
     <div className="flex items-center gap-4">
       <div className="w-10 h-10 bg-surface-muted rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm border border-border">
         {icon}
