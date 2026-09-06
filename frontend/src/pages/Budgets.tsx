@@ -1,175 +1,136 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../lib/api';
-import { Target } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, AlertTriangle, ChevronDown } from 'lucide-react';
 
 export const Budgets = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    category_id: '',
-    amount: ''
-  });
-
-  const queryClient = useQueryClient();
-  const currentMonth = new Date().getMonth() + 1;
-  const currentYear = new Date().getFullYear();
-
-  const { data: budgets, isLoading } = useQuery({
-    queryKey: ['budgets', currentMonth, currentYear],
-    queryFn: async () => {
-      const res = await api.get(`/budgets?month=${currentMonth}&year=${currentYear}`);
-      return res.data.data;
-    }
-  });
-
-  const { data: categories } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const res = await api.get('/categories');
-      return res.data.data.filter((c: any) => c.type === 'EXPENSE');
-    }
-  });
-
-  const setBudgetMutation = useMutation({
-    mutationFn: async (data: any) => {
-      await api.post('/budgets', data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['budgets'] });
-      setIsModalOpen(false);
-      setFormData({ category_id: '', amount: '' });
-    }
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setBudgetMutation.mutate({
-      category_id: formData.category_id,
-      amount: Number(formData.amount),
-      period_month: currentMonth,
-      period_year: currentYear
-    });
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount);
-  };
+  const [activeTab, setActiveTab] = useState<'ME' | 'FAMILY'>('ME');
 
   return (
-    <div className="space-y-8">
-      <header className="flex justify-between items-end">
-        <div>
-          <h2 className="text-charcoal/60 font-medium mb-1">Planning</h2>
-          <h1 className="font-serif text-4xl text-charcoal font-bold">Budgets</h1>
-        </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-5 py-3 bg-charcoal text-surface font-medium rounded-xl hover:bg-charcoal/90 transition-all"
-        >
-          <Target size={20} />
-          Set Budget
+    <div className="space-y-6 animate-fade-in pb-8">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-text-primary">Anggaran</h1>
+        <button className="w-10 h-10 bg-primary text-surface rounded-full flex items-center justify-center shadow-md shadow-primary/20 hover:bg-primary/90 transition-all">
+          <Plus size={20} />
         </button>
-      </header>
-
-      {/* Budgets Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {isLoading ? (
-          <div className="col-span-full p-8 text-center text-charcoal/50">Loading budgets...</div>
-        ) : budgets?.length === 0 ? (
-          <div className="col-span-full p-12 text-center bg-surface border border-charcoal/10 rounded-2xl">
-            <Target size={48} className="mx-auto text-charcoal/20 mb-4" />
-            <h3 className="font-serif text-xl font-bold text-charcoal mb-2">No Budgets Set</h3>
-            <p className="text-charcoal/60">Take control of your spending by setting limits for this month.</p>
-          </div>
-        ) : (
-          budgets?.map((b: any) => {
-            const isOver = b.percentage > 100;
-            const progressWidth = Math.min(b.percentage, 100);
-            
-            return (
-              <div key={b.id} className="bg-surface p-6 rounded-2xl border border-charcoal/10 shadow-sm">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-bold text-lg text-charcoal flex items-center gap-2">
-                    {b.category_name}
-                  </h3>
-                  <span className={`px-3 py-1 text-xs font-bold rounded-full ${isOver ? 'bg-terracotta/10 text-terracotta' : 'bg-charcoal/5 text-charcoal/70'}`}>
-                    {b.percentage.toFixed(0)}% Used
-                  </span>
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-charcoal/70 font-medium">Spent: <span className="text-charcoal font-bold">{formatCurrency(b.spent_amount)}</span></span>
-                    <span className="text-charcoal/50">Limit: {formatCurrency(b.limit_amount)}</span>
-                  </div>
-                  
-                  {/* Progress Bar */}
-                  <div className="h-3 w-full bg-background rounded-full overflow-hidden border border-charcoal/5">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-1000 ${isOver ? 'bg-terracotta' : 'bg-charcoal'}`}
-                      style={{ width: `${progressWidth}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            );
-          })
-        )}
       </div>
 
-      {/* Modal Form */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-charcoal/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface p-8 rounded-3xl w-full max-w-md shadow-2xl border border-charcoal/10">
-            <h3 className="font-serif text-2xl font-bold mb-6">Set Category Budget</h3>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              
-              <div>
-                <label className="block text-sm font-semibold text-charcoal mb-2">Expense Category</label>
-                <select 
-                  required
-                  value={formData.category_id}
-                  onChange={e => setFormData({...formData, category_id: e.target.value})}
-                  className="w-full px-4 py-3 bg-background border border-charcoal/10 rounded-xl focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta"
-                >
-                  <option value="" disabled>Select category</option>
-                  {categories?.map((c: any) => (
-                    <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
-                  ))}
-                </select>
-              </div>
+      <button className="flex items-center gap-2 px-4 py-2 bg-surface rounded-xl font-semibold text-sm shadow-sm border border-border w-max">
+        Agustus 2026
+        <ChevronDown size={16} />
+      </button>
 
-              <div>
-                <label className="block text-sm font-semibold text-charcoal mb-2">Monthly Limit (IDR)</label>
-                <input 
-                  type="number" required min="1"
-                  value={formData.amount}
-                  onChange={e => setFormData({...formData, amount: e.target.value})}
-                  className="w-full px-4 py-3 bg-background border border-charcoal/10 rounded-xl focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta"
-                  placeholder="1000000"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button 
-                  type="button" 
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-3 text-charcoal bg-background font-bold rounded-xl hover:bg-charcoal/5 transition-colors border border-charcoal/10"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  disabled={setBudgetMutation.isPending}
-                  className="flex-1 py-3 bg-charcoal text-surface font-bold rounded-xl hover:bg-charcoal/90 transition-colors disabled:opacity-50"
-                >
-                  {setBudgetMutation.isPending ? 'Saving...' : 'Save Limit'}
-                </button>
-              </div>
-            </form>
+      {/* Overview Card */}
+      <div className="bg-surface border border-border p-5 sm:p-6 rounded-2xl shadow-sm">
+        <div className="flex justify-between items-end mb-4">
+          <div>
+            <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1">Total Budget</p>
+            <p className="text-2xl sm:text-3xl font-bold text-text-primary">Rp 5.000.000</p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1">Terpakai</p>
+            <p className="text-lg sm:text-xl font-bold text-expense">Rp 3.120.000</p>
           </div>
         </div>
-      )}
+        
+        <div className="w-full bg-surface-muted rounded-full h-3 overflow-hidden mb-2">
+          <div className="bg-primary h-full rounded-full" style={{ width: '62%' }} />
+        </div>
+        <p className="text-sm font-semibold text-text-secondary">
+          <span className="text-text-primary font-bold">62%</span> · sisa Rp 1.880.000
+        </p>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex p-1 bg-surface-muted rounded-xl w-full sm:w-64">
+        <button 
+          onClick={() => setActiveTab('ME')}
+          className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${activeTab === 'ME' ? 'bg-surface text-text-primary shadow-sm' : 'text-text-secondary'}`}
+        >
+          Pribadi
+        </button>
+        <button 
+          onClick={() => setActiveTab('FAMILY')}
+          className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${activeTab === 'FAMILY' ? 'bg-surface text-text-primary shadow-sm' : 'text-text-secondary'}`}
+        >
+          Keluarga
+        </button>
+      </div>
+
+      {/* Budget List */}
+      <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm divide-y divide-border">
+        
+        <div className="p-4 sm:p-5 hover:bg-surface-muted transition-colors cursor-pointer group">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-xl group-hover:scale-105 transition-transform">🍜</div>
+              <p className="font-bold text-text-primary text-lg">Makanan</p>
+            </div>
+            <div className="text-right">
+              <p className="font-bold text-text-primary">Rp 780rb <span className="text-text-secondary font-medium text-sm">/ 1jt</span></p>
+            </div>
+          </div>
+          
+          <div className="w-full bg-surface-muted rounded-full h-2.5 overflow-hidden mb-2">
+            <div className="bg-warning h-full rounded-full" style={{ width: '78%' }} />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-warning bg-warning/10 px-2 py-0.5 rounded-md">
+              <AlertTriangle size={12} />
+              <p className="text-xs font-bold">Hampir habis · sisa 220rb</p>
+            </div>
+            <p className="text-xs font-bold text-text-secondary">78%</p>
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-5 hover:bg-surface-muted transition-colors cursor-pointer group">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center text-xl group-hover:scale-105 transition-transform">🛒</div>
+              <p className="font-bold text-text-primary text-lg">Belanja</p>
+            </div>
+            <div className="text-right">
+              <p className="font-bold text-error">Rp 550rb <span className="text-text-secondary font-medium text-sm">/ 500rb</span></p>
+            </div>
+          </div>
+          
+          <div className="w-full bg-surface-muted rounded-full h-2.5 overflow-hidden mb-2 relative">
+            <div className="bg-error h-full rounded-full" style={{ width: '100%' }} />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-error bg-error/10 px-2 py-0.5 rounded-md">
+              <div className="w-3 h-3 rounded-full bg-error text-surface flex items-center justify-center text-[8px] font-bold">!</div>
+              <p className="text-xs font-bold">Lewat 50rb</p>
+            </div>
+            <p className="text-xs font-bold text-error">110%</p>
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-5 hover:bg-surface-muted transition-colors cursor-pointer group">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-xl group-hover:scale-105 transition-transform">🚗</div>
+              <p className="font-bold text-text-primary text-lg">Transportasi</p>
+            </div>
+            <div className="text-right">
+              <p className="font-bold text-text-primary">Rp 350rb <span className="text-text-secondary font-medium text-sm">/ 1jt</span></p>
+            </div>
+          </div>
+          
+          <div className="w-full bg-surface-muted rounded-full h-2.5 overflow-hidden mb-2">
+            <div className="bg-primary h-full rounded-full" style={{ width: '35%' }} />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold text-text-secondary">Aman · sisa 650rb</p>
+            <p className="text-xs font-bold text-text-secondary">35%</p>
+          </div>
+        </div>
+
+      </div>
+
     </div>
   );
 };

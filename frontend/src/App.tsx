@@ -5,14 +5,13 @@ import { AuthGuard } from './components/AuthGuard';
 
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
-// Placeholders for FinBareng routes
-const Dashboard = () => <div className="p-4"><h1>Dashboard</h1></div>;
-const Transactions = () => <div className="p-4"><h1>Transactions</h1></div>;
-const Wallets = () => <div className="p-4"><h1>Wallets</h1></div>;
-const Budgets = () => <div className="p-4"><h1>Budgets</h1></div>;
-const Goals = () => <div className="p-4"><h1>Goals</h1></div>;
-const Family = () => <div className="p-4"><h1>Family</h1></div>;
-const Settings = () => <div className="p-4"><h1>Settings</h1></div>;
+import { Dashboard } from './pages/Dashboard';
+import { Transactions } from './pages/Transactions';
+import { Wallets } from './pages/Wallets';
+import { Budgets } from './pages/Budgets';
+import { Goals } from './pages/Goals';
+import { Family } from './pages/Family';
+import { Settings } from './pages/Settings';
 
 const queryClient = new QueryClient({
   defaultOptions: {

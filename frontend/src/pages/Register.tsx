@@ -1,108 +1,113 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { api } from '../lib/api';
-import { UserPlus } from 'lucide-react';
+import { ArrowRight, UserPlus } from 'lucide-react';
 
 export const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
-  const login = useAuthStore(state => state.login);
+  const register = useAuthStore((state) => state.register);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    setIsLoading(true);
 
     try {
-      const res = await api.post('/auth/register', { name, email, password });
-      login(res.data.data.user, res.data.data.token);
-      
-      // Auto-create some default categories for new users
-      await api.post('/categories', { name: 'Food & Dining', type: 'EXPENSE', icon: '🍽️' }, { headers: { Authorization: `Bearer ${res.data.data.token}` } });
-      await api.post('/categories', { name: 'Transportation', type: 'EXPENSE', icon: '🚗' }, { headers: { Authorization: `Bearer ${res.data.data.token}` } });
-      await api.post('/categories', { name: 'Salary', type: 'INCOME', icon: '💰' }, { headers: { Authorization: `Bearer ${res.data.data.token}` } });
-
+      await register(name, email, password);
+      // For MVP, directly navigate to dashboard instead of onboarding flow
       navigate('/');
     } catch (err: any) {
-      if (err.response?.data?.errors) {
-        setError(err.response.data.errors.map((e: any) => e.message).join(', '));
-      } else {
-        setError(err.response?.data?.message || 'Registration failed');
-      }
+      setError(err.response?.data?.message || 'Registrasi gagal. Silakan coba lagi.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-surface p-10 border border-charcoal/10 shadow-2xl rounded-2xl">
-        <div className="mb-8 text-center">
-          <h1 className="font-serif text-4xl font-bold text-charcoal mb-2">Join Catatu.</h1>
-          <p className="text-charcoal/60">Start managing your wealth beautifully.</p>
-        </div>
+    <div className="min-h-screen bg-background flex flex-col justify-center items-center p-4">
+      
+      <div className="w-full max-w-md bg-surface p-8 sm:p-10 border border-border shadow-2xl rounded-3xl relative overflow-hidden">
+        {/* Decorative background element */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+        
+        <div className="relative z-10">
+          <Link to="/" className="flex items-center gap-2 mb-10 group">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-surface font-bold text-lg shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">F</div>
+            <span className="font-bold text-2xl tracking-tight text-text-primary">FinBareng</span>
+          </Link>
 
-        {error && (
-          <div className="mb-6 p-4 bg-terracotta/10 text-terracotta rounded-xl text-sm font-medium">
-            {error}
-          </div>
-        )}
+          <h1 className="text-3xl font-bold text-text-primary mb-2 tracking-tight">Daftar Akun</h1>
+          <p className="text-text-secondary mb-8">Uangmu dan uang keluarga, rapi di satu tempat.</p>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-semibold text-charcoal mb-2">Full Name</label>
-            <input 
-              type="text" required
-              value={name}
-              onChange={e => setName(e.target.value)}
-              className="w-full px-4 py-3 bg-background border border-charcoal/10 rounded-xl focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-all"
-              placeholder="John Doe"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-charcoal mb-2">Email Address</label>
-            <input 
-              type="email" required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-background border border-charcoal/10 rounded-xl focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-all"
-              placeholder="you@example.com"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-charcoal mb-2">Password</label>
-            <input 
-              type="password" required minLength={6}
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-background border border-charcoal/10 rounded-xl focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-all"
-              placeholder="••••••••"
-            />
-          </div>
-          <button 
-            type="submit"
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-4 bg-charcoal text-surface font-semibold rounded-xl hover:bg-charcoal/90 transition-all disabled:opacity-50 mt-4"
-          >
-            {loading ? 'Creating account...' : (
-              <>
-                <UserPlus size={20} />
-                Create Account
-              </>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-bold text-text-primary mb-2">Nama Lengkap</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Andi"
+                className="w-full px-4 py-3 bg-surface border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-medium text-text-primary placeholder:text-text-secondary/50"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-text-primary mb-2">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="nama@email.com"
+                className="w-full px-4 py-3 bg-surface border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-medium text-text-primary placeholder:text-text-secondary/50"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-text-primary mb-2">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Minimal 8 karakter"
+                className="w-full px-4 py-3 bg-surface border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-medium text-text-primary placeholder:text-text-secondary/50"
+                required
+                minLength={8}
+              />
+            </div>
+
+            {error && (
+              <div className="p-4 bg-error/10 border border-error/20 rounded-xl text-error text-sm font-semibold flex items-center gap-3">
+                {error}
+              </div>
             )}
-          </button>
-        </form>
 
-        <p className="mt-8 text-center text-charcoal/60 text-sm">
-          Already have an account?{' '}
-          <Link to="/login" className="text-terracotta font-bold hover:underline">Log in</Link>
-        </p>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-surface font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95 disabled:opacity-70 disabled:active:scale-100 mt-2"
+            >
+              {isLoading ? 'Membuat Akun...' : 'Daftar Sekarang'}
+              {!isLoading && <UserPlus size={20} />}
+            </button>
+          </form>
+
+          <div className="mt-8 pt-6 border-t border-border text-center">
+            <p className="text-text-secondary text-sm font-medium">
+              Sudah punya akun?{' '}
+              <Link to="/login" className="text-primary font-bold hover:underline">
+                Masuk
+              </Link>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
