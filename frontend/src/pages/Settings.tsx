@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Globe, Moon, Shield, Bell, Download, Trash2, HelpCircle, ChevronRight, Smartphone, Wallet, Tags } from 'lucide-react';
+import { User, Users, Globe, Moon, Shield, Bell, Download, Trash2, HelpCircle, ChevronRight, Smartphone, Wallet, Tags } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 
@@ -29,6 +29,12 @@ export const Settings = () => {
       <section>
         <h2 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 px-1">Manajemen</h2>
         <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm divide-y divide-border">
+          <SettingsItem 
+            icon={<Users size={20} className="text-text-secondary" />}
+            title="Keluarga"
+            subtitle="Kelola anggota keluarga"
+            onClick={() => navigate('/family')}
+          />
           <SettingsItem 
             icon={<Wallet size={20} className="text-text-secondary" />}
             title="Daftar Dompet"

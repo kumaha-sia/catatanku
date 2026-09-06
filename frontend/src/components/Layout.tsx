@@ -90,22 +90,23 @@ export const Layout = () => {
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-border flex justify-around items-center px-2 py-1 pb-safe z-40">
-        <MobileNavItem to="/" icon={<Home size={24} />} label="Beranda" />
-        <MobileNavItem to="/transactions" icon={<Receipt size={24} />} label="Trans." />
-        
-        <div className="relative -top-5">
-          <button 
-            onClick={openAddTransaction}
-            className="w-14 h-14 bg-primary text-surface rounded-full flex items-center justify-center shadow-lg shadow-primary/30 active:scale-95 transition-transform"
-          >
-            <Plus size={28} />
-          </button>
-        </div>
+      {/* Floating Action Button (Mobile Only) */}
+      <div className="md:hidden fixed bottom-20 right-4 z-40">
+        <button 
+          onClick={openAddTransaction}
+          className="w-14 h-14 bg-primary text-surface rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30 active:scale-95 transition-transform"
+        >
+          <Plus size={28} />
+        </button>
+      </div>
 
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-border flex justify-between items-center px-2 py-1 pb-safe z-50">
+        <MobileNavItem to="/" icon={<Home size={24} />} label="Beranda" />
+        <MobileNavItem to="/transactions" icon={<Receipt size={24} />} label="Riwayat" />
+        <MobileNavItem to="/family" icon={<Users size={24} />} label="Keluarga" />
         <MobileNavItem to="/budgets" icon={<Target size={24} />} label="Anggaran" />
-        <MobileNavItem to="/reports" icon={<PieChart size={24} />} label="Laporan" />
+        <MobileNavItem to="/settings" icon={<Settings size={24} />} label="Profil" />
       </nav>
 
       <AddTransactionSheet />
