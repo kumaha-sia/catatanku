@@ -4,9 +4,9 @@ import { Layout } from './components/Layout';
 import { AuthGuard } from './components/AuthGuard';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
-
 import { Transactions } from './pages/Transactions';
 import { Budgets } from './pages/Budgets';
+import { Register } from './pages/Register';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,6 +23,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           
           <Route path="/" element={
             <AuthGuard>
