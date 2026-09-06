@@ -20,6 +20,7 @@ export const Settings = () => {
             icon={<User size={20} className="text-primary" />}
             title="Andi"
             subtitle="andi@email.com"
+            onClick={() => navigate('/profile')}
           />
         </div>
       </section>
