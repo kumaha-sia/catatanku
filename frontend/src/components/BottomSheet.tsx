@@ -6,9 +6,18 @@ interface BottomSheetProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  leftIcon?: React.ReactNode;
+  onLeftIconClick?: () => void;
 }
 
-export const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, children }) => {
+export const BottomSheet: React.FC<BottomSheetProps> = ({ 
+  isOpen, 
+  onClose, 
+  title, 
+  children,
+  leftIcon,
+  onLeftIconClick
+}) => {
   // Prevent body scrolling when open
   useEffect(() => {
     if (isOpen) {
@@ -27,7 +36,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" 
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity animate-fade-in" 
         onClick={onClose}
       />
       
@@ -36,7 +45,16 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title
         className="w-full sm:w-full sm:max-w-md bg-surface rounded-t-3xl sm:rounded-3xl shadow-2xl relative z-10 max-h-[90vh] flex flex-col animate-slide-up"
       >
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <div className="w-8" /> {/* Spacer for centering */}
+          {leftIcon ? (
+            <button 
+              onClick={onLeftIconClick}
+              className="w-8 h-8 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary transition-colors"
+            >
+              {leftIcon}
+            </button>
+          ) : (
+            <div className="w-8" />
+          )}
           <h2 className="font-bold text-lg text-text-primary">{title}</h2>
           <button 
             onClick={onClose}
