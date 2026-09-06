@@ -1,7 +1,13 @@
-import React from 'react';
-import { Settings, UserPlus, Users, ChevronRight, ShoppingCart, Lightbulb } from 'lucide-react';
+import React, { useState } from 'react';
+import { Settings, UserPlus, Users, ChevronRight, ShoppingCart, Lightbulb, Mail } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { BottomSheet } from '../components/BottomSheet';
 
 export const Family = () => {
+  const navigate = useNavigate();
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+
   return (
     <div className="space-y-6 animate-fade-in pb-8">
       
@@ -33,7 +39,10 @@ export const Family = () => {
             <div className="w-12 h-12 rounded-full border-2 border-surface bg-primary text-surface flex items-center justify-center font-bold text-sm shadow-sm z-20">A</div>
             <div className="w-12 h-12 rounded-full border-2 border-surface bg-accent text-surface flex items-center justify-center font-bold text-sm shadow-sm z-10">R</div>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-surface-muted hover:bg-border rounded-xl font-bold text-text-primary text-sm transition-colors">
+          <button 
+            onClick={() => setIsInviteOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-surface-muted hover:bg-border rounded-xl font-bold text-text-primary text-sm transition-colors"
+          >
             <UserPlus size={16} />
             Undang
           </button>
@@ -42,7 +51,10 @@ export const Family = () => {
 
       {/* Shared Wallets Link */}
       <section>
-        <button className="w-full flex items-center justify-between bg-surface border border-border p-4 rounded-2xl shadow-sm hover:shadow-md hover:bg-surface-muted transition-all group">
+        <button 
+          onClick={() => navigate('/wallets')}
+          className="w-full flex items-center justify-between bg-surface border border-border p-4 rounded-2xl shadow-sm hover:shadow-md hover:bg-surface-muted transition-all group"
+        >
           <div className="text-left">
             <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1">Dompet Bersama</h3>
             <p className="font-bold text-text-primary text-lg">Rp 6.500.000</p>
@@ -54,7 +66,10 @@ export const Family = () => {
 
       {/* Contribution Link */}
       <section>
-        <button className="w-full flex items-center justify-between bg-surface border border-border p-4 rounded-2xl shadow-sm hover:shadow-md hover:bg-surface-muted transition-all group">
+        <button 
+          onClick={() => navigate('/reports')}
+          className="w-full flex items-center justify-between bg-surface border border-border p-4 rounded-2xl shadow-sm hover:shadow-md hover:bg-surface-muted transition-all group"
+        >
           <div className="text-left w-full pr-4">
             <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2">Kontribusi Agustus</h3>
             <div className="flex items-center gap-2 mb-2">
@@ -75,7 +90,12 @@ export const Family = () => {
       <section>
         <div className="flex items-center justify-between mb-3 px-1">
           <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest">Aktivitas Keluarga</h3>
-          <button className="text-primary text-xs font-bold">Lihat Semua</button>
+          <button 
+            onClick={() => navigate('/transactions')}
+            className="text-primary text-xs font-bold hover:underline"
+          >
+            Lihat Semua
+          </button>
         </div>
         <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm divide-y divide-border">
           
@@ -107,6 +127,41 @@ export const Family = () => {
 
         </div>
       </section>
+
+      {/* Invite Member Bottom Sheet */}
+      <BottomSheet isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} title="Undang Anggota">
+        <div className="space-y-6 pt-2">
+          
+          <div className="text-center mb-4">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
+              <UserPlus size={32} />
+            </div>
+            <p className="text-sm font-semibold text-text-secondary">Undang pasangan atau anggota keluarga lain untuk mencatat keuangan bersama secara transparan.</p>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 block px-1">Email Undangan</label>
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
+              <input 
+                type="email" 
+                placeholder="Masukkan email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                className="w-full bg-surface border border-border rounded-xl pl-11 pr-4 py-3 font-semibold text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+              />
+            </div>
+          </div>
+
+          <button 
+            onClick={() => { setIsInviteOpen(false); setInviteEmail(''); }}
+            disabled={!inviteEmail}
+            className="w-full py-4 bg-primary text-surface rounded-xl font-bold text-lg shadow-lg shadow-primary/20 hover:bg-primary/90 disabled:opacity-50 disabled:shadow-none transition-all mt-4"
+          >
+            Kirim Undangan
+          </button>
+        </div>
+      </BottomSheet>
 
     </div>
   );

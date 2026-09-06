@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useUIStore } from '../store/uiStore';
+import { useNavigate } from 'react-router-dom';
 import { Bell, Eye, EyeOff, Plus, ArrowUpRight, ArrowDownRight, Users, Lock, ChevronDown, Check } from 'lucide-react';
 
 export const Dashboard = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'ME' | 'FAMILY'>('ME');
   const [hideBalance, setHideBalance] = useState(false);
   const openAddTransaction = useUIStore((state) => state.openAddTransaction);
@@ -21,7 +23,10 @@ export const Dashboard = () => {
             <Bell size={20} />
             <div className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full" />
           </button>
-          <div className="w-10 h-10 rounded-full bg-primary text-surface flex items-center justify-center font-bold">
+          <div 
+            onClick={() => navigate('/profile')}
+            className="w-10 h-10 rounded-full bg-primary text-surface flex items-center justify-center font-bold cursor-pointer hover:bg-primary/90 transition-colors"
+          >
             A
           </div>
         </div>
@@ -59,16 +64,16 @@ export const Dashboard = () => {
 
       {/* Tab Content */}
       {activeTab === 'ME' ? (
-        <MeTab hideBalance={hideBalance} />
+        <MeTab hideBalance={hideBalance} navigate={navigate} />
       ) : (
-        <FamilyTab hideBalance={hideBalance} />
+        <FamilyTab hideBalance={hideBalance} navigate={navigate} />
       )}
 
     </div>
   );
 };
 
-const MeTab = ({ hideBalance }: { hideBalance: boolean }) => {
+const MeTab = ({ hideBalance, navigate }: { hideBalance: boolean, navigate: any }) => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Balance Card */}
@@ -81,7 +86,7 @@ const MeTab = ({ hideBalance }: { hideBalance: boolean }) => {
         <div className="flex items-center justify-between mt-6">
           <p className="text-primary-soft text-sm">3 dompet pribadi</p>
           <div className="flex gap-2">
-            <button className="px-4 py-2 bg-surface/20 hover:bg-surface/30 rounded-lg text-sm font-semibold transition-colors backdrop-blur-sm">
+            <button onClick={() => navigate('/wallets')} className="px-4 py-2 bg-surface/20 hover:bg-surface/30 rounded-lg text-sm font-semibold transition-colors backdrop-blur-sm">
               Dompet
             </button>
           </div>
@@ -116,7 +121,7 @@ const MeTab = ({ hideBalance }: { hideBalance: boolean }) => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-lg">Anggaran saya</h3>
-          <button className="text-primary text-sm font-semibold">Lihat semua</button>
+          <button onClick={() => navigate('/budgets')} className="text-primary text-sm font-semibold hover:underline">Lihat semua</button>
         </div>
         <div className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden">
           <div className="p-4 border-b border-border hover:bg-surface-muted cursor-pointer transition-colors">
@@ -156,7 +161,7 @@ const MeTab = ({ hideBalance }: { hideBalance: boolean }) => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-lg">Terbaru</h3>
-          <button className="text-primary text-sm font-semibold">Lihat semua</button>
+          <button onClick={() => navigate('/transactions')} className="text-primary text-sm font-semibold hover:underline">Lihat semua</button>
         </div>
         <div className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden">
           <div className="flex items-center justify-between p-4 border-b border-border hover:bg-surface-muted cursor-pointer">
@@ -171,7 +176,7 @@ const MeTab = ({ hideBalance }: { hideBalance: boolean }) => {
           </div>
           <div className="flex items-center justify-between p-4 hover:bg-surface-muted cursor-pointer">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-xl">💼</div>
+              <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-xl">💰</div>
               <div>
                 <p className="font-bold text-text-primary">Gaji</p>
                 <p className="text-xs text-text-secondary">Gaji • Bank • 1 Agu</p>
@@ -185,7 +190,7 @@ const MeTab = ({ hideBalance }: { hideBalance: boolean }) => {
   );
 };
 
-const FamilyTab = ({ hideBalance }: { hideBalance: boolean }) => {
+const FamilyTab = ({ hideBalance, navigate }: { hideBalance: boolean, navigate: any }) => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Balance Card */}
@@ -199,7 +204,7 @@ const FamilyTab = ({ hideBalance }: { hideBalance: boolean }) => {
         <div className="flex items-center justify-between mt-6">
           <p className="text-text-secondary text-sm font-medium">2 dompet bersama</p>
           <div className="flex gap-2">
-            <button className="px-4 py-2 bg-surface-muted hover:bg-border rounded-lg text-sm font-semibold transition-colors">
+            <button onClick={() => navigate('/wallets')} className="px-4 py-2 bg-surface-muted hover:bg-border rounded-lg text-sm font-semibold transition-colors">
               Dompet
             </button>
           </div>
@@ -265,7 +270,7 @@ const FamilyTab = ({ hideBalance }: { hideBalance: boolean }) => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-lg">Aktivitas Keluarga</h3>
-          <button className="text-primary text-sm font-semibold">Lihat semua</button>
+          <button onClick={() => navigate('/transactions')} className="text-primary text-sm font-semibold hover:underline">Lihat semua</button>
         </div>
         <div className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden">
           <div className="flex items-center justify-between p-4 border-b border-border hover:bg-surface-muted cursor-pointer">

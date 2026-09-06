@@ -1,8 +1,21 @@
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { BottomSheet } from '../components/BottomSheet';
 
 export const Goals = () => {
   const [activeTab, setActiveTab] = useState<'ME' | 'FAMILY'>('ME');
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [goalName, setGoalName] = useState('');
+  const [goalTarget, setGoalTarget] = useState('');
+  const [goalIcon, setGoalIcon] = useState('🎯');
+  const [goalDate, setGoalDate] = useState('');
+
+  const handleSave = () => {
+    setIsAddOpen(false);
+    setGoalName('');
+    setGoalTarget('');
+    setGoalDate('');
+  };
 
   return (
     <div className="space-y-6 animate-fade-in pb-8">
@@ -10,7 +23,10 @@ export const Goals = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-text-primary">Tujuan</h1>
-        <button className="w-10 h-10 bg-primary text-surface rounded-full flex items-center justify-center shadow-md shadow-primary/20 hover:bg-primary/90 transition-all">
+        <button 
+          onClick={() => setIsAddOpen(true)}
+          className="w-10 h-10 bg-primary text-surface rounded-full flex items-center justify-center shadow-md shadow-primary/20 hover:bg-primary/90 transition-all"
+        >
           <Plus size={20} />
         </button>
       </div>
@@ -87,6 +103,65 @@ export const Goals = () => {
         </div>
 
       </div>
+
+      {/* Add Goal Bottom Sheet */}
+      <BottomSheet isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Buat Tujuan Keuangan">
+        <div className="space-y-6 pt-2">
+          
+          <div className="flex items-center gap-4 justify-center mb-6">
+            <button className="w-20 h-20 bg-surface-muted rounded-full flex items-center justify-center text-4xl shadow-inner hover:bg-border transition-colors border border-border">
+              {goalIcon}
+            </button>
+            <div className="text-xs font-bold text-primary uppercase tracking-widest cursor-pointer hover:underline">
+              Ubah Ikon
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 block px-1">Nama Tujuan</label>
+            <input 
+              type="text" 
+              placeholder="Contoh: Liburan ke Bali"
+              value={goalName}
+              onChange={(e) => setGoalName(e.target.value)}
+              className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-semibold text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 block px-1">Target Nominal (Rp)</label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-secondary">Rp</span>
+              <input 
+                type="number" 
+                placeholder="0"
+                value={goalTarget}
+                onChange={(e) => setGoalTarget(e.target.value)}
+                className="w-full bg-surface border border-border rounded-xl pl-12 pr-4 py-3 font-bold text-lg text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 block px-1">Target Tercapai Pada (Opsional)</label>
+            <input 
+              type="month" 
+              value={goalDate}
+              onChange={(e) => setGoalDate(e.target.value)}
+              className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-semibold text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+            />
+          </div>
+
+          <button 
+            onClick={handleSave}
+            disabled={!goalName || !goalTarget}
+            className="w-full py-4 bg-primary text-surface rounded-xl font-bold text-lg shadow-lg shadow-primary/20 hover:bg-primary/90 disabled:opacity-50 disabled:shadow-none transition-all mt-4"
+          >
+            Simpan Tujuan
+          </button>
+        </div>
+      </BottomSheet>
+
     </div>
   );
 };
