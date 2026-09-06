@@ -1,8 +1,18 @@
 import React, { useState } from 'react';
 import { Plus, AlertTriangle, ChevronDown } from 'lucide-react';
+import { BottomSheet } from '../components/BottomSheet';
 
 export const Budgets = () => {
   const [activeTab, setActiveTab] = useState<'ME' | 'FAMILY'>('ME');
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [budgetAmount, setBudgetAmount] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+
+  const handleSave = () => {
+    setIsAddOpen(false);
+    setBudgetAmount('');
+    setSelectedCategory('');
+  };
 
   return (
     <div className="space-y-6 animate-fade-in pb-8">
@@ -10,7 +20,10 @@ export const Budgets = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-text-primary">Anggaran</h1>
-        <button className="w-10 h-10 bg-primary text-surface rounded-full flex items-center justify-center shadow-md shadow-primary/20 hover:bg-primary/90 transition-all">
+        <button 
+          onClick={() => setIsAddOpen(true)}
+          className="w-10 h-10 bg-primary text-surface rounded-full flex items-center justify-center shadow-md shadow-primary/20 hover:bg-primary/90 transition-all"
+        >
           <Plus size={20} />
         </button>
       </div>
@@ -130,6 +143,68 @@ export const Budgets = () => {
         </div>
 
       </div>
+
+      {/* Add Budget Bottom Sheet */}
+      <BottomSheet isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Buat Anggaran Baru">
+        <div className="space-y-6 pt-2">
+          
+          <div>
+            <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 block px-1">Bulan Anggaran</label>
+            <div className="bg-surface border border-border rounded-xl px-4 py-3 font-semibold text-text-primary">
+              Agustus 2026
+            </div>
+            <p className="text-[10px] text-text-secondary mt-1 px-1 font-medium">Anggaran akan berlaku untuk bulan ini.</p>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 block px-1">Kategori Pengeluaran</label>
+            <div className="flex overflow-x-auto gap-3 pb-2 px-1 hide-scrollbar -mx-1">
+              {[
+                { icon: '🍜', name: 'Makanan' },
+                { icon: '🚗', name: 'Transport' },
+                { icon: '🛒', name: 'Belanja' },
+                { icon: '💡', name: 'Tagihan' },
+                { icon: '🎮', name: 'Hiburan' },
+              ].map((cat) => (
+                <button 
+                  key={cat.name}
+                  onClick={() => setSelectedCategory(cat.name)}
+                  className={`flex flex-col items-center gap-2 min-w-[72px] p-2 rounded-xl border-2 transition-all ${
+                    selectedCategory === cat.name ? 'border-primary bg-primary/5' : 'border-transparent hover:bg-surface-muted'
+                  }`}
+                >
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${selectedCategory === cat.name ? 'bg-primary/20 shadow-sm' : 'bg-surface-muted'}`}>
+                    {cat.icon}
+                  </div>
+                  <span className={`text-xs font-bold ${selectedCategory === cat.name ? 'text-primary' : 'text-text-secondary'}`}>{cat.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 block px-1">Batas Maksimal (Rp)</label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-secondary">Rp</span>
+              <input 
+                type="number" 
+                placeholder="0"
+                value={budgetAmount}
+                onChange={(e) => setBudgetAmount(e.target.value)}
+                className="w-full bg-surface border border-border rounded-xl pl-12 pr-4 py-3 font-bold text-lg text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+              />
+            </div>
+          </div>
+
+          <button 
+            onClick={handleSave}
+            disabled={!selectedCategory || !budgetAmount}
+            className="w-full py-4 bg-primary text-surface rounded-xl font-bold text-lg shadow-lg shadow-primary/20 hover:bg-primary/90 disabled:opacity-50 disabled:shadow-none transition-all mt-4"
+          >
+            Simpan Anggaran
+          </button>
+        </div>
+      </BottomSheet>
 
     </div>
   );
