@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { ArrowRight, UserPlus } from 'lucide-react';
+import { UserPlus, AlertTriangle } from 'lucide-react';
 
 export const Register = () => {
   const [name, setName] = useState('');
@@ -10,7 +10,7 @@ export const Register = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const register = useAuthStore((state) => state.register);
+  const loginState = useAuthStore((state) => state.login);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,8 +19,9 @@ export const Register = () => {
     setIsLoading(true);
 
     try {
-      await register(name, email, password);
-      // For MVP, directly navigate to dashboard instead of onboarding flow
+      const { register } = await import('../services/apiServices');
+      const response = await register({ name, email, password });
+      loginState(response.data.user, response.data.token);
       navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registrasi gagal. Silakan coba lagi.');
@@ -30,85 +31,110 @@ export const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col justify-center items-center p-4">
+    <div className="min-h-screen bg-background flex flex-col md:flex-row-reverse font-sans">
       
-      <div className="w-full max-w-md bg-surface p-8 sm:p-10 border border-border shadow-2xl rounded-3xl relative overflow-hidden">
-        {/* Decorative background element */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-        
-        <div className="relative z-10">
-          <Link to="/" className="flex items-center gap-2 mb-10 group">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-surface font-bold text-lg shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">F</div>
-            <span className="font-bold text-2xl tracking-tight text-text-primary">FinBareng</span>
-          </Link>
+      {/* Right Panel (now visual left for variation) - Branding */}
+      <div className="w-full md:w-5/12 bg-accent p-8 md:p-12 flex flex-col justify-between border-b-4 md:border-b-0 md:border-l-4 border-text-primary relative overflow-hidden">
+        {/* Abstract Geometry */}
+        <div className="absolute top-[20%] left-[-10%] w-48 h-48 bg-primary rounded-none rotate-45 border-4 border-text-primary z-0" />
+        <div className="absolute bottom-[-10%] right-[-5%] w-64 h-64 bg-surface rounded-full border-4 border-text-primary z-0" />
 
-          <h1 className="text-3xl font-bold text-text-primary mb-2 tracking-tight">Daftar Akun</h1>
-          <p className="text-text-secondary mb-8">Uangmu dan uang keluarga, rapi di satu tempat.</p>
+        <div className="relative z-10">
+          <Link to="/" className="inline-flex items-center gap-3 mb-16">
+            <div className="w-12 h-12 bg-primary border-2 border-text-primary flex items-center justify-center text-surface font-black text-xl shadow-[4px_4px_0_0_#171B22] transform rotate-6">F</div>
+            <span className="font-black text-3xl tracking-tight text-text-primary">FinBareng</span>
+          </Link>
+          
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-text-primary leading-[1.1] tracking-tight">
+            Mulai<br/>
+            <span className="text-surface drop-shadow-[2px_2px_0_#171B22]">Kendali</span><br/>
+            Hari Ini.
+          </h1>
+        </div>
+
+        <div className="relative z-10 mt-12 md:mt-0">
+          <p className="text-text-primary font-bold text-lg md:text-xl border-l-4 border-surface pl-4">
+            Berhenti pusing akhir bulan.<br/>
+            Pisahkan uang pribadi & keluarga<br/>
+            hanya dalam satu aplikasi.
+          </p>
+        </div>
+      </div>
+
+      {/* Left Panel - Form */}
+      <div className="w-full md:w-7/12 flex items-center justify-center p-6 md:p-12 relative">
+        <div className="w-full max-w-md">
+          <div className="mb-10">
+            <h2 className="text-4xl font-black text-text-primary mb-3">Daftar</h2>
+            <p className="text-text-secondary font-bold text-lg">Buat akun gratis. Tidak ada biaya tersembunyi.</p>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-bold text-text-primary mb-2">Nama Lengkap</label>
+              <label className="block text-base font-black text-text-primary mb-2 uppercase tracking-wide">Nama Panggilan</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Andi"
-                className="w-full px-4 py-3 bg-surface border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-medium text-text-primary placeholder:text-text-secondary/50"
+                placeholder="Si Paling Hemat"
+                className="w-full px-5 py-4 bg-surface border-2 border-text-primary rounded-none focus:outline-none focus:ring-0 focus:shadow-[6px_6px_0_0_#0C6B58] transition-all font-bold text-text-primary placeholder:text-text-secondary/50"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-text-primary mb-2">Email</label>
+              <label className="block text-base font-black text-text-primary mb-2 uppercase tracking-wide">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@email.com"
-                className="w-full px-4 py-3 bg-surface border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-medium text-text-primary placeholder:text-text-secondary/50"
+                className="w-full px-5 py-4 bg-surface border-2 border-text-primary rounded-none focus:outline-none focus:ring-0 focus:shadow-[6px_6px_0_0_#0C6B58] transition-all font-bold text-text-primary placeholder:text-text-secondary/50"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-text-primary mb-2">Password</label>
+              <label className="block text-base font-black text-text-primary mb-2 uppercase tracking-wide">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Minimal 8 karakter"
-                className="w-full px-4 py-3 bg-surface border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-medium text-text-primary placeholder:text-text-secondary/50"
+                placeholder="Minimal 8 karakter rahasia"
+                className="w-full px-5 py-4 bg-surface border-2 border-text-primary rounded-none focus:outline-none focus:ring-0 focus:shadow-[6px_6px_0_0_#0C6B58] transition-all font-bold text-text-primary placeholder:text-text-secondary/50"
                 required
                 minLength={8}
               />
             </div>
 
             {error && (
-              <div className="p-4 bg-error/10 border border-error/20 rounded-xl text-error text-sm font-semibold flex items-center gap-3">
-                {error}
+              <div className="p-4 bg-error text-surface font-bold flex items-center gap-3 border-2 border-text-primary shadow-[4px_4px_0_0_#171B22]">
+                <AlertTriangle size={20} className="flex-shrink-0" />
+                <p>{error}</p>
               </div>
             )}
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-surface font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95 disabled:opacity-70 disabled:active:scale-100 mt-2"
+              className="w-full flex items-center justify-center gap-3 py-4 bg-accent text-text-primary border-2 border-text-primary font-black text-lg uppercase tracking-wider hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:shadow-none mt-6"
             >
-              {isLoading ? 'Membuat Akun...' : 'Daftar Sekarang'}
-              {!isLoading && <UserPlus size={20} />}
+              {isLoading ? 'Memproses...' : 'Gabung Sekarang'}
+              {!isLoading && <UserPlus size={24} />}
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-border text-center">
-            <p className="text-text-secondary text-sm font-medium">
+          <div className="mt-12 text-center">
+            <p className="text-text-primary font-bold text-lg">
               Sudah punya akun?{' '}
-              <Link to="/login" className="text-primary font-bold hover:underline">
-                Masuk
+              <Link to="/login" className="text-primary hover:text-accent underline decoration-4 underline-offset-4 transition-colors">
+                Masuk Sini
               </Link>
             </p>
           </div>
         </div>
       </div>
+
     </div>
   );
 };

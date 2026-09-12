@@ -3,10 +3,14 @@ import { Camera, Mail, User, Shield, CheckCircle2, Image as ImageIcon, Trash2, K
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../components/BottomSheet';
 
+import { useAuthStore } from '../store/authStore';
+
 export const Profile = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState('Andi');
-  const [email, setEmail] = useState('andi@email.com');
+  const user = useAuthStore(state => state.user);
+  
+  const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [isSaved, setIsSaved] = useState(false);
 
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
@@ -14,6 +18,7 @@ export const Profile = () => {
 
   const handleSave = () => {
     setIsSaved(true);
+    // TODO: Call API to update profile if needed
     setTimeout(() => setIsSaved(false), 3000);
   };
 
@@ -24,32 +29,32 @@ export const Profile = () => {
       <div className="flex items-center gap-4 mb-8">
         <button 
           onClick={() => navigate('/settings')}
-          className="w-10 h-10 flex items-center justify-center bg-surface border border-border rounded-xl text-text-secondary hover:text-text-primary transition-colors"
+          className="w-10 h-10 flex items-center justify-center bg-surface border-2 border-text-primary rounded-none text-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <h1 className="text-2xl font-bold text-text-primary">Profil & Akun</h1>
+        <h1 className="text-3xl font-black text-text-primary uppercase tracking-wide">Profil & Akun</h1>
       </div>
 
       {/* Avatar Section */}
-      <div className="flex flex-col items-center justify-center p-6 bg-surface border border-border rounded-3xl shadow-sm mb-6">
+      <div className="flex flex-col items-center justify-center p-6 bg-surface border-4 border-text-primary rounded-none shadow-[8px_8px_0_0_#171B22] mb-6">
         <div 
           onClick={() => setIsAvatarOpen(true)}
           className="relative group cursor-pointer"
         >
-          <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center text-primary text-3xl font-bold border-4 border-surface shadow-md">
-            A
+          <div className="w-24 h-24 bg-primary rounded-none flex items-center justify-center text-surface text-4xl font-black border-4 border-text-primary shadow-[4px_4px_0_0_#171B22]">
+            {name ? name.charAt(0).toUpperCase() : 'U'}
           </div>
-          <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <Camera size={24} className="text-white" />
+          <div className="absolute inset-0 bg-text-primary/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <Camera size={24} className="text-surface" />
           </div>
-          <div className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center border-2 border-surface shadow-sm text-surface">
+          <div className="absolute bottom-0 right-0 w-8 h-8 bg-accent flex items-center justify-center border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] text-text-primary">
             <Camera size={14} />
           </div>
         </div>
         <p 
           onClick={() => setIsAvatarOpen(true)}
-          className="text-sm font-bold text-primary mt-4 cursor-pointer hover:underline"
+          className="text-sm font-black text-text-primary mt-4 cursor-pointer hover:underline uppercase tracking-wider"
         >
           Ganti Foto Profil
         </p>
@@ -58,31 +63,31 @@ export const Profile = () => {
       {/* Form Section */}
       <div className="space-y-5">
         <div>
-          <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 block px-1">Nama Lengkap</label>
+          <label className="text-sm font-black text-text-primary uppercase tracking-wider mb-2 block">Nama Lengkap</label>
           <div className="relative">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
+            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-text-primary" size={18} />
             <input 
               type="text" 
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-surface border border-border rounded-xl pl-11 pr-4 py-3.5 font-bold text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+              className="w-full bg-surface border-2 border-text-primary rounded-none pl-11 pr-4 py-3.5 font-bold text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] transition-all"
             />
           </div>
         </div>
 
         <div>
-          <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 block px-1">Email</label>
+          <label className="text-sm font-black text-text-primary uppercase tracking-wider mb-2 block">Email</label>
           <div className="relative">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-text-primary" size={18} />
             <input 
               type="email" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-surface-muted border border-border rounded-xl pl-11 pr-4 py-3.5 font-bold text-text-secondary cursor-not-allowed"
+              className="w-full bg-surface-muted border-2 border-text-primary rounded-none pl-11 pr-4 py-3.5 font-bold text-text-secondary cursor-not-allowed"
               disabled
             />
           </div>
-          <p className="text-[10px] font-bold text-text-secondary mt-2 px-1">Email tidak dapat diubah karena terhubung dengan fitur keamanan Keluarga.</p>
+          <p className="text-xs font-bold text-text-primary mt-2">Email tidak dapat diubah karena terhubung dengan fitur keamanan Keluarga.</p>
         </div>
       </div>
 
@@ -90,18 +95,18 @@ export const Profile = () => {
       <div className="mt-8">
         <button 
           onClick={() => setIsPasswordOpen(true)}
-          className="w-full flex items-center justify-between p-4 bg-surface border border-border rounded-2xl hover:bg-surface-muted transition-colors text-left group"
+          className="w-full flex items-center justify-between p-4 bg-surface border-4 border-text-primary rounded-none hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all text-left group shadow-[4px_4px_0_0_#171B22]"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-surface-muted rounded-xl flex items-center justify-center border border-border">
-              <Shield size={18} className="text-text-secondary" />
+            <div className="w-10 h-10 bg-accent rounded-none flex items-center justify-center border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] text-text-primary">
+              <Shield size={18} />
             </div>
             <div>
-              <p className="font-bold text-text-primary">Ubah Password</p>
-              <p className="text-xs font-medium text-text-secondary mt-0.5">Terakhir diubah 3 bulan lalu</p>
+              <p className="font-black text-text-primary uppercase">Ubah Password</p>
+              <p className="text-xs font-bold text-text-primary mt-0.5">Terakhir diubah 3 bulan lalu</p>
             </div>
           </div>
-          <svg className="text-text-secondary/50 group-hover:text-text-primary transition-colors" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          <svg className="text-text-primary transition-transform group-hover:translate-x-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </button>
       </div>
 
@@ -109,15 +114,15 @@ export const Profile = () => {
       <div className="pt-6">
         <button 
           onClick={handleSave}
-          className={`w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 ${
+          className={`w-full py-4 rounded-none font-black text-lg transition-all flex items-center justify-center gap-2 border-4 border-text-primary uppercase tracking-wider hover:-translate-y-1 active:translate-y-0 active:shadow-none ${
             isSaved 
-              ? 'bg-income text-surface shadow-lg shadow-income/20' 
-              : 'bg-primary text-surface shadow-lg shadow-primary/20 hover:bg-primary/90'
+              ? 'bg-income text-text-primary shadow-[4px_4px_0_0_#171B22] hover:shadow-[6px_6px_0_0_#171B22]' 
+              : 'bg-primary text-text-primary shadow-[4px_4px_0_0_#171B22] hover:shadow-[6px_6px_0_0_#171B22]'
           }`}
         >
           {isSaved ? (
             <>
-              <CheckCircle2 size={20} />
+              <CheckCircle2 size={24} className="stroke-[3]" />
               Tersimpan
             </>
           ) : (
@@ -128,67 +133,67 @@ export const Profile = () => {
 
       {/* Avatar Bottom Sheet */}
       <BottomSheet isOpen={isAvatarOpen} onClose={() => setIsAvatarOpen(false)} title="Foto Profil">
-        <div className="space-y-3 pt-2">
-          <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-surface-muted transition-colors text-left">
-            <div className="w-10 h-10 bg-surface-muted rounded-full flex items-center justify-center border border-border text-text-secondary">
-              <Camera size={20} />
+        <div className="space-y-4 pt-4">
+          <button className="w-full flex items-center gap-4 p-4 bg-surface border-2 border-text-primary rounded-none hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all text-left">
+            <div className="w-12 h-12 bg-primary rounded-none flex items-center justify-center border-2 border-text-primary text-text-primary">
+              <Camera size={20} className="stroke-[3]" />
             </div>
-            <p className="font-bold text-text-primary text-base">Ambil Foto</p>
+            <p className="font-black text-text-primary text-base uppercase">Ambil Foto</p>
           </button>
           
-          <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-surface-muted transition-colors text-left">
-            <div className="w-10 h-10 bg-surface-muted rounded-full flex items-center justify-center border border-border text-text-secondary">
-              <ImageIcon size={20} />
+          <button className="w-full flex items-center gap-4 p-4 bg-surface border-2 border-text-primary rounded-none hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all text-left">
+            <div className="w-12 h-12 bg-accent rounded-none flex items-center justify-center border-2 border-text-primary text-text-primary">
+              <ImageIcon size={20} className="stroke-[3]" />
             </div>
-            <p className="font-bold text-text-primary text-base">Pilih dari Galeri</p>
+            <p className="font-black text-text-primary text-base uppercase">Pilih dari Galeri</p>
           </button>
 
-          <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-error/10 transition-colors text-left group">
-            <div className="w-10 h-10 bg-error/10 rounded-full flex items-center justify-center border border-error/20 text-error group-hover:bg-error group-hover:text-surface transition-colors">
-              <Trash2 size={20} />
+          <button className="w-full flex items-center gap-4 p-4 bg-error text-text-primary border-2 border-text-primary rounded-none hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all text-left">
+            <div className="w-12 h-12 bg-surface rounded-none flex items-center justify-center border-2 border-text-primary text-text-primary">
+              <Trash2 size={20} className="stroke-[3]" />
             </div>
-            <p className="font-bold text-error text-base">Hapus Foto</p>
+            <p className="font-black text-text-primary text-base uppercase">Hapus Foto</p>
           </button>
         </div>
       </BottomSheet>
 
       {/* Password Bottom Sheet */}
       <BottomSheet isOpen={isPasswordOpen} onClose={() => setIsPasswordOpen(false)} title="Ubah Password">
-        <div className="space-y-6 pt-2">
+        <div className="space-y-6 pt-4">
           
           <div>
-            <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 block px-1">Password Saat Ini</label>
+            <label className="text-sm font-black text-text-primary uppercase tracking-wider mb-2 block">Password Saat Ini</label>
             <div className="relative">
-              <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
+              <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-text-primary" size={18} />
               <input 
                 type="password" 
                 placeholder="Masukkan password lama"
-                className="w-full bg-surface border border-border rounded-xl pl-11 pr-4 py-3.5 font-bold text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                className="w-full bg-surface border-2 border-text-primary rounded-none pl-11 pr-4 py-3.5 font-bold text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] transition-all"
               />
             </div>
           </div>
 
-          <div className="space-y-4 pt-4 border-t border-border">
+          <div className="space-y-4 pt-6 border-t-4 border-text-primary">
             <div>
-              <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 block px-1">Password Baru</label>
+              <label className="text-sm font-black text-text-primary uppercase tracking-wider mb-2 block">Password Baru</label>
               <div className="relative">
-                <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
+                <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-text-primary" size={18} />
                 <input 
                   type="password" 
                   placeholder="Minimal 8 karakter"
-                  className="w-full bg-surface border border-border rounded-xl pl-11 pr-4 py-3.5 font-bold text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                  className="w-full bg-surface border-2 border-text-primary rounded-none pl-11 pr-4 py-3.5 font-bold text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 block px-1">Konfirmasi Password Baru</label>
+              <label className="text-sm font-black text-text-primary uppercase tracking-wider mb-2 block">Konfirmasi Password Baru</label>
               <div className="relative">
-                <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
+                <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-text-primary" size={18} />
                 <input 
                   type="password" 
                   placeholder="Ketik ulang password baru"
-                  className="w-full bg-surface border border-border rounded-xl pl-11 pr-4 py-3.5 font-bold text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                  className="w-full bg-surface border-2 border-text-primary rounded-none pl-11 pr-4 py-3.5 font-bold text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] transition-all"
                 />
               </div>
             </div>
@@ -196,7 +201,7 @@ export const Profile = () => {
 
           <button 
             onClick={() => setIsPasswordOpen(false)}
-            className="w-full py-4 bg-primary text-surface rounded-xl font-bold text-lg shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all mt-4"
+            className="w-full py-4 bg-primary text-text-primary rounded-none border-4 border-text-primary font-black text-lg shadow-[4px_4px_0_0_#171B22] hover:shadow-[6px_6px_0_0_#171B22] hover:-translate-y-1 active:translate-y-0 active:shadow-none transition-all uppercase tracking-wider mt-4"
           >
             Perbarui Password
           </button>

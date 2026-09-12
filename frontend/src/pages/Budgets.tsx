@@ -1,197 +1,250 @@
 import React, { useState } from 'react';
-import { Plus, AlertTriangle, ChevronDown } from 'lucide-react';
+import { Plus, AlertTriangle, Trash2 } from 'lucide-react';
 import { BottomSheet } from '../components/BottomSheet';
+import { useBudgets, useCreateBudget, useUpdateBudget, useDeleteBudget, useCategories, useHouseholds } from '../hooks/useFinances';
 
 export const Budgets = () => {
   const [activeTab, setActiveTab] = useState<'ME' | 'FAMILY'>('ME');
-  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [budgetAmount, setBudgetAmount] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedBudgetId, setSelectedBudgetId] = useState('');
 
-  const handleSave = () => {
-    setIsAddOpen(false);
+  const now = new Date();
+  const [currentMonth, setCurrentMonth] = useState(now.getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState(now.getFullYear());
+
+  const { data: households } = useHouseholds();
+  const myHouseholdId = households?.find((h: any) => h.role === 'OWNER' && h.name.includes('Household'))?.id;
+  const familyHouseholdId = households?.find((h: any) => h.role !== 'OWNER' || !h.name.includes('Household'))?.id;
+
+  const currentHouseholdId = activeTab === 'ME' ? myHouseholdId : familyHouseholdId;
+
+  const { data: budgets } = useBudgets(currentHouseholdId, currentMonth, currentYear);
+  const { data: categories } = useCategories();
+  
+  const createBudget = useCreateBudget();
+  const updateBudget = useUpdateBudget();
+  const deleteBudget = useDeleteBudget();
+
+  const handleSave = async () => {
+    try {
+      const data = {
+        household_id: currentHouseholdId,
+        category_id: selectedCategory,
+        period: 'MONTHLY',
+        period_month: currentMonth,
+        period_year: currentYear,
+        amount: parseFloat(budgetAmount.replace(/\./g, '')) || 0,
+        alert_threshold: 80
+      };
+
+      if (editMode && selectedBudgetId) {
+        await updateBudget.mutateAsync({ id: selectedBudgetId, data });
+      } else {
+        await createBudget.mutateAsync(data);
+      }
+      setIsModalOpen(false);
+    } catch (e) {
+      alert('Gagal menyimpan anggaran');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedBudgetId) return;
+    if (confirm('Yakin ingin menghapus anggaran ini?')) {
+      await deleteBudget.mutateAsync(selectedBudgetId);
+      setIsModalOpen(false);
+    }
+  };
+
+  const openAdd = () => {
+    setEditMode(false);
     setBudgetAmount('');
     setSelectedCategory('');
+    setSelectedBudgetId('');
+    setIsModalOpen(true);
   };
+
+  const openEdit = (budget: any) => {
+    setEditMode(true);
+    setSelectedBudgetId(budget.id);
+    setSelectedCategory(budget.category_id);
+    setBudgetAmount(budget.amount.toString());
+    setIsModalOpen(true);
+  };
+
+  // Calculate totals
+  const totalBudget = budgets?.reduce((acc: number, b: any) => acc + b.amount, 0) || 0;
+  const totalSpent = budgets?.reduce((acc: number, b: any) => acc + b.spent, 0) || 0;
+  const totalPct = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+  const isOverBudget = totalSpent > totalBudget;
+
+  const expenseCategories = categories?.filter((c: any) => c.type === 'EXPENSE') || [];
 
   return (
     <div className="space-y-6 animate-fade-in pb-8">
       
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-text-primary">Anggaran</h1>
-        <button 
-          onClick={() => setIsAddOpen(true)}
-          className="w-10 h-10 bg-primary text-surface rounded-full flex items-center justify-center shadow-md shadow-primary/20 hover:bg-primary/90 transition-all"
-        >
-          <Plus size={20} />
-        </button>
-      </div>
-
-      <button className="flex items-center gap-2 px-4 py-2 bg-surface rounded-xl font-semibold text-sm shadow-sm border border-border w-max">
-        Agustus 2026
-        <ChevronDown size={16} />
-      </button>
-
-      {/* Overview Card */}
-      <div className="bg-surface border border-border p-5 sm:p-6 rounded-2xl shadow-sm">
-        <div className="flex justify-between items-end mb-4">
-          <div>
-            <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1">Total Budget</p>
-            <p className="text-2xl sm:text-3xl font-bold text-text-primary">Rp 5.000.000</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1">Terpakai</p>
-            <p className="text-lg sm:text-xl font-bold text-expense">Rp 3.120.000</p>
-          </div>
-        </div>
+      {/* Header & Date Navigation */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h1 className="text-2xl font-black text-text-primary uppercase tracking-wide">Anggaran</h1>
         
-        <div className="w-full bg-surface-muted rounded-full h-3 overflow-hidden mb-2">
-          <div className="bg-primary h-full rounded-full" style={{ width: '62%' }} />
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => {
+              if (currentMonth === 1) { setCurrentMonth(12); setCurrentYear(y => y - 1); }
+              else setCurrentMonth(m => m - 1);
+            }}
+            className="w-10 h-10 flex items-center justify-center bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] transition-all active:translate-y-0 active:shadow-none"
+          >
+            &lt;
+          </button>
+          
+          <div className="px-4 py-2 bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] font-black uppercase tracking-wider text-sm min-w-[140px] text-center">
+            {new Date(currentYear, currentMonth - 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+          </div>
+
+          <button 
+            onClick={() => {
+              if (currentMonth === 12) { setCurrentMonth(1); setCurrentYear(y => y + 1); }
+              else setCurrentMonth(m => m + 1);
+            }}
+            className="w-10 h-10 flex items-center justify-center bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] transition-all active:translate-y-0 active:shadow-none"
+          >
+            &gt;
+          </button>
+
+          {currentHouseholdId && (
+            <button 
+              onClick={openAdd}
+              className="ml-2 w-10 h-10 bg-primary text-surface border-2 border-text-primary flex items-center justify-center shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
+            >
+              <Plus size={20} />
+            </button>
+          )}
         </div>
-        <p className="text-sm font-semibold text-text-secondary">
-          <span className="text-text-primary font-bold">62%</span> · sisa Rp 1.880.000
-        </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex p-1 bg-surface-muted rounded-xl w-full sm:w-64">
+      <div className="flex p-1 bg-surface-muted border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] rounded-none w-full sm:w-64">
         <button 
           onClick={() => setActiveTab('ME')}
-          className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${activeTab === 'ME' ? 'bg-surface text-text-primary shadow-sm' : 'text-text-secondary'}`}
+          className={`flex-1 py-2 text-sm font-black uppercase tracking-wider rounded-none transition-all ${activeTab === 'ME' ? 'bg-primary text-surface border-2 border-text-primary shadow-[2px_2px_0_0_#171B22]' : 'text-text-primary hover:bg-surface-muted'}`}
         >
           Pribadi
         </button>
         <button 
           onClick={() => setActiveTab('FAMILY')}
-          className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${activeTab === 'FAMILY' ? 'bg-surface text-text-primary shadow-sm' : 'text-text-secondary'}`}
+          className={`flex-1 py-2 text-sm font-black uppercase tracking-wider rounded-none transition-all ${activeTab === 'FAMILY' ? 'bg-primary text-surface border-2 border-text-primary shadow-[2px_2px_0_0_#171B22]' : 'text-text-primary hover:bg-surface-muted'}`}
         >
           Keluarga
         </button>
       </div>
 
-      {/* Budget List */}
-      <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm divide-y divide-border">
-        
-        <div className="p-4 sm:p-5 hover:bg-surface-muted transition-colors cursor-pointer group">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-xl group-hover:scale-105 transition-transform">🍜</div>
-              <p className="font-bold text-text-primary text-lg">Makanan</p>
-            </div>
-            <div className="text-right">
-              <p className="font-bold text-text-primary">Rp 780rb <span className="text-text-secondary font-medium text-sm">/ 1jt</span></p>
-            </div>
+      {/* Summary Block */}
+      <div className="bg-surface border-4 border-text-primary p-6 shadow-[6px_6px_0_0_#171B22]">
+        <div className="flex justify-between items-end mb-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-widest text-text-secondary mb-1">Total Terpakai</p>
+            <p className="text-3xl font-black text-text-primary">Rp {totalSpent.toLocaleString('id-ID')}</p>
           </div>
-          
-          <div className="w-full bg-surface-muted rounded-full h-2.5 overflow-hidden mb-2">
-            <div className="bg-warning h-full rounded-full" style={{ width: '78%' }} />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-warning bg-warning/10 px-2 py-0.5 rounded-md">
-              <AlertTriangle size={12} />
-              <p className="text-xs font-bold">Hampir habis · sisa 220rb</p>
-            </div>
-            <p className="text-xs font-bold text-text-secondary">78%</p>
+          <div className="text-right">
+            <p className="text-xs font-black uppercase tracking-widest text-text-secondary mb-1">Dari Total</p>
+            <p className="text-xl font-bold text-text-primary">Rp {totalBudget.toLocaleString('id-ID')}</p>
           </div>
         </div>
-
-        <div className="p-4 sm:p-5 hover:bg-surface-muted transition-colors cursor-pointer group">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center text-xl group-hover:scale-105 transition-transform">🛒</div>
-              <p className="font-bold text-text-primary text-lg">Belanja</p>
-            </div>
-            <div className="text-right">
-              <p className="font-bold text-error">Rp 550rb <span className="text-text-secondary font-medium text-sm">/ 500rb</span></p>
-            </div>
-          </div>
-          
-          <div className="w-full bg-surface-muted rounded-full h-2.5 overflow-hidden mb-2 relative">
-            <div className="bg-error h-full rounded-full" style={{ width: '100%' }} />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-error bg-error/10 px-2 py-0.5 rounded-md">
-              <div className="w-3 h-3 rounded-full bg-error text-surface flex items-center justify-center text-[8px] font-bold">!</div>
-              <p className="text-xs font-bold">Lewat 50rb</p>
-            </div>
-            <p className="text-xs font-bold text-error">110%</p>
-          </div>
+        <div className="h-4 w-full bg-surface-muted border-2 border-text-primary relative overflow-hidden">
+          <div 
+            className={`absolute top-0 left-0 h-full ${isOverBudget ? 'bg-error' : 'bg-primary'} transition-all`} 
+            style={{ width: `${Math.min(totalPct, 100)}%` }}
+          />
         </div>
-
-        <div className="p-4 sm:p-5 hover:bg-surface-muted transition-colors cursor-pointer group">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-xl group-hover:scale-105 transition-transform">🚗</div>
-              <p className="font-bold text-text-primary text-lg">Transportasi</p>
-            </div>
-            <div className="text-right">
-              <p className="font-bold text-text-primary">Rp 350rb <span className="text-text-secondary font-medium text-sm">/ 1jt</span></p>
-            </div>
-          </div>
-          
-          <div className="w-full bg-surface-muted rounded-full h-2.5 overflow-hidden mb-2">
-            <div className="bg-primary h-full rounded-full" style={{ width: '35%' }} />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-bold text-text-secondary">Aman · sisa 650rb</p>
-            <p className="text-xs font-bold text-text-secondary">35%</p>
-          </div>
-        </div>
-
+        {isOverBudget && (
+          <p className="text-error font-bold mt-2 text-sm uppercase tracking-wide">! Melebihi Total Anggaran</p>
+        )}
       </div>
 
-      {/* Add Budget Bottom Sheet */}
-      <BottomSheet isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Buat Anggaran Baru">
+      {/* Budget List */}
+      <div className="space-y-4">
+        {budgets?.length === 0 ? (
+          <div className="p-8 text-center border-4 border-text-primary bg-surface shadow-[6px_6px_0_0_#171B22]">
+            <p className="text-text-secondary font-bold text-lg mb-4">Belum ada anggaran bulan ini.</p>
+            {currentHouseholdId && (
+              <button 
+                onClick={openAdd}
+                className="px-6 py-3 bg-primary text-surface font-black uppercase tracking-wider border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
+              >
+                Buat Anggaran
+              </button>
+            )}
+          </div>
+        ) : (
+          budgets?.map((budget: any) => {
+            const cat = expenseCategories.find((c: any) => c.id === budget.category_id);
+            const pct = budget.amount > 0 ? (budget.spent / budget.amount) * 100 : 0;
+            const over = budget.spent > budget.amount;
+            return (
+              <div 
+                key={budget.id}
+                onClick={() => openEdit(budget)}
+                className="bg-surface border-4 border-text-primary p-4 shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] transition-all cursor-pointer"
+              >
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-none bg-surface-muted border-2 border-text-primary flex items-center justify-center text-lg shadow-[2px_2px_0_0_#171B22]">
+                      {cat?.icon || '💰'}
+                    </div>
+                    <div>
+                      <h3 className="font-black text-text-primary uppercase tracking-wide">{cat?.name || 'Kategori'}</h3>
+                      <p className="text-sm font-bold text-text-secondary">Sisa: Rp {(budget.amount - budget.spent).toLocaleString('id-ID')}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-black text-text-primary">Rp {budget.spent.toLocaleString('id-ID')}</p>
+                    <p className="text-xs font-bold text-text-secondary">dari Rp {budget.amount.toLocaleString('id-ID')}</p>
+                  </div>
+                </div>
+                <div className="h-3 w-full bg-surface-muted border-2 border-text-primary relative overflow-hidden">
+                  <div 
+                    className={`absolute top-0 left-0 h-full ${over ? 'bg-error' : 'bg-primary'} transition-all`} 
+                    style={{ width: `${Math.min(pct, 100)}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Add / Edit Budget Modal */}
+      <BottomSheet isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editMode ? "Edit Anggaran" : "Anggaran Baru"}>
         <div className="space-y-6 pt-2">
           
           <div>
-            <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 block px-1">Bulan Anggaran</label>
-            <div className="bg-surface border border-border rounded-xl px-4 py-3 font-semibold text-text-primary">
-              Agustus 2026
-            </div>
-            <p className="text-[10px] text-text-secondary mt-1 px-1 font-medium">Anggaran akan berlaku untuk bulan ini.</p>
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 block px-1">Kategori Pengeluaran</label>
-            <div className="flex overflow-x-auto gap-3 pb-2 px-1 hide-scrollbar -mx-1">
-              {[
-                { icon: '🍜', name: 'Makanan' },
-                { icon: '🚗', name: 'Transport' },
-                { icon: '🛒', name: 'Belanja' },
-                { icon: '💡', name: 'Tagihan' },
-                { icon: '🎮', name: 'Hiburan' },
-              ].map((cat) => (
-                <button 
-                  key={cat.name}
-                  onClick={() => setSelectedCategory(cat.name)}
-                  className={`flex flex-col items-center gap-2 min-w-[72px] p-2 rounded-xl border-2 transition-all ${
-                    selectedCategory === cat.name ? 'border-primary bg-primary/5' : 'border-transparent hover:bg-surface-muted'
-                  }`}
-                >
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${selectedCategory === cat.name ? 'bg-primary/20 shadow-sm' : 'bg-surface-muted'}`}>
-                    {cat.icon}
-                  </div>
-                  <span className={`text-xs font-bold ${selectedCategory === cat.name ? 'text-primary' : 'text-text-secondary'}`}>{cat.name}</span>
-                </button>
+            <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block px-1">Kategori</label>
+            <select 
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full bg-surface border-2 border-text-primary rounded-none px-4 py-3 font-bold text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] focus:ring-0 appearance-none"
+            >
+              <option value="" disabled>Pilih Kategori</option>
+              {expenseCategories.map((c: any) => (
+                <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
               ))}
-            </div>
+            </select>
           </div>
 
           <div>
-            <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 block px-1">Batas Maksimal (Rp)</label>
+            <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block px-1">Jumlah Anggaran</label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-secondary">Rp</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-primary font-black">Rp</span>
               <input 
                 type="number" 
                 placeholder="0"
                 value={budgetAmount}
                 onChange={(e) => setBudgetAmount(e.target.value)}
-                className="w-full bg-surface border border-border rounded-xl pl-12 pr-4 py-3 font-bold text-lg text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                className="w-full bg-surface border-2 border-text-primary rounded-none pl-12 pr-4 py-3 font-bold text-lg text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] focus:ring-0 transition-all"
               />
             </div>
           </div>
@@ -199,13 +252,24 @@ export const Budgets = () => {
           <button 
             onClick={handleSave}
             disabled={!selectedCategory || !budgetAmount}
-            className="w-full py-4 bg-primary text-surface rounded-xl font-bold text-lg shadow-lg shadow-primary/20 hover:bg-primary/90 disabled:opacity-50 disabled:shadow-none transition-all mt-4"
+            className="w-full py-4 bg-primary text-surface rounded-none border-2 border-text-primary font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:shadow-none transition-all mt-4"
           >
-            Simpan Anggaran
+            {editMode ? "Simpan Perubahan" : "Simpan Anggaran"}
           </button>
+
+          {editMode && (
+            <button 
+              onClick={handleDelete}
+              className="w-full py-4 bg-error text-surface border-2 border-text-primary rounded-none font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all mt-2 flex items-center justify-center gap-2"
+            >
+              <Trash2 size={20} />
+              Hapus Anggaran
+            </button>
+          )}
         </div>
       </BottomSheet>
 
     </div>
   );
 };
+

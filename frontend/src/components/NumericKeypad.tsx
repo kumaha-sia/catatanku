@@ -31,24 +31,24 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({ value, onChange })
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-2 mt-4">
+    <div className="grid grid-cols-4 gap-3 mt-4">
       {/* Row 1 */}
       <KeyButton label="1" onPress={() => handlePress('1')} />
       <KeyButton label="2" onPress={() => handlePress('2')} />
       <KeyButton label="3" onPress={() => handlePress('3')} />
-      <KeyButton icon={<Delete size={24} />} onPress={() => handlePress('delete')} className="bg-surface-muted text-text-secondary" />
+      <KeyButton icon={<Delete size={24} />} onPress={() => handlePress('delete')} className="bg-error text-text-primary" />
       
       {/* Row 2 */}
       <KeyButton label="4" onPress={() => handlePress('4')} />
       <KeyButton label="5" onPress={() => handlePress('5')} />
       <KeyButton label="6" onPress={() => handlePress('6')} />
-      <KeyButton label="000" onPress={() => handlePress('000')} className="bg-surface-muted font-bold text-sm" />
+      <KeyButton label="000" onPress={() => handlePress('000')} className="bg-primary text-text-primary" />
       
       {/* Row 3 */}
       <KeyButton label="7" onPress={() => handlePress('7')} />
       <KeyButton label="8" onPress={() => handlePress('8')} />
       <KeyButton label="9" onPress={() => handlePress('9')} />
-      <KeyButton label=",00" onPress={() => handlePress(',00')} className="bg-surface-muted font-bold text-sm" />
+      <KeyButton label=",00" onPress={() => handlePress(',00')} className="bg-primary text-text-primary" />
       
       {/* Row 4 (centered 0) */}
       <div className="col-span-1" />
@@ -71,7 +71,7 @@ const KeyButton = ({
 }) => (
   <button 
     onClick={(e) => { e.preventDefault(); onPress(); }}
-    className={`h-14 sm:h-12 rounded-xl flex items-center justify-center text-xl font-medium active:scale-95 transition-transform active:bg-border ${className || 'bg-surface text-text-primary border border-border/50 shadow-sm'}`}
+    className={`h-14 sm:h-12 rounded-none border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] flex items-center justify-center text-xl font-black uppercase tracking-wider hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all ${className || 'bg-surface text-text-primary'}`}
   >
     {icon || label}
   </button>

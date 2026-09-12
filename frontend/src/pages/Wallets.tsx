@@ -1,17 +1,76 @@
 import React, { useState } from 'react';
 import { Plus, ArrowRightLeft, CreditCard, Wallet as WalletIcon, Smartphone, PiggyBank, Users } from 'lucide-react';
 import { BottomSheet } from '../components/BottomSheet';
+import { useWallets, useCreateWallet, useUpdateWallet, useDeleteWallet } from '../hooks/useFinances';
+import { useUIStore } from '../store/uiStore';
 
 export const Wallets = () => {
-  const [isAddOpen, setIsAddOpen] = useState(false);
+  const openAddTransaction = useUIStore(state => state.openAddTransaction);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [selectedWalletId, setSelectedWalletId] = useState('');
   const [walletName, setWalletName] = useState('');
   const [walletBalance, setWalletBalance] = useState('');
-  const [walletType, setWalletType] = useState<'PRIBADI' | 'BERSAMA'>('PRIBADI');
+  const [walletType, setWalletType] = useState<'PERSONAL' | 'SHARED'>('PERSONAL');
 
-  const handleSave = () => {
-    setIsAddOpen(false);
+  const { data: wallets } = useWallets();
+  const createWallet = useCreateWallet();
+  const updateWallet = useUpdateWallet();
+  const deleteWallet = useDeleteWallet();
+
+  const handleSave = async () => {
+    try {
+      const data = {
+        name: walletName,
+        type: 'CASH', // default for now
+        scope: walletType,
+        initial_balance: parseFloat(walletBalance.replace(/\./g, '')) || 0
+      };
+
+      if (editMode && selectedWalletId) {
+        await updateWallet.mutateAsync({ id: selectedWalletId, data: { name: data.name, type: data.type } });
+      } else {
+        await createWallet.mutateAsync(data);
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error(error);
+      alert('Terjadi kesalahan');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedWalletId) return;
+    if (confirm('Yakin ingin menghapus dompet ini? Semua transaksi terkait akan terhapus.')) {
+      try {
+        await deleteWallet.mutateAsync(selectedWalletId);
+        setIsModalOpen(false);
+      } catch (error) {
+        console.error(error);
+        alert('Gagal menghapus dompet');
+      }
+    }
+  };
+
+  const openAdd = () => {
+    setEditMode(false);
+    setSelectedWalletId('');
     setWalletName('');
     setWalletBalance('');
+    setIsModalOpen(true);
+  };
+
+  const openEdit = (wallet: any) => {
+    setEditMode(true);
+    setSelectedWalletId(wallet.id);
+    setWalletName(wallet.name);
+    setWalletBalance('');
+    setWalletType(wallet.scope as 'PERSONAL' | 'SHARED');
+    setIsModalOpen(true);
+  };
+
+  const calculateTotal = (walletList: any[]) => {
+    return walletList?.reduce((acc, w) => acc + (w.initial_balance || 0), 0) || 0;
   };
 
   return (
@@ -19,144 +78,143 @@ export const Wallets = () => {
       
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-text-primary">Dompet</h1>
+        <h1 className="text-3xl font-black text-text-primary uppercase tracking-wide">Dompet</h1>
         <button 
-          onClick={() => setIsAddOpen(true)}
-          className="w-10 h-10 bg-primary text-surface rounded-full flex items-center justify-center shadow-md shadow-primary/20 hover:bg-primary/90 transition-all"
+          onClick={openAdd}
+          className="w-12 h-12 bg-primary text-text-primary rounded-none border-4 border-text-primary flex items-center justify-center shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
         >
-          <Plus size={20} />
+          <Plus size={24} className="stroke-[3]" />
         </button>
       </div>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-surface border border-border p-5 rounded-2xl shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-          <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1">Saldo Pribadi</p>
-          <p className="text-3xl font-bold text-text-primary">Rp 8.450.000</p>
+        <div className="bg-primary border-4 border-text-primary p-5 rounded-none shadow-[4px_4px_0_0_#171B22]">
+          <p className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 border-b-2 border-text-primary pb-2 inline-block">Total Dompet Pribadi</p>
+          <p className="text-3xl font-black text-text-primary mt-2 break-all sm:break-words">Rp {calculateTotal(wallets?.personal || []).toLocaleString('id-ID')}</p>
         </div>
         
-        <div className="bg-surface border border-border p-5 rounded-2xl shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-          <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1 flex items-center gap-1">
-            <Users size={14} className="text-accent" />
-            Saldo Keluarga
+        {/* Total Keluarga Card */}
+        <div className="bg-accent border-4 border-text-primary p-5 rounded-none shadow-[4px_4px_0_0_#171B22]">
+          <p className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 border-b-2 border-text-primary pb-2 inline-flex items-center gap-2">
+            Total Dompet Keluarga <Users size={14} />
           </p>
-          <p className="text-3xl font-bold text-text-primary">Rp 6.500.000</p>
+          <p className="text-3xl font-black text-text-primary mt-2 break-all sm:break-words">Rp {calculateTotal(wallets?.shared || []).toLocaleString('id-ID')}</p>
         </div>
       </div>
 
       {/* Transfer Button */}
-      <button className="w-full bg-surface border border-border hover:bg-surface-muted transition-colors py-4 rounded-xl flex items-center justify-center gap-2 font-bold text-text-primary shadow-sm">
-        <ArrowRightLeft size={18} className="text-transfer" />
-        Transfer antar dompet
+      <button 
+        onClick={() => openAddTransaction({ type: 'TRANSFER', amount: 0, date: new Date().toISOString() })}
+        className="w-full bg-surface border-4 border-text-primary py-4 rounded-none flex items-center justify-center gap-3 font-black text-text-primary uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
+      >
+        <ArrowRightLeft size={20} className="stroke-[3] text-transfer" />
+        Transfer Antar Dompet
       </button>
 
       {/* Personal Wallets */}
       <section>
-        <h2 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 px-1">Pribadi</h2>
-        <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm divide-y divide-border">
-          
-          <WalletItem 
-            icon={<WalletIcon size={24} className="text-orange-500" />}
-            name="Tunai"
-            balance="450.000"
-            bgClass="bg-orange-100"
-          />
-          <WalletItem 
-            icon={<CreditCard size={24} className="text-blue-500" />}
-            name="Bank Andi"
-            balance="8.000.000"
-            bgClass="bg-blue-100"
-          />
-          <WalletItem 
-            icon={<Smartphone size={24} className="text-purple-500" />}
-            name="E-wallet"
-            balance="0"
-            bgClass="bg-purple-100"
-          />
-
+        <h2 className="text-sm font-black text-text-primary uppercase tracking-widest mb-3 border-b-2 border-text-primary pb-2 inline-block">Pribadi</h2>
+        <div className="bg-surface border-4 border-text-primary rounded-none overflow-hidden shadow-[4px_4px_0_0_#171B22] divide-y-4 divide-text-primary mt-2">
+          {wallets?.personal?.map((w: any) => (
+            <WalletItem 
+              key={w.id}
+              icon={<WalletIcon size={24} className="text-text-primary stroke-[3]" />}
+              name={w.name}
+              balance={w.initial_balance?.toLocaleString('id-ID') || '0'}
+              bgClass="bg-[#89CFF0]"
+              onEdit={() => openEdit(w)}
+            />
+          ))}
+          {(!wallets?.personal || wallets.personal.length === 0) && (
+             <div className="p-6 text-center text-text-primary font-black uppercase tracking-widest bg-surface">Belum ada dompet pribadi</div>
+          )}
         </div>
       </section>
 
-      {/* Shared Wallets */}
+      {/* Family Wallets */}
       <section>
-        <h2 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 px-1">Bersama (Keluarga)</h2>
-        <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm divide-y divide-border">
-          
-          <WalletItem 
-            icon={<Users size={24} className="text-accent" />}
-            name="Dompet Keluarga"
-            balance="4.000.000"
-            bgClass="bg-accent/20"
-          />
-          <WalletItem 
-            icon={<PiggyBank size={24} className="text-pink-500" />}
-            name="Tabungan Anak"
-            balance="2.500.000"
-            bgClass="bg-pink-100"
-          />
-
+        <h2 className="text-sm font-black text-text-primary uppercase tracking-widest mb-3 border-b-2 border-text-primary pb-2 inline-block">Keluarga</h2>
+        <div className="bg-surface border-4 border-text-primary rounded-none overflow-hidden shadow-[4px_4px_0_0_#171B22] divide-y-4 divide-text-primary mt-2">
+          {wallets?.shared?.map((w: any) => (
+            <WalletItem 
+              key={w.id}
+              icon={<WalletIcon size={24} className="text-text-primary stroke-[3]" />}
+              name={w.name}
+              balance={w.initial_balance?.toLocaleString('id-ID') || '0'}
+              bgClass="bg-income"
+              onEdit={() => openEdit(w)}
+            />
+          ))}
+          {(!wallets?.shared || wallets.shared.length === 0) && (
+             <div className="p-6 text-center text-text-primary font-black uppercase tracking-widest bg-surface">Belum ada dompet keluarga</div>
+          )}
         </div>
       </section>
 
       {/* Add Wallet Bottom Sheet */}
-      <BottomSheet isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Tambah Dompet Baru">
-        <div className="space-y-6 pt-2">
+      <BottomSheet isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editMode ? "Ubah Dompet" : "Tambah Dompet Baru"}>
+        <div className="space-y-6 pt-4">
           
           <div>
-            <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 block px-1">Nama Dompet</label>
+            <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block">Nama Dompet</label>
             <input 
               type="text" 
-              placeholder="Contoh: BCA Andi"
+              placeholder="Contoh: BCA Pribadi"
               value={walletName}
               onChange={(e) => setWalletName(e.target.value)}
-              className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-semibold text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+              className="w-full bg-surface border-4 border-text-primary rounded-none px-4 py-3 font-black text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] transition-all"
             />
           </div>
 
           <div>
-            <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 block px-1">Saldo Awal (Rp)</label>
+            <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block">Saldo Awal (Rp)</label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-secondary">Rp</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-text-primary bg-surface px-1">Rp</span>
               <input 
                 type="number" 
                 placeholder="0"
                 value={walletBalance}
                 onChange={(e) => setWalletBalance(e.target.value)}
-                className="w-full bg-surface border border-border rounded-xl pl-12 pr-4 py-3 font-bold text-lg text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                className="w-full bg-surface border-4 border-text-primary rounded-none pl-14 pr-4 py-3 font-black text-xl text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] transition-all"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 block px-1">Jenis Dompet</label>
-            <div className="flex p-1 bg-surface-muted rounded-xl">
+            <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-3 block">Visibilitas</label>
+            <div className="flex p-1.5 bg-surface border-4 border-text-primary rounded-none shadow-[4px_4px_0_0_#171B22]">
               <button 
-                onClick={() => setWalletType('PRIBADI')}
-                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${walletType === 'PRIBADI' ? 'bg-surface text-text-primary shadow-sm border border-border/50' : 'text-text-secondary'}`}
+                onClick={() => setWalletType('PERSONAL')}
+                className={`flex-1 py-3 text-xs font-black uppercase tracking-wider rounded-none transition-all border-2 ${walletType === 'PERSONAL' ? 'bg-primary border-text-primary text-text-primary shadow-[2px_2px_0_0_#171B22]' : 'bg-transparent border-transparent text-text-primary hover:border-text-primary/50'}`}
               >
                 Pribadi
               </button>
               <button 
-                onClick={() => setWalletType('BERSAMA')}
-                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${walletType === 'BERSAMA' ? 'bg-surface text-text-primary shadow-sm border border-border/50' : 'text-text-secondary'}`}
+                onClick={() => setWalletType('SHARED')}
+                className={`flex-1 py-3 text-xs font-black uppercase tracking-wider rounded-none transition-all border-2 ${walletType === 'SHARED' ? 'bg-accent border-text-primary text-text-primary shadow-[2px_2px_0_0_#171B22]' : 'bg-transparent border-transparent text-text-primary hover:border-text-primary/50'}`}
               >
-                Bersama
+                Keluarga
               </button>
             </div>
-            {walletType === 'BERSAMA' && (
-              <p className="text-[10px] text-text-secondary mt-2 px-1 font-medium">Dompet ini akan terlihat oleh semua anggota keluarga.</p>
-            )}
           </div>
 
           <button 
             onClick={handleSave}
-            disabled={!walletName}
-            className="w-full py-4 bg-primary text-surface rounded-xl font-bold text-lg shadow-lg shadow-primary/20 hover:bg-primary/90 disabled:opacity-50 disabled:shadow-none transition-all mt-4"
+            disabled={!walletName || (!editMode && !walletBalance)}
+            className="w-full py-4 bg-primary text-text-primary border-4 border-text-primary rounded-none font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0_0_#171B22] transition-all mt-6"
           >
-            Simpan Dompet
+            {editMode ? "Simpan Perubahan" : "Simpan Dompet"}
           </button>
+          
+          {editMode && (
+            <button 
+              onClick={handleDelete}
+              className="w-full py-4 bg-error text-text-primary border-4 border-text-primary rounded-none font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all mt-4"
+            >
+              Hapus Dompet
+            </button>
+          )}
         </div>
       </BottomSheet>
 
@@ -164,14 +222,14 @@ export const Wallets = () => {
   );
 };
 
-const WalletItem = ({ icon, name, balance, bgClass }: { icon: React.ReactNode, name: string, balance: string, bgClass: string }) => (
-  <div className="flex items-center justify-between p-4 hover:bg-surface-muted cursor-pointer transition-colors group">
+const WalletItem = ({ icon, name, balance, bgClass, onEdit }: { icon: React.ReactNode, name: string, balance: string, bgClass: string, onEdit: () => void }) => (
+  <div onClick={onEdit} className="flex items-center justify-between p-4 bg-surface hover:bg-text-primary/5 cursor-pointer transition-colors group">
     <div className="flex items-center gap-4">
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${bgClass} group-hover:scale-105 transition-transform`}>
+      <div className={`w-14 h-14 border-2 border-text-primary rounded-none flex items-center justify-center ${bgClass} shadow-[2px_2px_0_0_#171B22] group-hover:-translate-y-1 group-hover:shadow-[4px_4px_0_0_#171B22] transition-transform`}>
         {icon}
       </div>
-      <p className="font-bold text-text-primary text-lg">{name}</p>
+      <p className="font-black text-text-primary uppercase tracking-wide text-lg md:text-xl">{name}</p>
     </div>
-    <p className="font-bold text-text-primary text-lg">Rp {balance}</p>
+    <p className="font-black text-text-primary text-lg md:text-xl bg-surface px-2 py-1 border-2 border-text-primary shadow-[2px_2px_0_0_#171B22]">Rp {balance}</p>
   </div>
 );
