@@ -4,6 +4,12 @@ import App from './App.tsx';
 import './index.css';
 import { useToastStore } from './store/toastStore';
 import { useConfirmStore } from './store/confirmStore';
+import { registerSW } from 'virtual:pwa-register';
+
+// Register Service Worker for PWA
+if ('serviceWorker' in navigator) {
+  registerSW({ immediate: true });
+}
 
 declare global {
   interface Window {
