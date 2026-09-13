@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { BottomSheet } from '../components/BottomSheet';
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal, useHouseholds, useWallets, useCreateTransaction, useMembers } from '../hooks/useFinances';
+import { useAuthStore } from '../store/authStore';
 
 export const Goals = () => {
+  const user = useAuthStore(state => state.user);
   const [activeTab, setActiveTab] = useState<'ME' | 'FAMILY'>('ME');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -39,6 +41,12 @@ export const Goals = () => {
   const updateGoal = useUpdateGoal();
   const deleteGoal = useDeleteGoal();
   const createTransaction = useCreateTransaction();
+
+  let filteredGoals = goals || [];
+  if (activeTab === 'FAMILY') {
+    // Just like transactions, hide the current user's personal goals from the family tab
+    filteredGoals = filteredGoals.filter((g: any) => g.user_id !== user?.id);
+  }
 
   const EMOJI_LIST = [
     '🎯', '✈️', '🏝️', '🏠', '🚘', '💍', '👶', '🎓', '🏥', 
@@ -179,7 +187,7 @@ export const Goals = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {goals?.map((g: any) => {
+          {filteredGoals.map((g: any) => {
             const pct = g.target_amount > 0 ? (g.current_amount / g.target_amount) * 100 : 0;
             const targetDateStr = g.target_date 
               ? new Date(g.target_date).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })
