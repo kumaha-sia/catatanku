@@ -181,7 +181,7 @@ export const AddTransactionSheet = () => {
           <div className="py-6 px-4 bg-surface border-4 border-text-primary shadow-[6px_6px_0_0_#171B22] mb-4">
             <p className="text-xs font-black text-text-primary uppercase tracking-widest text-center mb-2">Nominal</p>
             <div className="flex items-center justify-center">
-              <span className="text-text-primary font-black text-3xl md:text-4xl mr-2">Rp</span>
+              <span className="text-text-primary font-black text-2xl md:text-3xl mr-1 md:mr-2 relative -top-1 md:-top-2">Rp</span>
               <input
                 type="text"
                 inputMode="numeric"
@@ -191,10 +191,12 @@ export const AddTransactionSheet = () => {
                   const raw = e.target.value.replace(/\D/g, '');
                   setAmountStr(raw || '0');
                 }}
-                className="w-full max-w-[200px] bg-transparent border-none text-center font-black tracking-tight leading-none text-text-primary focus:outline-none focus:ring-0 placeholder:text-text-primary/30 text-4xl md:text-5xl p-0"
+                style={{ width: `${Math.max(1, formattedAmount.length) + 0.5}ch` }}
+                className={`bg-transparent border-none text-center font-black tracking-tighter leading-none text-text-primary focus:outline-none focus:ring-0 placeholder:text-text-primary/30 p-0
+                  ${formattedAmount.length > 11 ? 'text-3xl' : formattedAmount.length > 8 ? 'text-4xl' : formattedAmount.length > 6 ? 'text-5xl' : 'text-6xl md:text-7xl'}
+                `}
               />
             </div>
-            <div className="h-1 w-3/4 max-w-[150px] bg-text-primary mx-auto mt-2"></div>
           </div>
 
           {/* Selectors (Premium Drill-Down) */}
