@@ -179,9 +179,9 @@ export const Transactions = () => {
                   {grouped[date].total > 0 ? '+' : ''}{grouped[date].total.toLocaleString('id-ID')}
                 </p>
               </div>
-              <div className="space-y-3">
-                {grouped[date].transactions.map((tx: any) => (
-                  <div key={tx.id} onClick={() => openDetail(tx)} className="bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] flex items-center justify-between p-3 md:p-4 cursor-pointer hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-[2px_2px_0_0_#171B22] transition-all group">
+              <div className="bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] flex flex-col">
+                {grouped[date].transactions.map((tx: any, index: number) => (
+                  <div key={tx.id} onClick={() => openDetail(tx)} className={`flex items-center justify-between p-3 md:p-4 cursor-pointer hover:bg-surface-muted transition-all group ${index !== grouped[date].transactions.length - 1 ? 'border-b-2 border-text-primary' : ''}`}>
                     <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
                       <div className={`w-12 h-12 flex-shrink-0 border-2 border-text-primary rounded-none flex items-center justify-center text-xl shadow-[2px_2px_0_0_#171B22] ${tx.type === 'INCOME' ? 'bg-[#A3E635]' : tx.type === 'EXPENSE' ? 'bg-[#FFA6A6]' : 'bg-[#89CFF0]'}`}>
                         {tx.category?.icon || (tx.type === 'INCOME' ? '💰' : '💸')}
