@@ -33,69 +33,65 @@ export const Login = () => {
     <div className="min-h-screen bg-background flex flex-col md:flex-row font-sans">
       
       {/* Left Panel - Branding */}
-      <div className="w-full md:w-5/12 bg-primary p-8 md:p-12 flex flex-col justify-between border-b-4 md:border-b-0 md:border-r-4 border-text-primary relative overflow-hidden">
-        {/* Abstract Geometry */}
-        <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-accent rounded-full opacity-90 border-4 border-text-primary z-0" />
-        <div className="absolute bottom-[10%] left-[-5%] w-32 h-32 bg-surface rounded-none rotate-12 border-4 border-text-primary z-0" />
-
-        <div className="relative z-10">
-          <Link to="/" className="inline-flex items-center gap-3 mb-16">
-            <div className="w-12 h-12 bg-accent border-2 border-text-primary flex items-center justify-center text-text-primary font-black text-xl shadow-[4px_4px_0_0_#171B22] transform -rotate-6">F</div>
-            <span className="font-black text-3xl tracking-tight text-surface">FinBareng</span>
+      <div className="w-full md:w-5/12 bg-primary p-6 md:p-12 flex flex-col justify-center border-b-4 md:border-b-0 md:border-r-4 border-text-primary relative">
+        <div className="relative z-10 w-full max-w-lg mx-auto">
+          <Link to="/" className="inline-flex items-center gap-3 mb-12">
+            <div className="w-12 h-12 bg-accent border-4 border-text-primary flex items-center justify-center text-text-primary font-black text-2xl shadow-[4px_4px_0_0_#171B22] transform -rotate-6 hover:rotate-0 transition-all">F</div>
+            <span className="font-black text-3xl tracking-tight text-surface uppercase">FinBareng</span>
           </Link>
           
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-surface leading-[1.1] tracking-tight">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-surface leading-tight tracking-tight uppercase">
             Uang Keluarga,<br/>
-            <span className="text-accent">Tanpa Rahasia</span><br/>
-            (Kecuali Uang Jajanmu).
+            <span className="text-accent bg-text-primary px-2 py-1 inline-block mt-2 transform -rotate-2">Tanpa Rahasia</span><br/>
+            <span className="text-2xl md:text-4xl mt-2 block opacity-90">(Kecuali Uang Jajanmu).</span>
           </h1>
-        </div>
 
-        <div className="relative z-10 mt-12 md:mt-0">
-          <p className="text-primary-soft font-bold text-lg md:text-xl border-l-4 border-accent pl-4">
-            Catat pengeluaran harian,<br/>
-            pantau saldo bersama,<br/>
-            wujudkan kebebasan finansial.
-          </p>
+          <div className="mt-10 bg-surface text-text-primary p-4 border-4 border-text-primary shadow-[6px_6px_0_0_#171B22] transform rotate-1">
+            <p className="font-black text-sm md:text-base uppercase tracking-wider">
+              Catat pengeluaran harian,<br/>
+              pantau saldo bersama,<br/>
+              wujudkan kebebasan finansial.
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Right Panel - Form */}
-      <div className="w-full md:w-7/12 flex items-center justify-center p-6 md:p-12 relative">
+      <div className="w-full md:w-7/12 flex items-center justify-center p-6 md:p-12 bg-surface">
         <div className="w-full max-w-md">
           <div className="mb-10">
-            <h2 className="text-4xl font-black text-text-primary mb-3">Masuk</h2>
-            <p className="text-text-secondary font-bold text-lg">Selamat datang kembali ke realita keuanganmu.</p>
+            <h2 className="text-4xl md:text-5xl font-black text-text-primary mb-2 uppercase">Masuk</h2>
+            <p className="text-text-primary font-bold text-base md:text-lg opacity-80 uppercase tracking-wider">Selamat datang kembali ke realita keuanganmu.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-base font-black text-text-primary mb-2 uppercase tracking-wide">Email</label>
+            <div className="space-y-2">
+              <label className="block text-sm font-black text-text-primary uppercase tracking-widest">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="nama@email.com"
-                className="w-full px-5 py-4 bg-surface border-2 border-text-primary rounded-none focus:outline-none focus:ring-0 focus:shadow-[6px_6px_0_0_#FFB43A] transition-all font-bold text-text-primary placeholder:text-text-secondary/50"
+                placeholder="NAMA@EMAIL.COM"
+                className="w-full px-5 py-4 bg-background border-4 border-text-primary rounded-none shadow-[4px_4px_0_0_#171B22] focus:outline-none focus:translate-y-1 focus:shadow-none transition-all font-black text-text-primary placeholder:text-text-primary/30 uppercase"
                 required
               />
             </div>
 
-            <div>
-              <label className="block text-base font-black text-text-primary mb-2 uppercase tracking-wide">Password</label>
+            <div className="space-y-2">
+              <label className="block text-sm font-black text-text-primary uppercase tracking-widest">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-5 py-4 bg-surface border-2 border-text-primary rounded-none focus:outline-none focus:ring-0 focus:shadow-[6px_6px_0_0_#FFB43A] transition-all font-bold text-text-primary placeholder:text-text-secondary/50"
+                className="w-full px-5 py-4 bg-background border-4 border-text-primary rounded-none shadow-[4px_4px_0_0_#171B22] focus:outline-none focus:translate-y-1 focus:shadow-none transition-all font-black text-text-primary placeholder:text-text-primary/30"
                 required
               />
             </div>
 
             {error && (
-              <div className="p-4 bg-error text-surface font-bold flex items-center gap-3 border-2 border-text-primary shadow-[4px_4px_0_0_#171B22]">
-                <AlertTriangle size={20} className="flex-shrink-0" />
+              <div className="p-4 bg-error text-surface font-black flex items-center gap-3 border-4 border-text-primary shadow-[4px_4px_0_0_#171B22] uppercase text-sm tracking-wider">
+                <AlertTriangle size={24} className="flex-shrink-0" strokeWidth={3} />
                 <p>{error}</p>
               </div>
             )}
@@ -103,24 +99,24 @@ export const Login = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-3 py-4 bg-primary text-surface border-2 border-text-primary font-black text-lg uppercase tracking-wider hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:shadow-none mt-4"
+              className="w-full mt-4 flex items-center justify-center gap-2 bg-primary text-surface py-4 border-4 border-text-primary shadow-[8px_8px_0_0_#171B22] hover:-translate-y-2 hover:shadow-[12px_12px_0_0_#171B22] hover:bg-accent hover:text-text-primary active:translate-y-0 active:shadow-[2px_2px_0_0_#171B22] transition-all font-black uppercase tracking-widest text-lg disabled:opacity-50 disabled:cursor-not-allowed group"
             >
-              {isLoading ? 'Memproses...' : 'Masuk Sekarang'}
-              {!isLoading && <ArrowRight size={24} />}
+              {isLoading ? 'MEMPROSES...' : 'MASUK SEKARANG'}
+              {!isLoading && <ArrowRight size={24} strokeWidth={3} className="group-hover:translate-x-2 transition-transform" />}
             </button>
           </form>
 
           <div className="mt-12 text-center">
-            <p className="text-text-primary font-bold text-lg">
-              Pendatang baru?{' '}
-              <Link to="/register" className="text-primary hover:text-accent underline decoration-4 underline-offset-4 transition-colors">
-                Bikin Akun
-              </Link>
-            </p>
+            <p className="text-text-primary font-bold uppercase tracking-wider text-sm mb-4">Pendatang baru?</p>
+            <Link 
+              to="/register" 
+              className="inline-block px-8 py-3 bg-accent text-text-primary border-4 border-text-primary font-black uppercase tracking-widest shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
+            >
+              Bikin Akun
+            </Link>
           </div>
         </div>
       </div>
-
     </div>
   );
 };
