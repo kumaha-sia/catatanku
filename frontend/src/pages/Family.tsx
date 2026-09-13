@@ -47,9 +47,6 @@ export const Family = () => {
   const myMembership = members?.find((m: any) => m.user_id === user?.id);
   const isOwner = myMembership?.role === 'OWNER';
 
-  const sharedWallets = walletsData?.shared || [];
-  const sharedWalletsTotal = sharedWallets.reduce((acc: number, w: any) => acc + w.balance, 0);
-
   const handleFetchInviteLink = async () => {
     if (!activeHouseholdId) return;
     try {
@@ -189,7 +186,11 @@ export const Family = () => {
         >
           <div className="flex -space-x-3">
             {members?.map((m: any, i: number) => (
-              <div key={m.id} className="w-12 h-12 rounded-none border-2 border-text-primary bg-primary text-surface flex items-center justify-center font-black text-sm shadow-[2px_2px_0_0_#171B22] z-20" style={{ zIndex: 20 - i, backgroundColor: i % 2 === 0 ? 'var(--color-primary)' : 'var(--color-accent)' }}>
+              <div 
+                key={m.id} 
+                className={`w-12 h-12 rounded-none border-2 border-text-primary text-text-primary flex items-center justify-center font-black text-lg shadow-[2px_2px_0_0_#171B22] relative ${i % 3 === 0 ? 'bg-primary text-surface' : i % 3 === 1 ? 'bg-accent text-text-primary' : 'bg-income text-surface'}`} 
+                style={{ zIndex: 20 - i }}
+              >
                 {m.user.name.charAt(0).toUpperCase()}
               </div>
             ))}
@@ -208,21 +209,6 @@ export const Family = () => {
             </div>
           )}
         </div>
-      </section>
-
-      {/* Shared Wallets Link */}
-      <section>
-        <button 
-          onClick={() => navigate('/wallets')}
-          className="w-full flex items-center justify-between bg-surface border-2 border-text-primary p-4 rounded-none shadow-[6px_6px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[8px_8px_0_0_#171B22] active:translate-y-0 active:shadow-[2px_2px_0_0_#171B22] transition-all group"
-        >
-          <div className="text-left">
-            <h3 className="text-xs font-black text-text-primary uppercase tracking-widest mb-1">Dompet Bersama</h3>
-            <p className="font-black text-text-primary text-lg">Rp {sharedWalletsTotal.toLocaleString('id-ID')}</p>
-            <p className="text-xs text-text-primary font-bold mt-1">{sharedWallets.length} Dompet terdaftar</p>
-          </div>
-          <ChevronRight size={24} className="text-text-primary group-hover:translate-x-1 transition-all font-black" />
-        </button>
       </section>
 
       {!isOwner && (
