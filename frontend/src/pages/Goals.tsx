@@ -48,7 +48,7 @@ export const Goals = () => {
   const handleSave = async () => {
     try {
       const data = {
-        household_id: currentHouseholdId,
+        household_id: currentHouseholdId || null,
         name: goalName,
         target_amount: parseFloat(goalTarget.replace(/\./g, '')) || 0,
         current_amount: 0,
@@ -58,13 +58,15 @@ export const Goals = () => {
 
       if (editMode && selectedGoalId) {
         // don't overwrite current_amount when editing
-        const { current_amount, ...updateData } = data;
+        const { current_amount, household_id, ...updateData } = data;
         await updateGoal.mutateAsync({ id: selectedGoalId, data: updateData });
       } else {
         await createGoal.mutateAsync(data);
       }
       setIsModalOpen(false);
+      window.toast.success('Tujuan berhasil disimpan!');
     } catch (e) {
+      console.error(e);
       window.toast.error('Gagal menyimpan tujuan');
     }
   };
@@ -145,7 +147,7 @@ export const Goals = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-black text-text-primary uppercase tracking-wide">Tujuan</h1>
-        {currentHouseholdId && (
+        {((activeTab === 'ME') || (activeTab === 'FAMILY' && hasFamily)) && (
           <button 
             onClick={openAdd}
             className="w-10 h-10 bg-primary text-surface rounded-none border-2 border-text-primary flex items-center justify-center shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
