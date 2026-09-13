@@ -27,7 +27,7 @@ export const Goals = () => {
 
   const { data: goals } = useGoals(currentHouseholdId);
   const { data: walletsData } = useWallets(currentHouseholdId);
-  const availableWallets = currentHouseholdId === myHouseholdId ? walletsData?.personal : walletsData?.family_members?.flatMap((m: any) => m.wallets);
+  const availableWallets = walletsData?.personal || [];
 
   const createGoal = useCreateGoal();
   const updateGoal = useUpdateGoal();
