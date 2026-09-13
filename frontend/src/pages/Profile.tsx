@@ -224,7 +224,7 @@ export const Profile = () => {
           className={`w-full py-4 rounded-none font-black text-lg transition-all flex items-center justify-center gap-2 border-4 border-text-primary uppercase tracking-wider hover:-translate-y-1 active:translate-y-0 active:shadow-none ${
             isSaved 
               ? 'bg-income text-text-primary shadow-[4px_4px_0_0_#171B22] hover:shadow-[6px_6px_0_0_#171B22]' 
-              : 'bg-primary text-text-primary shadow-[4px_4px_0_0_#171B22] hover:shadow-[6px_6px_0_0_#171B22]'
+              : 'bg-primary text-surface shadow-[4px_4px_0_0_#171B22] hover:shadow-[6px_6px_0_0_#171B22]'
           }`}
         >
           {isSaved ? (
@@ -322,7 +322,7 @@ export const Profile = () => {
 
           <button 
             onClick={() => setIsPasswordOpen(false)}
-            className="w-full py-4 bg-primary text-text-primary rounded-none border-4 border-text-primary font-black text-lg shadow-[4px_4px_0_0_#171B22] hover:shadow-[6px_6px_0_0_#171B22] hover:-translate-y-1 active:translate-y-0 active:shadow-none transition-all uppercase tracking-wider mt-4"
+            className="w-full py-4 bg-primary text-surface rounded-none border-4 border-text-primary font-black text-lg shadow-[4px_4px_0_0_#171B22] hover:shadow-[6px_6px_0_0_#171B22] hover:-translate-y-1 active:translate-y-0 active:shadow-none transition-all uppercase tracking-wider mt-4"
           >
             Perbarui Password
           </button>

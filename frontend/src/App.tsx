@@ -15,6 +15,7 @@ import { Settings } from './pages/Settings';
 import { Reports } from './pages/Reports';
 import { Categories } from './pages/Categories';
 import { Profile } from './pages/Profile';
+import { JoinHousehold } from './pages/JoinHousehold';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,6 +50,12 @@ function App() {
             <Route path="categories" element={<Categories />} />
             <Route path="profile" element={<Profile />} />
           </Route>
+
+          <Route path="/join/:code" element={
+            <AuthGuard>
+              <JoinHousehold />
+            </AuthGuard>
+          } />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

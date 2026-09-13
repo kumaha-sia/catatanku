@@ -81,7 +81,7 @@ export const Wallets = () => {
         <h1 className="text-3xl font-black text-text-primary uppercase tracking-wide">Dompet</h1>
         <button 
           onClick={openAdd}
-          className="w-12 h-12 bg-primary text-text-primary rounded-none border-4 border-text-primary flex items-center justify-center shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
+          className="w-12 h-12 bg-primary text-surface rounded-none border-4 border-text-primary flex items-center justify-center shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
         >
           <Plus size={24} className="stroke-[3]" />
         </button>
@@ -89,9 +89,9 @@ export const Wallets = () => {
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-primary border-4 border-text-primary p-5 rounded-none shadow-[4px_4px_0_0_#171B22]">
-          <p className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 border-b-2 border-text-primary pb-2 inline-block">Total Dompet Pribadi</p>
-          <p className="text-3xl font-black text-text-primary mt-2 break-all sm:break-words">Rp {calculateTotal(wallets?.personal || []).toLocaleString('id-ID')}</p>
+        <div className="bg-primary text-surface border-4 border-text-primary p-5 rounded-none shadow-[4px_4px_0_0_#171B22]">
+          <p className="text-xs font-black uppercase tracking-widest mb-2 border-b-2 border-surface pb-2 inline-block">Total Dompet Pribadi</p>
+          <p className="text-3xl font-black mt-2 break-all sm:break-words">Rp {calculateTotal(wallets?.personal || []).toLocaleString('id-ID')}</p>
         </div>
         
         {/* Total Keluarga Card */}
@@ -99,7 +99,12 @@ export const Wallets = () => {
           <p className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 border-b-2 border-text-primary pb-2 inline-flex items-center gap-2">
             Total Dompet Keluarga <Users size={14} />
           </p>
-          <p className="text-3xl font-black text-text-primary mt-2 break-all sm:break-words">Rp {calculateTotal(wallets?.shared || []).toLocaleString('id-ID')}</p>
+          <p className="text-3xl font-black text-text-primary mt-2 break-all sm:break-words">
+            Rp {(
+              (wallets?.family_members?.reduce((acc: number, m: any) => acc + (m.total_balance || 0), 0) || 0) +
+              calculateTotal(wallets?.personal || [])
+            ).toLocaleString('id-ID')}
+          </p>
         </div>
       </div>
 
@@ -136,18 +141,26 @@ export const Wallets = () => {
       <section>
         <h2 className="text-sm font-black text-text-primary uppercase tracking-widest mb-3 border-b-2 border-text-primary pb-2 inline-block">Keluarga</h2>
         <div className="bg-surface border-4 border-text-primary rounded-none overflow-hidden shadow-[4px_4px_0_0_#171B22] divide-y-4 divide-text-primary mt-2">
-          {wallets?.shared?.map((w: any) => (
-            <WalletItem 
-              key={w.id}
-              icon={<WalletIcon size={24} className="text-text-primary stroke-[3]" />}
-              name={w.name}
-              balance={w.balance?.toLocaleString('id-ID') || '0'}
-              bgClass="bg-income"
-              onEdit={() => openEdit(w)}
-            />
+          {wallets?.family_members?.map((member: any) => (
+            <div key={member.id} className="flex items-center justify-between p-3 md:p-4 bg-surface hover:bg-text-primary/5 transition-colors group">
+              <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+                <div className={`w-12 h-12 md:w-14 md:h-14 shrink-0 border-2 border-text-primary rounded-none flex items-center justify-center bg-accent text-text-primary font-black text-xl md:text-2xl shadow-[2px_2px_0_0_#171B22] group-hover:-translate-y-1 group-hover:shadow-[4px_4px_0_0_#171B22] transition-all`}>
+                   {member.name?.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1 pr-2">
+                   <p className="font-black text-text-primary uppercase tracking-wide text-base md:text-xl leading-none truncate">{member.name}</p>
+                   <p className="text-[10px] md:text-xs font-black uppercase tracking-wider text-text-primary/70 mt-1 truncate">Total Saldo Pribadi</p>
+                </div>
+              </div>
+              <p className="font-black text-text-primary text-base md:text-xl bg-surface px-2 py-1 md:px-3 md:py-2 border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] shrink-0 whitespace-nowrap ml-2">Rp {member.total_balance?.toLocaleString('id-ID') || '0'}</p>
+            </div>
           ))}
-          {(!wallets?.shared || wallets.shared.length === 0) && (
-             <div className="p-6 text-center text-text-primary font-black uppercase tracking-widest bg-surface">Belum ada dompet keluarga</div>
+          {(!wallets?.family_members || wallets.family_members.length === 0) && (
+             <div className="p-8 flex flex-col items-center text-center bg-surface">
+                <Users size={32} className="text-text-primary/30 mb-3" />
+                <p className="text-text-primary font-black uppercase tracking-widest">Belum ada anggota keluarga</p>
+                <p className="text-xs font-bold text-text-primary/70 mt-1">Undang pasangan untuk melihat total kekayaan bersama.</p>
+             </div>
           )}
         </div>
       </section>
@@ -160,7 +173,7 @@ export const Wallets = () => {
             <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block">Nama Dompet</label>
             <input 
               type="text" 
-              placeholder="Contoh: BCA Pribadi"
+              placeholder="Contoh: BCA"
               value={walletName}
               onChange={(e) => setWalletName(e.target.value)}
               className="w-full bg-surface border-4 border-text-primary rounded-none px-4 py-3 font-black text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] transition-all"
@@ -181,28 +194,11 @@ export const Wallets = () => {
             </div>
           </div>
 
-          <div>
-            <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-3 block">Visibilitas</label>
-            <div className="flex p-1.5 bg-surface border-4 border-text-primary rounded-none shadow-[4px_4px_0_0_#171B22]">
-              <button 
-                onClick={() => setWalletType('PERSONAL')}
-                className={`flex-1 py-3 text-xs font-black uppercase tracking-wider rounded-none transition-all border-2 ${walletType === 'PERSONAL' ? 'bg-primary border-text-primary text-text-primary shadow-[2px_2px_0_0_#171B22]' : 'bg-transparent border-transparent text-text-primary hover:border-text-primary/50'}`}
-              >
-                Pribadi
-              </button>
-              <button 
-                onClick={() => setWalletType('SHARED')}
-                className={`flex-1 py-3 text-xs font-black uppercase tracking-wider rounded-none transition-all border-2 ${walletType === 'SHARED' ? 'bg-accent border-text-primary text-text-primary shadow-[2px_2px_0_0_#171B22]' : 'bg-transparent border-transparent text-text-primary hover:border-text-primary/50'}`}
-              >
-                Keluarga
-              </button>
-            </div>
-          </div>
 
           <button 
             onClick={handleSave}
             disabled={!walletName || (!editMode && !walletBalance)}
-            className="w-full py-4 bg-primary text-text-primary border-4 border-text-primary rounded-none font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0_0_#171B22] transition-all mt-6"
+            className="w-full py-4 bg-primary text-surface border-4 border-text-primary rounded-none font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0_0_#171B22] transition-all mt-6"
           >
             {editMode ? "Simpan Perubahan" : "Simpan Dompet"}
           </button>
@@ -223,13 +219,13 @@ export const Wallets = () => {
 };
 
 const WalletItem = ({ icon, name, balance, bgClass, onEdit }: { icon: React.ReactNode, name: string, balance: string, bgClass: string, onEdit: () => void }) => (
-  <div onClick={onEdit} className="flex items-center justify-between p-4 bg-surface hover:bg-text-primary/5 cursor-pointer transition-colors group">
-    <div className="flex items-center gap-4">
-      <div className={`w-14 h-14 border-2 border-text-primary rounded-none flex items-center justify-center ${bgClass} shadow-[2px_2px_0_0_#171B22] group-hover:-translate-y-1 group-hover:shadow-[4px_4px_0_0_#171B22] transition-transform`}>
+  <div onClick={onEdit} className="flex items-center justify-between p-3 md:p-4 bg-surface hover:bg-text-primary/5 cursor-pointer transition-colors group">
+    <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+      <div className={`w-12 h-12 md:w-14 md:h-14 shrink-0 border-2 border-text-primary rounded-none flex items-center justify-center ${bgClass} shadow-[2px_2px_0_0_#171B22] group-hover:-translate-y-1 group-hover:shadow-[4px_4px_0_0_#171B22] transition-transform`}>
         {icon}
       </div>
-      <p className="font-black text-text-primary uppercase tracking-wide text-lg md:text-xl">{name}</p>
+      <p className="font-black text-text-primary uppercase tracking-wide text-base md:text-xl truncate pr-2">{name}</p>
     </div>
-    <p className="font-black text-text-primary text-lg md:text-xl bg-surface px-2 py-1 border-2 border-text-primary shadow-[2px_2px_0_0_#171B22]">Rp {balance}</p>
+    <p className="font-black text-text-primary text-base md:text-xl bg-surface px-2 py-1 md:px-3 md:py-2 border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] shrink-0 whitespace-nowrap ml-2">Rp {balance}</p>
   </div>
 );

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from './BottomSheet';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../services/apiServices';
@@ -35,11 +36,24 @@ export const NotificationPanel: React.FC<NotificationProps> = ({ isOpen, onClose
   const notifications = data?.notifications || [];
   const unreadCount = data?.unreadCount || 0;
 
+  const navigate = useNavigate();
+
   const handleNotificationClick = (notif: any) => {
     if (!notif.is_read) {
       markAsReadMutation.mutate(notif.id);
     }
-    // Navigate logic based on type could go here
+    
+    let url = notif.action_url;
+    if (url === '/family/invites') {
+      url = '/family';
+    }
+
+    if (url) {
+      navigate(url);
+    } else if (notif.type === 'INVITATION') {
+      navigate('/family');
+    }
+    onClose();
   };
 
   const getIcon = (type: string) => {

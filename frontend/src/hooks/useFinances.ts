@@ -19,6 +19,54 @@ export const useInviteMember = () => {
   });
 };
 
+export const useRemoveMember = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ householdId, memberId }: { householdId: string, memberId: string }) => api.removeMember(householdId, memberId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['members'] })
+  });
+};
+
+export const useLeaveHousehold = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (householdId: string) => api.leaveHousehold(householdId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['households'] })
+  });
+};
+
+export const useJoinHousehold = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (code: string) => api.joinHousehold(code),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['households'] });
+      qc.invalidateQueries({ queryKey: ['members'] });
+    }
+  });
+};
+
+export const useAcceptHousehold = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (householdId: string) => api.acceptHousehold(householdId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['households'] });
+      qc.invalidateQueries({ queryKey: ['members'] });
+    }
+  });
+};
+
+export const useRejectHousehold = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (householdId: string) => api.rejectHousehold(householdId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['households'] });
+    }
+  });
+};
+
 // Transaction Hooks
 export const useTransactions = (householdId?: string, page = 1, month?: string, year?: string) => 
   useQuery({ 

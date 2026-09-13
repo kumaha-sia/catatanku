@@ -10,6 +10,12 @@ export const uploadAvatar = (formData: FormData) => api.put('/auth/avatar', form
 export const getHouseholds = () => api.get('/households').then(res => res.data.data);
 export const getMembers = (householdId: string) => api.get(`/households/${householdId}/members`).then(res => res.data.data);
 export const inviteMember = (householdId: string, email: string) => api.post(`/households/${householdId}/invite`, { email }).then(res => res.data);
+export const getInviteLink = (householdId: string) => api.get(`/households/${householdId}/invite-link`).then(res => res.data.data);
+export const joinHousehold = (code: string) => api.post(`/households/join`, { code }).then(res => res.data);
+export const acceptHousehold = (householdId: string) => api.post(`/households/${householdId}/accept`).then(res => res.data);
+export const rejectHousehold = (householdId: string) => api.post(`/households/${householdId}/reject`).then(res => res.data);
+export const removeMember = (householdId: string, memberId: string) => api.delete(`/households/${householdId}/members/${memberId}`).then(res => res.data);
+export const leaveHousehold = (householdId: string) => api.post(`/households/${householdId}/leave`).then(res => res.data);
 
 // Transactions
 export const getTransactions = (householdId?: string, page = 1, limit = 20, month?: string, year?: string) => 

@@ -275,7 +275,7 @@ export const AddTransactionSheet = () => {
           <button 
             onClick={handleSave}
             disabled={!amountStr || amountStr === '0' || createTx.isPending}
-            className="w-full py-4 bg-primary text-text-primary rounded-none border-2 border-text-primary font-black uppercase tracking-wider text-xl shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:shadow-none transition-all mt-4"
+            className="w-full py-4 bg-primary text-surface rounded-none border-2 border-text-primary font-black uppercase tracking-wider text-xl shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:shadow-none transition-all mt-4"
           >
             {createTx.isPending ? 'Menyimpan...' : 'Simpan Transaksi'}
           </button>
@@ -344,7 +344,7 @@ export const AddTransactionSheet = () => {
           />
           <button 
             onClick={() => setActiveView('MAIN')}
-            className="w-full py-4 bg-primary text-text-primary rounded-none border-2 border-text-primary font-black uppercase tracking-wider text-xl shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all mt-6"
+            className="w-full py-4 bg-primary text-surface rounded-none border-2 border-text-primary font-black uppercase tracking-wider text-xl shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all mt-6"
           >
             Selesai
           </button>

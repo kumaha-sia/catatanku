@@ -42,13 +42,13 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({ value, onChange })
       <KeyButton label="4" onPress={() => handlePress('4')} />
       <KeyButton label="5" onPress={() => handlePress('5')} />
       <KeyButton label="6" onPress={() => handlePress('6')} />
-      <KeyButton label="000" onPress={() => handlePress('000')} className="bg-primary text-text-primary" />
+      <KeyButton label="000" onPress={() => handlePress('000')} className="bg-primary text-surface" />
       
       {/* Row 3 */}
       <KeyButton label="7" onPress={() => handlePress('7')} />
       <KeyButton label="8" onPress={() => handlePress('8')} />
       <KeyButton label="9" onPress={() => handlePress('9')} />
-      <KeyButton label=",00" onPress={() => handlePress(',00')} className="bg-primary text-text-primary" />
+      <KeyButton label=",00" onPress={() => handlePress(',00')} className="bg-primary text-surface" />
       
       {/* Row 4 (centered 0) */}
       <div className="col-span-1" />
