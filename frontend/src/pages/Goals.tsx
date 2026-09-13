@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { BottomSheet } from '../components/BottomSheet';
-import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal, useHouseholds, useWallets, useCreateTransaction } from '../hooks/useFinances';
+import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal, useHouseholds, useWallets, useCreateTransaction, useMembers } from '../hooks/useFinances';
 
 export const Goals = () => {
   const [activeTab, setActiveTab] = useState<'ME' | 'FAMILY'>('ME');
