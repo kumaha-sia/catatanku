@@ -132,10 +132,10 @@ export const Layout = () => {
       {/* Desktop Floating Action Button (FAB) */}
       <button 
         onClick={openAddTransaction}
-        className="hidden md:flex fixed bottom-12 right-12 z-40 items-center justify-center gap-3 bg-primary text-surface px-6 py-4 border-4 border-text-primary shadow-[8px_8px_0_0_#171B22] hover:-translate-y-2 hover:shadow-[12px_12px_0_0_#171B22] hover:text-text-primary hover:bg-accent active:translate-y-0 active:shadow-none transition-all font-black uppercase tracking-widest text-lg group"
+        className="hidden md:flex fixed bottom-12 right-12 z-40 w-16 h-16 items-center justify-center bg-primary text-surface border-4 border-text-primary shadow-[8px_8px_0_0_#171B22] hover:-translate-y-2 hover:shadow-[12px_12px_0_0_#171B22] hover:text-text-primary hover:bg-accent active:translate-y-0 active:shadow-[2px_2px_0_0_#171B22] transition-all group"
+        title="Catat Transaksi"
       >
-        <Plus size={28} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-300" />
-        Catat Transaksi
+        <Plus size={36} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-300" />
       </button>
 
       <AddTransactionSheet />
