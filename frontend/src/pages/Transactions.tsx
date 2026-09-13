@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Search, SlidersHorizontal, ArrowDownRight, ArrowUpRight, ArrowRightLeft, Calendar, ChevronDown, Download, Filter, Trash2, Edit3, Users, Lock, ChevronRight } from 'lucide-react';
 import { BottomSheet } from '../components/BottomSheet';
-import { useTransactions, useDeleteTransaction, useCategories } from '../hooks/useFinances';
+import { useTransactions, useDeleteTransaction, useCategories, useHouseholds } from '../hooks/useFinances';
 import { useUIStore } from '../store/uiStore';
+import { useAuthStore } from '../store/authStore';
 
 export const Transactions = () => {
   const now = new Date();
@@ -10,7 +11,7 @@ export const Transactions = () => {
   const [currentYear, setCurrentYear] = useState(now.getFullYear());
   
   const [activeType, setActiveType] = useState('SEMUA');
-  const [activeVisibility, setActiveVisibility] = useState('SEMUA');
+  const [activeTab, setActiveTab] = useState<'ME' | 'FAMILY'>('ME');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [sortOrder, setSortOrder] = useState<'NEWEST' | 'OLDEST' | 'HIGHEST' | 'LOWEST'>('NEWEST');
@@ -19,7 +20,15 @@ export const Transactions = () => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedTx, setSelectedTx] = useState<any>(null);
 
-  const { data: transactions } = useTransactions(undefined, 1, currentMonth + "", currentYear + "");
+  const { data: households } = useHouseholds();
+  const user = useAuthStore(state => state.user);
+  
+  const personalHousehold = households?.find((h: any) => h.role === 'OWNER') || households?.[0];
+  const joinedHousehold = households?.find((h: any) => h.role !== 'OWNER' && h.status !== 'PENDING');
+  const familyHousehold = joinedHousehold || personalHousehold;
+  const activeHouseholdId = activeTab === 'ME' ? personalHousehold?.id : familyHousehold?.id;
+
+  const { data: transactions } = useTransactions(activeHouseholdId, 1, currentMonth + "", currentYear + "");
   const { data: categories } = useCategories();
   const deleteTx = useDeleteTransaction();
   const openAddTransaction = useUIStore(state => state.openAddTransaction);
@@ -30,8 +39,10 @@ export const Transactions = () => {
   };
 
   let filteredTransactions = transactions?.filter((tx: any) => {
+    if (activeTab === 'ME' && tx.creator?.id !== user?.id) return false;
+    if (activeTab === 'FAMILY' && tx.creator?.id === user?.id) return false;
+
     if (activeType !== 'SEMUA' && tx.type !== activeType) return false;
-    if (activeVisibility !== 'SEMUA' && tx.visibility !== activeVisibility) return false;
     if (filterCategory && tx.category_id !== filterCategory) return false;
     
     if (searchTerm) {
@@ -133,21 +144,20 @@ export const Transactions = () => {
           ))}
         </div>
 
-        {/* Visibility Filter */}
-        <div className="flex overflow-x-auto gap-2 pb-1 hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
-          {['SEMUA', 'PRIVATE', 'FAMILY'].map((vis) => (
-            <button 
-              key={vis}
-              onClick={() => setActiveVisibility(vis)}
-              className={`whitespace-nowrap px-4 py-1.5 rounded-none text-xs uppercase tracking-wider font-black transition-all border-2 border-text-primary flex-shrink-0 ${
-                activeVisibility === vis 
-                  ? 'bg-accent text-text-primary shadow-[4px_4px_0_0_#171B22] -translate-y-0.5' 
-                  : 'bg-surface text-text-primary shadow-[2px_2px_0_0_#171B22] hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#171B22]'
-              }`}
-            >
-              {vis === 'SEMUA' ? 'Semua' : vis === 'PRIVATE' ? 'Pribadi' : 'Keluarga'}
-            </button>
-          ))}
+        {/* Context Tabs (Me vs Family) */}
+        <div className="flex bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] p-1 mt-2">
+          <button 
+            onClick={() => setActiveTab('ME')}
+            className={`flex-1 md:flex-none px-8 py-2 font-black text-sm uppercase tracking-wider transition-all ${activeTab === 'ME' ? 'bg-primary text-surface shadow-[2px_2px_0_0_#171B22]' : 'text-text-primary opacity-50 hover:opacity-100'}`}
+          >
+            Pribadi
+          </button>
+          <button 
+            onClick={() => setActiveTab('FAMILY')}
+            className={`flex-1 md:flex-none px-8 py-2 font-black text-sm uppercase tracking-wider transition-all ${activeTab === 'FAMILY' ? 'bg-primary text-surface shadow-[2px_2px_0_0_#171B22]' : 'text-text-primary opacity-50 hover:opacity-100'}`}
+          >
+            Keluarga
+          </button>
         </div>
       </div>
 
@@ -185,10 +195,12 @@ export const Transactions = () => {
                           <span className="bg-surface-muted px-1.5 py-0.5 border-2 border-text-primary text-[10px] font-black uppercase tracking-wider truncate max-w-[80px]">
                             {tx.wallet?.name}
                           </span>
-                          <span className={`px-1.5 py-0.5 border-2 border-text-primary text-[10px] font-black uppercase tracking-wider flex items-center gap-1 ${tx.visibility === 'PRIVATE' ? 'bg-primary text-surface' : 'bg-accent text-text-primary'}`}>
-                            {tx.visibility === 'PRIVATE' ? <Lock size={10} className="stroke-[3]" /> : <Users size={10} className="stroke-[3]" />}
-                            {tx.visibility === 'PRIVATE' ? 'PRIBADI' : 'KELUARGA'}
-                          </span>
+                          {activeTab === 'FAMILY' && (
+                            <span className="bg-accent px-1.5 py-0.5 border-2 border-text-primary text-[10px] font-black uppercase tracking-wider truncate flex items-center gap-1 max-w-[100px]">
+                              <Users size={10} className="stroke-[3]" />
+                              {tx.creator?.name?.split(' ')[0] || 'Member'}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -275,22 +287,16 @@ export const Transactions = () => {
 
             <div className="bg-surface border-4 border-text-primary rounded-none p-5 space-y-4 shadow-[4px_4px_0_0_#171B22]">
               <div className="flex justify-between items-center pb-4 border-b-2 border-text-primary">
-                <span className="text-xs font-black text-text-primary uppercase tracking-widest">Visibilitas</span>
-                <span className={`text-sm font-black px-3 py-1 border-2 border-text-primary flex items-center gap-2 ${selectedTx.visibility === 'PRIVATE' ? 'bg-primary' : 'bg-accent'}`}>
-                  {selectedTx.visibility === 'PRIVATE' ? <Lock size={14} className="stroke-[3]"/> : <Users size={14} className="stroke-[3]"/>}
-                  {selectedTx.visibility === 'PRIVATE' ? 'PRIBADI' : 'KELUARGA'}
+                <span className="text-xs font-black text-text-primary uppercase tracking-widest">Dibuat Oleh</span>
+                <span className="text-sm font-black px-3 py-1 border-2 border-text-primary bg-accent flex items-center gap-2">
+                  <Users size={14} className="stroke-[3]"/>
+                  {selectedTx.creator?.name || 'User'}
                 </span>
               </div>
               <div className="flex justify-between items-center pb-4 border-b-2 border-text-primary">
                 <span className="text-xs font-black text-text-primary uppercase tracking-widest">Dompet</span>
                 <span className="text-sm font-black text-text-primary uppercase">{selectedTx.wallet?.name}</span>
               </div>
-              {selectedTx.creator && (
-                <div className="flex justify-between items-center pb-4 border-b-2 border-text-primary">
-                  <span className="text-xs font-black text-text-primary uppercase tracking-widest">Dibuat oleh</span>
-                  <span className="text-sm font-black text-text-primary uppercase">{selectedTx.creator?.name}</span>
-                </div>
-              )}
               <div className="flex justify-between items-center">
                 <span className="text-xs font-black text-text-primary uppercase tracking-widest">Tanggal</span>
                 <span className="text-sm font-black text-text-primary uppercase">
