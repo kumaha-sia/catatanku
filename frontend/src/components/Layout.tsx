@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Receipt, Target, PieChart, Wallet, Users, Settings, Plus, LogOut, Bell } from 'lucide-react';
+import { Home, Receipt, Target, PieChart, Wallet, Users, Settings, Plus, Bell } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useUIStore } from '../store/uiStore';
 import { AddTransactionSheet } from './AddTransactionSheet';
@@ -9,7 +9,6 @@ import { useQuery } from '@tanstack/react-query';
 import { getNotifications } from '../services/apiServices';
 
 export const Layout = () => {
-  const logout = useAuthStore((state) => state.logout);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -93,14 +92,6 @@ export const Layout = () => {
             </nav>
           </div>
         </div>
-
-        <button 
-          onClick={logout}
-          className="flex items-center gap-3 px-4 py-3 mt-6 text-text-primary bg-surface border-2 border-transparent hover:border-text-primary hover:bg-error hover:shadow-[4px_4px_0_0_#171B22] transition-all w-full font-black uppercase tracking-wider group"
-        >
-          <LogOut size={20} className="group-hover:text-text-primary" strokeWidth={2} />
-          <span className="font-black text-sm uppercase">Sign Out</span>
-        </button>
       </aside>
 
       {/* Main Content Area */}
