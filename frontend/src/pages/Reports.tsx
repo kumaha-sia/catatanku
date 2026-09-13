@@ -24,14 +24,21 @@ export const Reports = () => {
   const [currentYear, setCurrentYear] = useState(now.getFullYear());
 
   const { data: households } = useHouseholds();
-  const currentHousehold = households?.find((h: any) => 
-    activeTab === 'ME' ? h.role === 'OWNER' && h.name.includes('Household') : h.role !== 'OWNER' || !h.name.includes('Household')
-  );
+  
+  const personalHousehold = households?.find((h: any) => h.role === 'OWNER') || households?.[0];
+  const joinedHousehold = households?.find((h: any) => h.role !== 'OWNER' && h.status !== 'PENDING');
+  const familyHousehold = joinedHousehold || personalHousehold;
+
+  const { data: members } = useMembers(familyHousehold?.id);
+  const hasFamily = !!joinedHousehold || (members && members.length > 1);
+
+  const scope = activeTab === 'ME' ? 'PERSONAL' : 'FAMILY';
 
   const { data: report } = useReportSummary(
-    currentHousehold?.id, 
+    familyHousehold?.id, 
     periodType === 'MONTH' ? String(currentMonth) : 'all',
-    String(currentYear)
+    String(currentYear),
+    scope
   );
 
   const data = report || { total_income: 0, total_expense: 0, balance: 0, cashflow: [], spending_by_category: [] };
@@ -109,20 +116,22 @@ export const Reports = () => {
           </div>
 
           {/* Pribadi / Keluarga */}
-          <div className="flex p-1 bg-surface border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] flex-1">
-            <button 
-              onClick={() => setActiveTab('ME')}
-              className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all ${activeTab === 'ME' ? 'bg-primary text-surface border-2 border-text-primary shadow-[1px_1px_0_0_#171B22]' : 'text-text-secondary border-2 border-transparent'}`}
-            >
-              Pribadi
-            </button>
-            <button 
-              onClick={() => setActiveTab('FAMILY')}
-              className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all ${activeTab === 'FAMILY' ? 'bg-primary text-surface border-2 border-text-primary shadow-[1px_1px_0_0_#171B22]' : 'text-text-secondary border-2 border-transparent'}`}
-            >
-              Keluarga
-            </button>
-          </div>
+          {hasFamily && (
+            <div className="flex p-1 bg-surface border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] flex-1">
+              <button 
+                onClick={() => setActiveTab('ME')}
+                className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all ${activeTab === 'ME' ? 'bg-primary text-surface border-2 border-text-primary shadow-[1px_1px_0_0_#171B22]' : 'text-text-secondary border-2 border-transparent'}`}
+              >
+                Pribadi
+              </button>
+              <button 
+                onClick={() => setActiveTab('FAMILY')}
+                className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all ${activeTab === 'FAMILY' ? 'bg-primary text-surface border-2 border-text-primary shadow-[1px_1px_0_0_#171B22]' : 'text-text-secondary border-2 border-transparent'}`}
+              >
+                Keluarga
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
