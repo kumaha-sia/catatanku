@@ -251,7 +251,7 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
   // --- PERSONAL DASHBOARD ---
   const personalWallets = wallets?.personal || [];
   const totalBalance = calculateTotal(personalWallets);
-  const personalTx = transactions?.filter((t: any) => t.visibility === 'PRIVATE' || !t.visibility) || [];
+  const personalTx = transactions?.filter((t: any) => t.creator?.id === user?.id) || [];
 
   return (
     <div className="space-y-6 animate-fade-in">
