@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { BottomSheet } from '../components/BottomSheet';
-import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal, useHouseholds } from '../hooks/useFinances';
+import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal, useHouseholds, useWallets, useCreateTransaction } from '../hooks/useFinances';
 
 export const Goals = () => {
   const [activeTab, setActiveTab] = useState<'ME' | 'FAMILY'>('ME');
@@ -17,6 +17,7 @@ export const Goals = () => {
   const [isTopupOpen, setIsTopupOpen] = useState(false);
   const [topupAmount, setTopupAmount] = useState('');
   const [topupGoal, setTopupGoal] = useState<any>(null);
+  const [sourceWalletId, setSourceWalletId] = useState('');
 
   const { data: households } = useHouseholds();
   const myHouseholdId = households?.find((h: any) => h.role === 'OWNER' && h.name.includes('Household'))?.id;
@@ -25,9 +26,13 @@ export const Goals = () => {
   const currentHouseholdId = activeTab === 'ME' ? myHouseholdId : familyHouseholdId;
 
   const { data: goals } = useGoals(currentHouseholdId);
+  const { data: walletsData } = useWallets(currentHouseholdId);
+  const availableWallets = currentHouseholdId === myHouseholdId ? walletsData?.personal : walletsData?.family_members?.flatMap((m: any) => m.wallets);
+
   const createGoal = useCreateGoal();
   const updateGoal = useUpdateGoal();
   const deleteGoal = useDeleteGoal();
+  const createTransaction = useCreateTransaction();
 
   const EMOJI_LIST = [
     '🎯', '✈️', '🏝️', '🏠', '🚘', '💍', '👶', '🎓', '🏥', 
@@ -67,17 +72,33 @@ export const Goals = () => {
   };
 
   const handleTopupSave = async () => {
-    if (!topupGoal) return;
+    if (!topupGoal || !sourceWalletId) return;
     const addedAmount = parseFloat(topupAmount.replace(/\./g, '')) || 0;
     if (addedAmount <= 0) return;
 
     try {
+      // 1. Update goal current_amount
       await updateGoal.mutateAsync({ 
         id: topupGoal.id, 
         data: { current_amount: topupGoal.current_amount + addedAmount } 
       });
+
+      // 2. Create expense transaction to deduct from wallet
+      await createTransaction.mutateAsync({
+        household_id: currentHouseholdId,
+        wallet_id: sourceWalletId,
+        type: 'EXPENSE',
+        amount: addedAmount,
+        currency: 'IDR',
+        date: new Date().toISOString(),
+        note: `Tabungan: ${topupGoal.name}`,
+        visibility: activeTab === 'FAMILY' ? 'FAMILY' : 'PRIVATE'
+      });
+
       setIsTopupOpen(false);
       setTopupAmount('');
+      setSourceWalletId('');
+      window.toast.success('Tabungan berhasil ditambahkan!');
     } catch (e) {
       window.toast.error('Gagal menambah tabungan');
     }
@@ -98,7 +119,7 @@ export const Goals = () => {
     setEditMode(true);
     setSelectedGoalId(goal.id);
     setGoalName(goal.name);
-    setGoalTarget(goal.target_amount.toString());
+    setGoalTarget(goal.target_amount ? goal.target_amount.toLocaleString('id-ID') : '');
     setGoalIcon(goal.icon || '🎯');
     setGoalDate(goal.target_date ? new Date(goal.target_date).toISOString().substring(0, 10) : '');
     setIsSelectingIcon(false);
@@ -148,7 +169,7 @@ export const Goals = () => {
           <p className="text-text-primary font-black uppercase tracking-wide">Anda belum tergabung dalam keluarga.</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {goals?.map((g: any) => {
             const pct = g.target_amount > 0 ? (g.current_amount / g.target_amount) * 100 : 0;
             const targetDateStr = g.target_date 
@@ -156,33 +177,36 @@ export const Goals = () => {
               : 'Tanpa batas waktu';
 
             return (
-              <div key={g.id} onClick={() => openEdit(g)} className="bg-surface border-4 border-text-primary p-5 rounded-none shadow-[6px_6px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[8px_8px_0_0_#171B22] active:translate-y-0 active:shadow-[2px_2px_0_0_#171B22] transition-all cursor-pointer group relative overflow-hidden">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-none bg-surface border-2 border-text-primary flex items-center justify-center text-2xl group-hover:scale-105 transition-transform shadow-[4px_4px_0_0_#171B22]">{g.icon || '🎯'}</div>
-                    <div>
-                      <p className="font-black text-text-primary text-lg leading-tight uppercase tracking-wide">{g.name}</p>
-                      <p className="text-xs text-text-primary font-black uppercase tracking-wider mt-1">{targetDateStr}</p>
+              <div key={g.id} className="bg-surface border-4 border-text-primary p-5 rounded-none shadow-[6px_6px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[8px_8px_0_0_#171B22] transition-all group relative overflow-hidden flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-none bg-surface border-2 border-text-primary flex items-center justify-center text-2xl group-hover:scale-105 transition-transform shadow-[4px_4px_0_0_#171B22]">{g.icon || '🎯'}</div>
+                      <div>
+                        <p className="font-black text-text-primary text-lg leading-tight uppercase tracking-wide">{g.name}</p>
+                        <p className="text-xs text-text-primary font-black uppercase tracking-wider mt-1">{targetDateStr}</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-black text-text-primary text-lg">Rp {formatShort(g.current_amount)}</p>
-                    <p className="text-xs text-text-primary font-bold mt-0.5">dari {formatShort(g.target_amount)}</p>
+                  
+                  <div className="mb-4">
+                    <div className="flex justify-between items-end mb-2">
+                      <p className="font-black text-text-primary text-2xl">Rp {formatShort(g.current_amount)}</p>
+                      <p className="text-xs text-text-primary font-bold">dari {formatShort(g.target_amount)}</p>
+                    </div>
+                    <div className="w-full bg-background border-2 border-text-primary rounded-none h-4 overflow-hidden mb-2 shadow-[inset_2px_2px_0_0_#171B22]">
+                      <div className="bg-accent h-full border-r-2 border-text-primary transition-all duration-500" style={{ width: `${Math.min(pct, 100)}%` }} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-black text-text-primary uppercase tracking-wider">
+                        {pct >= 100 ? 'Tujuan Tercapai! 🎉' : `Kurang Rp ${formatShort(g.target_amount - g.current_amount)}`}
+                      </p>
+                      <p className="text-xs font-black text-primary">{pct.toFixed(1)}%</p>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="w-full bg-surface border-2 border-text-primary rounded-none h-4 overflow-hidden mb-2 shadow-[2px_2px_0_0_#171B22]">
-                  <div className="bg-primary h-full border-r-2 border-text-primary" style={{ width: `${Math.min(pct, 100)}%` }} />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-black text-text-primary uppercase tracking-wider">
-                    {pct >= 100 ? 'Tujuan Tercapai! 🎉' : `Kurang Rp ${formatShort(g.target_amount - g.current_amount)}`}
-                  </p>
-                  <p className="text-xs font-black text-primary">{pct.toFixed(1)}%</p>
-                </div>
-                
-                <div className="mt-4 border-t-2 border-text-primary pt-4 flex gap-3">
+                <div className="mt-2 border-t-4 border-text-primary pt-4 flex gap-3">
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
@@ -190,18 +214,19 @@ export const Goals = () => {
                       setTopupAmount('');
                       setIsTopupOpen(true);
                     }}
-                    className="flex-1 py-2 bg-accent text-text-primary border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] font-black uppercase tracking-widest text-xs hover:-translate-y-0.5 transition-all"
+                    className="flex-[2] py-3 bg-primary text-surface border-4 border-text-primary shadow-[4px_4px_0_0_#171B22] font-black uppercase tracking-widest text-sm hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-[2px_2px_0_0_#171B22] transition-all"
                   >
-                    + Nabung
+                    + NABUNG
                   </button>
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
                       openEdit(g);
                     }}
-                    className="flex-1 py-2 bg-surface text-text-primary border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] font-black uppercase tracking-widest text-xs hover:-translate-y-0.5 transition-all"
+                    className="flex-1 py-3 bg-surface text-text-primary border-4 border-text-primary shadow-[4px_4px_0_0_#171B22] font-black uppercase tracking-widest text-sm hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-[2px_2px_0_0_#171B22] transition-all flex items-center justify-center"
+                    title="Pengaturan Tujuan"
                   >
-                    Edit Goal
+                    EDIT
                   </button>
                 </div>
               </div>
@@ -264,10 +289,14 @@ export const Goals = () => {
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-primary font-black">Rp</span>
               <input 
-                type="number" 
+                type="text" 
+                inputMode="numeric"
                 placeholder="0"
                 value={goalTarget}
-                onChange={(e) => setGoalTarget(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '');
+                  setGoalTarget(val ? parseInt(val, 10).toLocaleString('id-ID') : '');
+                }}
                 className="w-full bg-surface border-2 border-text-primary rounded-none pl-12 pr-4 py-3 font-bold text-lg text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] focus:ring-0 transition-all"
               />
             </div>
@@ -307,6 +336,20 @@ export const Goals = () => {
       <BottomSheet isOpen={isTopupOpen} onClose={() => setIsTopupOpen(false)} title="Tambah Tabungan">
         <div className="space-y-6 pt-2">
           <div>
+            <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block px-1">Pilih Dompet Sumber</label>
+            <select
+              value={sourceWalletId}
+              onChange={(e) => setSourceWalletId(e.target.value)}
+              className="w-full bg-surface border-2 border-text-primary rounded-none px-4 py-3 font-bold text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] focus:ring-0 transition-all appearance-none cursor-pointer"
+            >
+              <option value="" disabled>-- Pilih Dompet --</option>
+              {availableWallets?.map((w: any) => (
+                <option key={w.id} value={w.id}>{w.name} (Rp {w.balance?.toLocaleString('id-ID')})</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block px-1">Nominal Tabungan</label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-text-secondary">Rp</span>
@@ -325,7 +368,7 @@ export const Goals = () => {
           </div>
           <button 
             onClick={handleTopupSave}
-            disabled={!topupAmount}
+            disabled={!topupAmount || !sourceWalletId}
             className="w-full py-4 bg-primary text-surface rounded-none border-2 border-text-primary font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none disabled:opacity-50 transition-all mt-4"
           >
             Simpan Tabungan
