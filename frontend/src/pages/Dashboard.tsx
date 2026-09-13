@@ -128,11 +128,10 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
     const totalBalance = (wallets?.family_members?.reduce((acc: number, m: any) => acc + (m.total_balance || 0), 0) || 0) +
                          calculateTotal(wallets?.personal || []);
     
-    // Filter transactions to ONLY include OTHER family members' activities
-    const familyTx = transactions?.filter((t: any) => t.creator?.id !== user?.id) || [];
-    const expenses = familyTx.filter((t: any) => t.type === 'EXPENSE');
+    // Use ALL expenses in the household for the category breakdown (You + Family)
+    const combinedHouseholdExpenses = transactions?.filter((t: any) => t.type === 'EXPENSE') || [];
     
-    const spendByCategory = expenses.reduce((acc: any, t: any) => {
+    const spendByCategory = combinedHouseholdExpenses.reduce((acc: any, t: any) => {
       const catName = t.category?.name || 'Lainnya';
       acc[catName] = (acc[catName] || 0) + t.amount;
       return acc;
@@ -142,6 +141,9 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
     const spendArray = Object.entries(spendByCategory)
       .map(([name, amount]) => ({ name, amount: amount as number, percentage: totalFamilyExpense ? ((amount as number) / totalFamilyExpense) * 100 : 0 }))
       .sort((a, b) => b.amount - a.amount);
+
+    // Keep Activity Feed strictly for OTHER family members
+    const familyTx = transactions?.filter((t: any) => t.creator?.id !== user?.id) || [];
 
     const colors = ['bg-primary', 'bg-accent', 'bg-error', 'bg-income'];
 
@@ -174,10 +176,16 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
 
         {/* Split Insight Card */}
         <div className="bg-surface border-4 border-text-primary p-5 shadow-[6px_6px_0_0_#171B22]">
-          <h3 className="font-black text-sm uppercase tracking-widest mb-4">Pengeluaran Anggota Keluarga</h3>
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="font-black text-sm uppercase tracking-widest leading-snug w-2/3">Kategori Pengeluaran Bersama</h3>
+            <div className="text-right">
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Total Pengeluaran</p>
+              <p className="font-black text-expense text-sm">Rp {totalFamilyExpense.toLocaleString('id-ID')}</p>
+            </div>
+          </div>
           
           {totalFamilyExpense === 0 ? (
-             <p className="text-sm font-bold opacity-70">Belum ada pengeluaran dari anggota keluarga bulan ini.</p>
+             <p className="text-sm font-bold opacity-70">Belum ada pengeluaran bersama bulan ini.</p>
           ) : (
              <div className="space-y-4">
                {/* Progress Bar */}
