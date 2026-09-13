@@ -66,17 +66,7 @@ export const Layout = () => {
             )}
           </button>
         </div>
-        <div className="px-4 mb-8 mt-4">
-          <button 
-            onClick={openAddTransaction}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-surface py-3 border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] hover:text-text-primary hover:bg-accent active:translate-y-0 active:shadow-none transition-all font-black uppercase tracking-wider"
-          >
-            <Plus size={24} strokeWidth={2.5} />
-            Catat Transaksi
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto space-y-8 pr-2">
+        <div className="flex-1 overflow-y-auto space-y-8 pr-2 mt-4">
           <div>
             <p className="px-4 text-xs font-black uppercase tracking-widest text-text-primary mb-3">Main</p>
             <nav className="space-y-2">
@@ -138,6 +128,15 @@ export const Layout = () => {
         <MobileNavItem to="/budgets" icon={<Target size={22} />} label="Anggaran" />
         <MobileNavItem to="/reports" icon={<PieChart size={22} />} label="Laporan" />
       </nav>
+
+      {/* Desktop Floating Action Button (FAB) */}
+      <button 
+        onClick={openAddTransaction}
+        className="hidden md:flex fixed bottom-12 right-12 z-40 items-center justify-center gap-3 bg-primary text-surface px-6 py-4 border-4 border-text-primary shadow-[8px_8px_0_0_#171B22] hover:-translate-y-2 hover:shadow-[12px_12px_0_0_#171B22] hover:text-text-primary hover:bg-accent active:translate-y-0 active:shadow-none transition-all font-black uppercase tracking-widest text-lg group"
+      >
+        <Plus size={28} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-300" />
+        Catat Transaksi
+      </button>
 
       <AddTransactionSheet />
       <NotificationPanel isOpen={isNotificationOpen} onClose={() => setIsNotificationOpen(false)} />
