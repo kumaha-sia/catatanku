@@ -4,7 +4,6 @@ import { BottomSheet } from '../components/BottomSheet';
 import { useBudgets, useCreateBudget, useUpdateBudget, useDeleteBudget, useCategories, useHouseholds, useRolloverBudgets } from '../hooks/useFinances';
 
 export const Budgets = () => {
-  const [activeTab, setActiveTab] = useState<'ME' | 'FAMILY'>('ME');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [budgetAmount, setBudgetAmount] = useState('');
@@ -16,12 +15,11 @@ export const Budgets = () => {
   const [currentYear, setCurrentYear] = useState(now.getFullYear());
 
   const { data: households } = useHouseholds();
-  const myHouseholdId = households?.find((h: any) => h.role === 'OWNER' && h.name.includes('Household'))?.id;
-  const familyHouseholdId = households?.find((h: any) => h.role !== 'OWNER' || !h.name.includes('Household'))?.id;
+  const personalHousehold = households?.find((h: any) => h.role === 'OWNER') || households?.[0];
+  const joinedHousehold = households?.find((h: any) => h.role !== 'OWNER' && h.status !== 'PENDING');
+  const activeHouseholdId = (joinedHousehold || personalHousehold)?.id;
 
-  const currentHouseholdId = activeTab === 'ME' ? myHouseholdId : familyHouseholdId;
-
-  const { data: budgets } = useBudgets(currentHouseholdId, currentMonth, currentYear);
+  const { data: budgets } = useBudgets(activeHouseholdId, currentMonth, currentYear);
   const { data: categories } = useCategories();
   
   const createBudget = useCreateBudget();
@@ -30,10 +28,10 @@ export const Budgets = () => {
   const rolloverBudgets = useRolloverBudgets();
 
   const handleRollover = async () => {
-    if (!currentHouseholdId) return;
+    if (!activeHouseholdId) return;
     try {
       await rolloverBudgets.mutateAsync({
-        household_id: currentHouseholdId,
+        household_id: activeHouseholdId,
         month: currentMonth,
         year: currentYear
       });
@@ -46,7 +44,7 @@ export const Budgets = () => {
   const handleSave = async () => {
     try {
       const data = {
-        household_id: currentHouseholdId,
+        household_id: activeHouseholdId,
         category_id: selectedCategory,
         period: 'MONTHLY',
         period_month: currentMonth,
@@ -130,7 +128,7 @@ export const Budgets = () => {
             &gt;
           </button>
 
-          {currentHouseholdId && (
+          {activeHouseholdId && (
             <button 
               onClick={openAdd}
               className="ml-2 w-10 h-10 bg-primary text-surface border-2 border-text-primary flex items-center justify-center shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
@@ -141,21 +139,7 @@ export const Budgets = () => {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex p-1 bg-surface-muted border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] rounded-none w-full sm:w-64">
-        <button 
-          onClick={() => setActiveTab('ME')}
-          className={`flex-1 py-2 text-sm font-black uppercase tracking-wider rounded-none transition-all ${activeTab === 'ME' ? 'bg-primary text-surface border-2 border-text-primary shadow-[2px_2px_0_0_#171B22]' : 'text-text-primary hover:bg-surface-muted'}`}
-        >
-          Pribadi
-        </button>
-        <button 
-          onClick={() => setActiveTab('FAMILY')}
-          className={`flex-1 py-2 text-sm font-black uppercase tracking-wider rounded-none transition-all ${activeTab === 'FAMILY' ? 'bg-primary text-surface border-2 border-text-primary shadow-[2px_2px_0_0_#171B22]' : 'text-text-primary hover:bg-surface-muted'}`}
-        >
-          Keluarga
-        </button>
-      </div>
+
 
       {/* Summary Block */}
       <div className="bg-surface border-4 border-text-primary p-5 md:p-6 shadow-[6px_6px_0_0_#171B22]">
@@ -187,7 +171,7 @@ export const Budgets = () => {
         {budgets?.length === 0 ? (
           <div className="p-8 text-center border-4 border-text-primary bg-surface shadow-[6px_6px_0_0_#171B22]">
             <p className="text-text-primary font-black uppercase tracking-widest text-sm mb-6">Belum ada anggaran bulan ini.</p>
-            {currentHouseholdId && (
+            {activeHouseholdId && (
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <button 
                   onClick={handleRollover}
