@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { BottomSheet } from './BottomSheet';
-import { NumericKeypad } from './NumericKeypad';
 import { useUIStore } from '../store/uiStore';
 import { ChevronRight, ChevronLeft, Search } from 'lucide-react';
 import { useWallets, useCategories, useCreateTransaction, useUpdateTransaction, useHouseholds } from '../hooks/useFinances';
@@ -178,19 +177,24 @@ export const AddTransactionSheet = () => {
             </div>
           )}
 
-          {/* Amount Display */}
-          <div className="text-center py-4 px-2">
-            <span className="text-text-primary font-black text-2xl relative -top-2 md:-top-4">Rp</span>
-            <span 
-              className={`font-black ml-1 md:ml-2 break-all tracking-tight leading-none ${amountStr === '0' ? 'text-text-primary/50' : 'text-text-primary'}
-                ${formattedAmount.length > 11 ? 'text-3xl' : formattedAmount.length > 8 ? 'text-4xl' : formattedAmount.length > 6 ? 'text-5xl' : 'text-6xl'}
-              `}
-            >
-              {formattedAmount}
-            </span>
-            {amountStr === '0' && (
-              <p className="text-text-primary font-bold uppercase tracking-wider text-sm mt-2">Ketik nominal di bawah</p>
-            )}
+          {/* Amount Input */}
+          <div className="py-6 px-4 bg-surface border-4 border-text-primary shadow-[6px_6px_0_0_#171B22] mb-4">
+            <p className="text-xs font-black text-text-primary uppercase tracking-widest text-center mb-2">Nominal</p>
+            <div className="flex items-center justify-center">
+              <span className="text-text-primary font-black text-3xl md:text-4xl mr-2">Rp</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={formattedAmount === '0' ? '' : formattedAmount}
+                placeholder="0"
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\D/g, '');
+                  setAmountStr(raw || '0');
+                }}
+                className="w-full max-w-[200px] bg-transparent border-none text-center font-black tracking-tight leading-none text-text-primary focus:outline-none focus:ring-0 placeholder:text-text-primary/30 text-4xl md:text-5xl p-0"
+              />
+            </div>
+            <div className="h-1 w-3/4 max-w-[150px] bg-text-primary mx-auto mt-2"></div>
           </div>
 
           {/* Selectors (Premium Drill-Down) */}
@@ -275,13 +279,10 @@ export const AddTransactionSheet = () => {
           <button 
             onClick={handleSave}
             disabled={!amountStr || amountStr === '0' || createTx.isPending}
-            className="w-full py-4 bg-primary text-surface rounded-none border-2 border-text-primary font-black uppercase tracking-wider text-xl shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:shadow-none transition-all mt-4"
+            className="w-full py-4 bg-primary text-surface rounded-none border-4 border-text-primary font-black uppercase tracking-wider text-xl shadow-[6px_6px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[8px_8px_0_0_#171B22] active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:shadow-none transition-all mt-4"
           >
             {createTx.isPending ? 'Menyimpan...' : 'Simpan Transaksi'}
           </button>
-
-          {/* Numeric Keypad */}
-          <NumericKeypad value={amountStr} onChange={setAmountStr} />
         </div>
       )}
 
