@@ -16,8 +16,7 @@ export const Budgets = () => {
 
   const { data: households } = useHouseholds();
   const personalHousehold = households?.find((h: any) => h.role === 'OWNER') || households?.[0];
-  const joinedHousehold = households?.find((h: any) => h.role !== 'OWNER' && h.status !== 'PENDING');
-  const activeHouseholdId = (joinedHousehold || personalHousehold)?.id;
+  const activeHouseholdId = personalHousehold?.id;
 
   const { data: budgets } = useBudgets(activeHouseholdId, currentMonth, currentYear);
   const { data: categories } = useCategories();
@@ -103,18 +102,18 @@ export const Budgets = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-black text-text-primary uppercase tracking-wide">Anggaran</h1>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button 
             onClick={() => {
               if (currentMonth === 1) { setCurrentMonth(12); setCurrentYear(y => y - 1); }
               else setCurrentMonth(m => m - 1);
             }}
-            className="w-10 h-10 flex items-center justify-center bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] transition-all active:translate-y-0 active:shadow-none"
+            className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] transition-all active:translate-y-0 active:shadow-none"
           >
             &lt;
           </button>
           
-          <div className="px-4 py-2 bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] font-black uppercase tracking-wider text-sm min-w-[140px] text-center">
+          <div className="flex-1 sm:flex-none px-2 sm:px-4 py-2 bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] font-black uppercase tracking-wider text-xs sm:text-sm min-w-[120px] text-center truncate">
             {new Date(currentYear, currentMonth - 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
           </div>
 
@@ -123,7 +122,7 @@ export const Budgets = () => {
               if (currentMonth === 12) { setCurrentMonth(1); setCurrentYear(y => y + 1); }
               else setCurrentMonth(m => m + 1);
             }}
-            className="w-10 h-10 flex items-center justify-center bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] transition-all active:translate-y-0 active:shadow-none"
+            className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] transition-all active:translate-y-0 active:shadow-none"
           >
             &gt;
           </button>
@@ -131,7 +130,7 @@ export const Budgets = () => {
           {activeHouseholdId && (
             <button 
               onClick={openAdd}
-              className="ml-2 w-10 h-10 bg-primary text-surface border-2 border-text-primary flex items-center justify-center shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
+              className="ml-1 w-10 h-10 flex-shrink-0 bg-primary text-surface border-2 border-text-primary flex items-center justify-center shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
             >
               <Plus size={20} />
             </button>
