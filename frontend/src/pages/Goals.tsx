@@ -20,10 +20,16 @@ export const Goals = () => {
   const [sourceWalletId, setSourceWalletId] = useState('');
 
   const { data: households } = useHouseholds();
-  const myHouseholdId = households?.find((h: any) => h.role === 'OWNER' && h.name.includes('Household'))?.id;
-  const familyHouseholdId = households?.find((h: any) => h.role !== 'OWNER' || !h.name.includes('Household'))?.id;
   
-  const currentHouseholdId = activeTab === 'ME' ? myHouseholdId : familyHouseholdId;
+  const personalHousehold = households?.find((h: any) => h.role === 'OWNER') || households?.[0];
+  const joinedHousehold = households?.find((h: any) => h.role !== 'OWNER' && h.status !== 'PENDING');
+  const familyHousehold = joinedHousehold || personalHousehold;
+
+  // Use undefined for ME to fetch personal goals (household_id: null in backend)
+  const currentHouseholdId = activeTab === 'ME' ? undefined : familyHousehold?.id;
+
+  const { data: members } = useMembers(familyHousehold?.id);
+  const hasFamily = !!joinedHousehold || (members && members.length > 1);
 
   const { data: goals } = useGoals(currentHouseholdId);
   const { data: walletsData } = useWallets(currentHouseholdId);
@@ -84,8 +90,9 @@ export const Goals = () => {
       });
 
       // 2. Create expense transaction to deduct from wallet
+      const txHouseholdId = activeTab === 'ME' ? personalHousehold?.id : familyHousehold?.id;
       await createTransaction.mutateAsync({
-        household_id: currentHouseholdId,
+        household_id: txHouseholdId,
         wallet_id: sourceWalletId,
         type: 'EXPENSE',
         amount: addedAmount,
@@ -164,7 +171,7 @@ export const Goals = () => {
         </button>
       </div>
 
-      {(!currentHouseholdId && activeTab === 'FAMILY') ? (
+      {(!hasFamily && activeTab === 'FAMILY') ? (
         <div className="text-center p-8 bg-surface border-4 border-text-primary rounded-none shadow-[8px_8px_0_0_#171B22] mt-4">
           <p className="text-text-primary font-black uppercase tracking-wide">Anda belum tergabung dalam keluarga.</p>
         </div>
