@@ -169,7 +169,7 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
           </h2>
           <div className="flex items-center justify-between mt-6">
             <p className="font-bold text-sm">
-              {familyWallets.length} dompet terhubung
+              {(wallets?.family_members?.length || 0) + 1} anggota terhubung
             </p>
             <button onClick={() => navigate('/wallets')} className="px-4 py-2 bg-surface text-text-primary border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none font-black uppercase text-xs transition-all">
               Kelola
