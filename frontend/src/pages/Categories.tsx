@@ -41,20 +41,20 @@ export const Categories = () => {
       setIsModalOpen(false);
     } catch (err) {
       console.error(err);
-      alert('Terjadi kesalahan');
+      window.toast.error('Terjadi kesalahan');
     }
   };
 
   const handleDelete = async () => {
     if (!selectedCategoryId) return;
-    if (confirm('Hapus kategori ini? Transaksi terkait akan kehilangan kategorinya.')) {
+    window.appConfirm('Hapus kategori ini? Transaksi terkait akan kehilangan kategorinya.', async () => {
       try {
         await deleteCategory.mutateAsync(selectedCategoryId);
         setIsModalOpen(false);
       } catch (err) {
-        alert('Gagal menghapus kategori');
+        window.toast.error('Gagal menghapus kategori');
       }
-    }
+    });
   };
 
   const openAdd = () => {

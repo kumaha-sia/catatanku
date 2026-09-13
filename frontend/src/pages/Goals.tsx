@@ -54,16 +54,16 @@ export const Goals = () => {
       }
       setIsModalOpen(false);
     } catch (e) {
-      alert('Gagal menyimpan tujuan');
+      window.toast.error('Gagal menyimpan tujuan');
     }
   };
 
   const handleDelete = async () => {
     if (!selectedGoalId) return;
-    if (confirm('Yakin ingin menghapus tujuan ini?')) {
+    window.appConfirm('Yakin ingin menghapus tujuan ini?', async () => {
       await deleteGoal.mutateAsync(selectedGoalId);
       setIsModalOpen(false);
-    }
+    });
   };
 
   const handleTopupSave = async () => {
@@ -79,7 +79,7 @@ export const Goals = () => {
       setIsTopupOpen(false);
       setTopupAmount('');
     } catch (e) {
-      alert('Gagal menambah tabungan');
+      window.toast.error('Gagal menambah tabungan');
     }
   };
 

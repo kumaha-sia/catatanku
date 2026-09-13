@@ -36,7 +36,7 @@ export const Profile = () => {
       }
     } catch (err) {
       console.error(err);
-      alert('Akses kamera tidak diizinkan atau perangkat tidak ditemukan.');
+      window.toast.info('Akses kamera tidak diizinkan atau perangkat tidak ditemukan.');
       setIsWebcamOpen(false);
     }
   };
@@ -83,7 +83,7 @@ export const Profile = () => {
               }
             } catch (err) {
               console.error(err);
-              alert('Gagal mengunggah foto profil');
+              window.toast.error('Gagal mengunggah foto profil');
             } finally {
               setIsUploading(false);
             }
@@ -118,7 +118,7 @@ export const Profile = () => {
         setIsAvatarOpen(false);
       } catch (err) {
         console.error(err);
-        alert('Gagal mengunggah foto profil');
+        window.toast.error('Gagal mengunggah foto profil');
       } finally {
         setIsUploading(false);
       }

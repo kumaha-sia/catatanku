@@ -35,21 +35,21 @@ export const Wallets = () => {
       setIsModalOpen(false);
     } catch (error) {
       console.error(error);
-      alert('Terjadi kesalahan');
+      window.toast.error('Terjadi kesalahan');
     }
   };
 
   const handleDelete = async () => {
     if (!selectedWalletId) return;
-    if (confirm('Yakin ingin menghapus dompet ini? Semua transaksi terkait akan terhapus.')) {
+    window.appConfirm('Yakin ingin menghapus dompet ini? Semua transaksi terkait akan terhapus.', async () => {
       try {
         await deleteWallet.mutateAsync(selectedWalletId);
         setIsModalOpen(false);
       } catch (error) {
         console.error(error);
-        alert('Gagal menghapus dompet');
+        window.toast.error('Gagal menghapus dompet');
       }
-    }
+    });
   };
 
   const openAdd = () => {

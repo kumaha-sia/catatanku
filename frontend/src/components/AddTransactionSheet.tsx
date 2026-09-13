@@ -100,9 +100,9 @@ export const AddTransactionSheet = () => {
   const formattedAmount = parseInt(amountStr || '0', 10).toLocaleString('id-ID');
 
   const handleSave = async () => {
-    if (!selectedWalletFrom) return alert('Pilih dompet sumber');
-    if (type !== 'TRANSFER' && !selectedCategory) return alert('Pilih kategori');
-    if (type === 'TRANSFER' && !selectedWalletTo) return alert('Pilih dompet tujuan');
+    if (!selectedWalletFrom) return window.toast.info('Pilih dompet sumber');
+    if (type !== 'TRANSFER' && !selectedCategory) return window.toast.info('Pilih kategori');
+    if (type === 'TRANSFER' && !selectedWalletTo) return window.toast.info('Pilih dompet tujuan');
 
     const personalHouseholdId = households?.find((h: any) => h.owner_id === user?.id)?.id || households?.[0]?.id;
 
@@ -130,7 +130,7 @@ export const AddTransactionSheet = () => {
       setNote('');
       setActiveView('MAIN');
     } catch (e) {
-      alert('Gagal menyimpan transaksi');
+      window.toast.error('Gagal menyimpan transaksi');
     }
   };
 

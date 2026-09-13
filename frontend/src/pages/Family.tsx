@@ -70,7 +70,7 @@ export const Family = () => {
       await inviteMember.mutateAsync({ householdId: activeHouseholdId, email: inviteEmail });
       setInviteEmail('');
       setErrorMsg('');
-      alert('Undangan berhasil dikirim!');
+      window.toast.success('Undangan berhasil dikirim!');
     } catch (e: any) {
       setErrorMsg(e.response?.data?.message || 'Gagal mengirim undangan. Pastikan email terdaftar.');
     }
@@ -83,18 +83,18 @@ export const Family = () => {
   };
 
   const handleKick = async (memberId: string) => {
-    if (window.confirm('Keluarkan anggota ini?')) {
+    window.appConfirm('Keluarkan anggota ini?', async () => {
       try { await removeMember.mutateAsync({ householdId: activeHouseholdId!, memberId }); } catch (e) {}
-    }
+    });
   };
 
   const handleLeave = async () => {
-    if (window.confirm('Yakin ingin meninggalkan keluarga ini?')) {
+    window.appConfirm('Yakin ingin meninggalkan keluarga ini?', async () => {
       try {
         await leaveHousehold.mutateAsync(activeHouseholdId!);
         setActiveHouseholdId(null);
       } catch (e) {}
-    }
+    });
   };
 
   const handleAccept = async () => {
@@ -102,12 +102,12 @@ export const Family = () => {
   };
 
   const handleReject = async () => {
-    if (window.confirm('Tolak undangan ini?')) {
+    window.appConfirm('Tolak undangan ini?', async () => {
       try {
         await rejectHousehold.mutateAsync(activeHouseholdId!);
         setActiveHouseholdId(null);
       } catch (e) {}
-    }
+    });
   };
 
   if (!households) return null;

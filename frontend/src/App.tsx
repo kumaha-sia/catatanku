@@ -16,6 +16,8 @@ import { Reports } from './pages/Reports';
 import { Categories } from './pages/Categories';
 import { Profile } from './pages/Profile';
 import { JoinHousehold } from './pages/JoinHousehold';
+import { ToastContainer } from './components/ToastContainer';
+import { ConfirmDialog } from './components/ConfirmDialog';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,6 +31,8 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <ToastContainer />
+      <ConfirmDialog />
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />

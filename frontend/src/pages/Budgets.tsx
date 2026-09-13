@@ -34,9 +34,9 @@ export const Budgets = () => {
         month: currentMonth,
         year: currentYear
       });
-      alert('Berhasil menyalin anggaran dari bulan lalu!');
+      window.toast.success('Berhasil menyalin anggaran dari bulan lalu!');
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Gagal menyalin anggaran');
+      window.toast.error(error.response?.data?.message || 'Gagal menyalin anggaran');
     }
   };
 
@@ -59,16 +59,16 @@ export const Budgets = () => {
       }
       setIsModalOpen(false);
     } catch (e) {
-      alert('Gagal menyimpan anggaran');
+      window.toast.error('Gagal menyimpan anggaran');
     }
   };
 
   const handleDelete = async () => {
     if (!selectedBudgetId) return;
-    if (confirm('Yakin ingin menghapus anggaran ini?')) {
+    window.appConfirm('Yakin ingin menghapus anggaran ini?', async () => {
       await deleteBudget.mutateAsync(selectedBudgetId);
       setIsModalOpen(false);
-    }
+    });
   };
 
   const openAdd = () => {

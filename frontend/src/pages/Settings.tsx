@@ -41,7 +41,7 @@ export const Settings = () => {
       URL.revokeObjectURL(url);
       setIsExportOpen(false);
     } catch {
-      alert('Gagal mengekspor data. Coba lagi.');
+      window.toast.error('Gagal mengekspor data. Coba lagi.');
     } finally {
       setIsExporting(false);
     }

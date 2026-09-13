@@ -308,10 +308,10 @@ export const Transactions = () => {
             <div className="flex gap-4 pt-4">
               <button 
                 onClick={async () => {
-                  if (confirm('Yakin ingin menghapus transaksi ini?')) {
+                  window.appConfirm('Yakin ingin menghapus transaksi ini?', async () => {
                     await deleteTx.mutateAsync(selectedTx.id);
                     setIsDetailOpen(false);
-                  }
+                  });
                 }}
                 className="flex-1 py-4 bg-error text-text-primary border-4 border-text-primary rounded-none font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all flex items-center justify-center gap-2"
               >
@@ -336,3 +336,4 @@ export const Transactions = () => {
     </div>
   );
 };
+
