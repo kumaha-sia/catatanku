@@ -129,32 +129,32 @@ export const Transactions = () => {
       {/* Filter Chips - Horizontal Scroll */}
       <div className="flex flex-col gap-3">
         {/* Type Filter */}
-        <div className="flex overflow-x-auto gap-2 pb-1 hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="grid grid-cols-4 gap-2">
           {['SEMUA', 'EXPENSE', 'INCOME', 'TRANSFER'].map((type) => (
             <button 
               key={type}
               onClick={() => setActiveType(type)}
-              className={`whitespace-nowrap px-4 py-2 rounded-none text-xs uppercase tracking-wider font-black transition-all border-2 border-text-primary flex-shrink-0 ${
+              className={`px-2 py-2 rounded-none text-[10px] sm:text-xs uppercase tracking-wider font-black transition-all border-2 border-text-primary text-center truncate ${
                 activeType === type 
-                  ? 'bg-text-primary text-surface shadow-[4px_4px_0_0_#FFB43A] -translate-y-0.5' 
-                  : 'bg-surface text-text-primary shadow-[2px_2px_0_0_#171B22] hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#171B22]'
+                  ? 'bg-text-primary text-surface shadow-[2px_2px_0_0_#FFB43A] translate-y-0.5' 
+                  : 'bg-surface text-text-primary shadow-[2px_2px_0_0_#171B22] hover:translate-y-0.5 hover:shadow-[2px_2px_0_0_#171B22]'
               }`}
             >
-              {type === 'SEMUA' ? 'Semua Tipe' : type === 'EXPENSE' ? 'Pengeluaran' : type === 'INCOME' ? 'Pemasukan' : 'Transfer'}
+              {type === 'SEMUA' ? 'Semua' : type === 'EXPENSE' ? 'Keluar' : type === 'INCOME' ? 'Masuk' : 'Transfer'}
             </button>
           ))}
         </div>
 
         {/* Visibility Filter */}
-        <div className="flex overflow-x-auto gap-2 pb-1 hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="grid grid-cols-3 gap-2">
           {['SEMUA', 'PRIVATE', 'FAMILY'].map((vis) => (
             <button 
               key={vis}
               onClick={() => setActiveVisibility(vis)}
-              className={`whitespace-nowrap px-4 py-1.5 rounded-none text-xs uppercase tracking-wider font-black transition-all border-2 border-text-primary flex-shrink-0 ${
+              className={`px-2 py-1.5 rounded-none text-xs uppercase tracking-wider font-black transition-all border-2 border-text-primary text-center truncate ${
                 activeVisibility === vis 
-                  ? 'bg-accent text-text-primary shadow-[4px_4px_0_0_#171B22] -translate-y-0.5' 
-                  : 'bg-surface text-text-primary shadow-[2px_2px_0_0_#171B22] hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#171B22]'
+                  ? 'bg-accent text-text-primary shadow-[2px_2px_0_0_#171B22] translate-y-0.5' 
+                  : 'bg-surface text-text-primary shadow-[2px_2px_0_0_#171B22] hover:translate-y-0.5 hover:shadow-[2px_2px_0_0_#171B22]'
               }`}
             >
               {vis === 'SEMUA' ? 'Semua' : vis === 'PRIVATE' ? 'Pribadi' : 'Keluarga'}
