@@ -42,12 +42,6 @@ export const Goals = () => {
   const deleteGoal = useDeleteGoal();
   const createTransaction = useCreateTransaction();
 
-  let filteredGoals = goals || [];
-  if (activeTab === 'FAMILY') {
-    // Just like transactions, hide the current user's personal goals from the family tab
-    filteredGoals = filteredGoals.filter((g: any) => g.user_id !== user?.id);
-  }
-
   const EMOJI_LIST = [
     '🎯', '✈️', '🏝️', '🏠', '🚘', '💍', '👶', '🎓', '🏥', 
     '🎉', '👗', '🎮', '📱', '💻', '📷', '💰', '📈', '🛍️'
@@ -187,7 +181,7 @@ export const Goals = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredGoals.map((g: any) => {
+          {goals?.map((g: any) => {
             const pct = g.target_amount > 0 ? (g.current_amount / g.target_amount) * 100 : 0;
             const targetDateStr = g.target_date 
               ? new Date(g.target_date).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })
