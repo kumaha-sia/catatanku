@@ -67,7 +67,15 @@ export const Layout = () => {
           </button>
         </div>
         
-        <div className="flex-1 overflow-y-auto space-y-8">
+        <button 
+          onClick={openAddTransaction}
+          className="flex items-center justify-center gap-2 bg-primary text-surface py-3 border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] hover:text-text-primary hover:bg-accent active:translate-y-0 active:shadow-none transition-all font-black uppercase tracking-wider mb-6 mx-2"
+        >
+          <Plus size={24} strokeWidth={2.5} />
+          Catat Transaksi
+        </button>
+
+        <div className="flex-1 overflow-y-auto space-y-8 pr-2">
           <div>
             <p className="px-4 text-xs font-black uppercase tracking-widest text-text-primary mb-3">Main</p>
             <nav className="space-y-2">
@@ -94,14 +102,6 @@ export const Layout = () => {
             </nav>
           </div>
         </div>
-
-        <button 
-          onClick={openAddTransaction}
-          className="flex items-center justify-center gap-2 bg-primary text-surface py-3 border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] hover:text-text-primary hover:bg-accent active:translate-y-0 active:shadow-none transition-all font-black uppercase tracking-wider mt-4"
-        >
-          <Plus size={24} strokeWidth={2.5} />
-          Catat Transaksi
-        </button>
 
         <button 
           onClick={logout}
