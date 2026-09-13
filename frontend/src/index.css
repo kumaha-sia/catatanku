@@ -12,3 +12,26 @@
 ::-webkit-scrollbar {
   display: none;
 }
+
+@media print {
+  /* Hide navigation, bottoms sheets, and interactive buttons when printing */
+  nav, .no-print, button {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Force background colors and borders to print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  .print-break-inside-avoid {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}

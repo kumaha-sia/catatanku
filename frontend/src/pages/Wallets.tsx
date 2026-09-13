@@ -70,7 +70,7 @@ export const Wallets = () => {
   };
 
   const calculateTotal = (walletList: any[]) => {
-    return walletList?.reduce((acc, w) => acc + (w.initial_balance || 0), 0) || 0;
+    return walletList?.reduce((acc, w) => acc + (w.balance || 0), 0) || 0;
   };
 
   return (
@@ -121,7 +121,7 @@ export const Wallets = () => {
               key={w.id}
               icon={<WalletIcon size={24} className="text-text-primary stroke-[3]" />}
               name={w.name}
-              balance={w.initial_balance?.toLocaleString('id-ID') || '0'}
+              balance={w.balance?.toLocaleString('id-ID') || '0'}
               bgClass="bg-[#89CFF0]"
               onEdit={() => openEdit(w)}
             />
@@ -141,7 +141,7 @@ export const Wallets = () => {
               key={w.id}
               icon={<WalletIcon size={24} className="text-text-primary stroke-[3]" />}
               name={w.name}
-              balance={w.initial_balance?.toLocaleString('id-ID') || '0'}
+              balance={w.balance?.toLocaleString('id-ID') || '0'}
               bgClass="bg-income"
               onEdit={() => openEdit(w)}
             />

@@ -3,14 +3,17 @@ import api from '../api';
 // Auth
 export const login = (data: any) => api.post('/auth/login', data).then(res => res.data);
 export const register = (data: any) => api.post('/auth/register', data).then(res => res.data);
+export const uploadAvatar = (formData: FormData) => api.put('/auth/avatar', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+}).then(res => res.data);
 
 export const getHouseholds = () => api.get('/households').then(res => res.data.data);
 export const getMembers = (householdId: string) => api.get(`/households/${householdId}/members`).then(res => res.data.data);
 export const inviteMember = (householdId: string, email: string) => api.post(`/households/${householdId}/invite`, { email }).then(res => res.data);
 
 // Transactions
-export const getTransactions = (householdId?: string, page = 1, limit = 20) => 
-  api.get('/transactions', { params: { household_id: householdId, page, limit } }).then(res => res.data.data);
+export const getTransactions = (householdId?: string, page = 1, limit = 20, month?: string, year?: string) => 
+  api.get('/transactions', { params: { household_id: householdId, page, limit, month, year } }).then(res => res.data.data);
 export const createTransaction = (data: any) => api.post('/transactions', data).then(res => res.data.data);
 export const updateTransaction = (id: string, data: any) => api.put(`/transactions/${id}`, data).then(res => res.data.data);
 export const deleteTransaction = (id: string) => api.delete(`/transactions/${id}`).then(res => res.data);
@@ -35,6 +38,8 @@ export const getBudgets = (householdId?: string, month?: number, year?: number) 
 export const createBudget = (data: any) => api.post('/budgets', data).then(res => res.data.data);
 export const updateBudget = (id: string, data: any) => api.put(`/budgets/${id}`, data).then(res => res.data.data);
 export const deleteBudget = (id: string) => api.delete(`/budgets/${id}`).then(res => res.data);
+export const rolloverBudgets = (data: { household_id: string, month: number, year: number }) => 
+  api.post('/budgets/rollover', data).then(res => res.data.data);
 
 // Goals
 export const getGoals = (householdId?: string) => 
@@ -46,3 +51,8 @@ export const deleteGoal = (id: string) => api.delete(`/goals/${id}`).then(res =>
 // Reports
 export const getReportSummary = (householdId: string, month?: string, year?: string) => 
   api.get('/reports/summary', { params: { household_id: householdId, month, year } }).then(res => res.data.data);
+
+// Notifications
+export const getNotifications = () => api.get('/notifications').then(res => res.data.data);
+export const markNotificationAsRead = (id: string) => api.put(`/notifications/${id}/read`).then(res => res.data.data);
+export const markAllNotificationsAsRead = () => api.put('/notifications/read-all').then(res => res.data);

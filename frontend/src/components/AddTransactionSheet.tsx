@@ -179,9 +179,13 @@ export const AddTransactionSheet = () => {
           )}
 
           {/* Amount Display */}
-          <div className="text-center py-4">
-            <span className="text-text-primary font-black text-2xl">Rp</span>
-            <span className={`text-6xl font-black ml-2 break-all ${amountStr === '0' ? 'text-text-primary/50' : 'text-text-primary'}`}>
+          <div className="text-center py-4 px-2">
+            <span className="text-text-primary font-black text-2xl relative -top-2 md:-top-4">Rp</span>
+            <span 
+              className={`font-black ml-1 md:ml-2 break-all tracking-tight leading-none ${amountStr === '0' ? 'text-text-primary/50' : 'text-text-primary'}
+                ${formattedAmount.length > 11 ? 'text-3xl' : formattedAmount.length > 8 ? 'text-4xl' : formattedAmount.length > 6 ? 'text-5xl' : 'text-6xl'}
+              `}
+            >
               {formattedAmount}
             </span>
             {amountStr === '0' && (

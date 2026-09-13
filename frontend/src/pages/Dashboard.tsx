@@ -46,8 +46,9 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {/* Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Controls & Tabs Container */}
+      <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
+        {/* Month Selector */}
         <div className="flex items-center gap-2">
           <button 
             onClick={() => {
@@ -59,7 +60,7 @@ export const Dashboard = () => {
             &lt;
           </button>
           
-          <div className="px-4 py-2 bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] font-black uppercase tracking-wider text-sm min-w-[140px] text-center">
+          <div className="flex-1 md:flex-none px-4 py-2 bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] font-black uppercase tracking-wider text-sm min-w-[140px] text-center">
             {new Date(currentYear, currentMonth - 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
           </div>
 
@@ -73,33 +74,28 @@ export const Dashboard = () => {
             &gt;
           </button>
         </div>
-        <button 
-          onClick={() => setHideBalance(!hideBalance)}
-          className="w-10 h-10 rounded-none bg-surface flex items-center justify-center text-text-primary shadow-[4px_4px_0_0_#171B22] border-2 border-text-primary hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
-        >
-          {hideBalance ? <EyeOff size={20} /> : <Eye size={20} />}
-        </button>
-      </div>
 
-      {/* Tabs */}
-      <div className="flex p-1 bg-surface-muted border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] rounded-none w-full sm:w-64">
-        <button 
-          onClick={() => setActiveTab('ME')}
-          className={`flex-1 py-2 text-sm font-black uppercase tracking-wider rounded-none transition-all ${activeTab === 'ME' ? 'bg-primary text-surface border-2 border-text-primary shadow-[2px_2px_0_0_#171B22]' : 'text-text-primary hover:bg-surface-muted'}`}
-        >
-          Pribadi
-        </button>
-        <button 
-          onClick={() => setActiveTab('FAMILY')}
-          className={`flex-1 py-2 text-sm font-black uppercase tracking-wider rounded-none transition-all ${activeTab === 'FAMILY' ? 'bg-primary text-surface border-2 border-text-primary shadow-[2px_2px_0_0_#171B22]' : 'text-text-primary hover:bg-surface-muted'}`}
-        >
-          Keluarga
-        </button>
+        {/* Tabs */}
+        <div className="flex p-1 bg-surface-muted border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] rounded-none w-full md:w-64">
+          <button 
+            onClick={() => setActiveTab('ME')}
+            className={`flex-1 py-2 text-sm font-black uppercase tracking-wider rounded-none transition-all ${activeTab === 'ME' ? 'bg-primary text-surface border-2 border-text-primary shadow-[2px_2px_0_0_#171B22]' : 'text-text-primary hover:bg-surface-muted'}`}
+          >
+            Pribadi
+          </button>
+          <button 
+            onClick={() => setActiveTab('FAMILY')}
+            className={`flex-1 py-2 text-sm font-black uppercase tracking-wider rounded-none transition-all ${activeTab === 'FAMILY' ? 'bg-primary text-surface border-2 border-text-primary shadow-[2px_2px_0_0_#171B22]' : 'text-text-primary hover:bg-surface-muted'}`}
+          >
+            Keluarga
+          </button>
+        </div>
       </div>
 
       {/* Tab Content */}
       <DashboardTab 
         hideBalance={hideBalance} 
+        setHideBalance={setHideBalance}
         navigate={navigate} 
         householdId={activeHouseholdId}
         type={activeTab}
@@ -112,11 +108,11 @@ export const Dashboard = () => {
   );
 };
 
-const DashboardTab = ({ hideBalance, navigate, householdId, type, hasFamily, currentMonth, currentYear }: { hideBalance: boolean, navigate: any, householdId?: string, type: string, hasFamily: boolean, currentMonth: number, currentYear: number }) => {
+const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type, hasFamily, currentMonth, currentYear }: { hideBalance: boolean, setHideBalance: (h: boolean) => void, navigate: any, householdId?: string, type: string, hasFamily: boolean, currentMonth: number, currentYear: number }) => {
   
   const { data: report } = useReportSummary(householdId || '', currentMonth + "", currentYear + "");
   const { data: wallets } = useWallets(householdId);
-  const { data: transactions } = useTransactions(householdId || '', 1);
+  const { data: transactions } = useTransactions(householdId || '', 1, currentMonth + "", currentYear + "");
 
   if (type === 'FAMILY' && !hasFamily) {
     return (
@@ -133,13 +129,24 @@ const DashboardTab = ({ hideBalance, navigate, householdId, type, hasFamily, cur
     );
   }
 
+  const calculateTotal = (walletList: any[]) => walletList?.reduce((acc, w) => acc + (w.balance || 0), 0) || 0;
+  const totalBalance = type === 'ME' ? calculateTotal(wallets?.personal || []) : calculateTotal(wallets?.shared || []);
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Balance Card */}
       <div className={`${type === 'FAMILY' ? 'bg-accent text-text-primary' : 'bg-primary text-surface'} rounded-none border-4 border-text-primary p-6 shadow-[8px_8px_0_0_#171B22] relative overflow-hidden`}>
-        <p className={`text-sm font-black mb-1 uppercase tracking-widest`}>Total Saldo {type === 'ME' ? 'Pribadi' : 'Keluarga'}</p>
+        <div className="flex items-center justify-between mb-1">
+          <p className={`text-sm font-black uppercase tracking-widest`}>Total Saldo {type === 'ME' ? 'Pribadi' : 'Keluarga'}</p>
+          <button 
+            onClick={() => setHideBalance(!hideBalance)}
+            className="w-8 h-8 rounded-none bg-surface/20 flex items-center justify-center border-2 border-text-primary hover:bg-surface/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
+          >
+            {hideBalance ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
         <h2 className="text-4xl font-black mb-4 tracking-tight break-all sm:break-words">
-          {hideBalance ? 'Rp        ' : `Rp ${(report?.balance || 0).toLocaleString('id-ID')}`}
+          {hideBalance ? 'Rp        ' : `Rp ${totalBalance.toLocaleString('id-ID')}`}
         </h2>
         <div className="flex items-center justify-between mt-6">
           <p className={`font-bold text-sm`}>
@@ -160,7 +167,7 @@ const DashboardTab = ({ hideBalance, navigate, householdId, type, hasFamily, cur
             <ArrowDownRight size={18} className="text-income" />
             <p className="text-xs font-black uppercase tracking-wider">Pemasukan</p>
           </div>
-          <p className="text-lg font-black text-income">
+          <p className="text-base md:text-lg font-black text-income break-all sm:break-words leading-tight">
             {hideBalance ? 'Rp      ' : `Rp ${(report?.total_income || 0).toLocaleString('id-ID')}`}
           </p>
         </div>
@@ -169,7 +176,7 @@ const DashboardTab = ({ hideBalance, navigate, householdId, type, hasFamily, cur
             <ArrowUpRight size={18} className="text-expense" />
             <p className="text-xs font-black uppercase tracking-wider">Pengeluaran</p>
           </div>
-          <p className="text-lg font-black text-expense">
+          <p className="text-base md:text-lg font-black text-expense break-all sm:break-words leading-tight">
             {hideBalance ? 'Rp      ' : `Rp ${(report?.total_expense || 0).toLocaleString('id-ID')}`}
           </p>
         </div>
@@ -182,19 +189,19 @@ const DashboardTab = ({ hideBalance, navigate, householdId, type, hasFamily, cur
           <button onClick={() => navigate('/transactions')} className="text-sm font-black uppercase tracking-wider text-primary hover:underline">Lihat semua</button>
         </div>
         
-        <div className="space-y-4">
+        <div className="space-y-3">
           {transactions?.slice(0, 5).map((t: any) => (
-            <div key={t.id} className="bg-surface p-4 rounded-none flex items-center justify-between shadow-[4px_4px_0_0_#171B22] border-2 border-text-primary cursor-pointer hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-[2px_2px_0_0_#171B22] transition-all">
-              <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-none border-2 border-text-primary flex items-center justify-center text-2xl ${t.type === 'INCOME' ? 'bg-[#A3E635]' : 'bg-[#FFA6A6]'}`}>
+            <div key={t.id} className="bg-surface p-3 md:p-4 rounded-none flex items-center justify-between shadow-[4px_4px_0_0_#171B22] border-2 border-text-primary cursor-pointer hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-[2px_2px_0_0_#171B22] transition-all">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className={`w-10 h-10 rounded-none border-2 border-text-primary flex items-center justify-center text-xl ${t.type === 'INCOME' ? 'bg-[#A3E635]' : 'bg-[#FFA6A6]'}`}>
                   {t.type === 'INCOME' ? '💰' : '💸'}
                 </div>
                 <div>
-                  <p className="font-black text-text-primary uppercase tracking-wide">{t.note || t.category?.name || 'Transaksi'}</p>
-                  <p className="text-xs font-bold text-text-primary mt-0.5">{new Date(t.date).toLocaleDateString('id-ID')}</p>
+                  <p className="text-sm font-black text-text-primary uppercase tracking-wide leading-none">{t.note || t.category?.name || 'Transaksi'}</p>
+                  <p className="text-[10px] md:text-xs font-bold text-text-primary mt-1">{new Date(t.date).toLocaleDateString('id-ID')}</p>
                 </div>
               </div>
-              <p className={`font-black ${t.type === 'INCOME' ? 'text-income' : 'text-expense'}`}>
+              <p className={`font-black text-sm md:text-base ${t.type === 'INCOME' ? 'text-income' : 'text-expense'}`}>
                 {t.type === 'INCOME' ? '+' : '-'} {t.amount.toLocaleString('id-ID')}
               </p>
             </div>

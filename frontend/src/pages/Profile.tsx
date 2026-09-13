@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Camera, Mail, User, Shield, CheckCircle2, Image as ImageIcon, Trash2, KeyRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../components/BottomSheet';
 
 import { useAuthStore } from '../store/authStore';
+import { uploadAvatar } from '../services/apiServices';
+import { API_URL } from '../api';
 
 export const Profile = () => {
   const navigate = useNavigate();
   const user = useAuthStore(state => state.user);
+  const loginAuth = useAuthStore(state => state.login);
   
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
@@ -15,12 +18,116 @@ export const Profile = () => {
 
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const [isWebcamOpen, setIsWebcamOpen] = useState(false);
+
+  const openWebcam = async () => {
+    setIsAvatarOpen(false);
+    setIsWebcamOpen(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Akses kamera tidak diizinkan atau perangkat tidak ditemukan.');
+      setIsWebcamOpen(false);
+    }
+  };
+
+  const closeWebcam = () => {
+    setIsWebcamOpen(false);
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      // Crop to a square for avatar
+      const size = Math.min(videoRef.current.videoWidth, videoRef.current.videoHeight);
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        // Center crop the video
+        const sx = (videoRef.current.videoWidth - size) / 2;
+        const sy = (videoRef.current.videoHeight - size) / 2;
+        ctx.drawImage(videoRef.current, sx, sy, size, size, 0, 0, size, size);
+        
+        canvas.toBlob(async (blob) => {
+          if (blob) {
+            const file = new File([blob], 'webcam.jpg', { type: 'image/jpeg' });
+            
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            try {
+              setIsUploading(true);
+              closeWebcam();
+              const res = await uploadAvatar(formData);
+              
+              if (user) {
+                const updatedUser = { ...user, avatarUrl: res.data.avatarUrl };
+                const token = localStorage.getItem('catatu_token') || '';
+                loginAuth(updatedUser, token);
+              }
+            } catch (err) {
+              console.error(err);
+              alert('Gagal mengunggah foto profil');
+            } finally {
+              setIsUploading(false);
+            }
+          }
+        }, 'image/jpeg', 0.9);
+      }
+    }
+  };
 
   const handleSave = () => {
     setIsSaved(true);
     // TODO: Call API to update profile if needed
     setTimeout(() => setIsSaved(false), 3000);
   };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      try {
+        setIsUploading(true);
+        const res = await uploadAvatar(formData);
+        
+        // Update user store with new avatarUrl
+        if (user) {
+          const updatedUser = { ...user, avatarUrl: res.data.avatarUrl };
+          const token = localStorage.getItem('catatu_token') || '';
+          loginAuth(updatedUser, token);
+        }
+        setIsAvatarOpen(false);
+      } catch (err) {
+        console.error(err);
+        alert('Gagal mengunggah foto profil');
+      } finally {
+        setIsUploading(false);
+      }
+    }
+  };
+
+  const avatarDisplay = user?.avatarUrl 
+    ? <img src={`${API_URL.replace('/api/v1', '')}${user.avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
+    : <span className="text-surface text-4xl font-black">{name ? name.charAt(0).toUpperCase() : 'U'}</span>;
 
   return (
     <div className="space-y-6 animate-fade-in pb-8 max-w-xl mx-auto">
@@ -42,8 +149,8 @@ export const Profile = () => {
           onClick={() => setIsAvatarOpen(true)}
           className="relative group cursor-pointer"
         >
-          <div className="w-24 h-24 bg-primary rounded-none flex items-center justify-center text-surface text-4xl font-black border-4 border-text-primary shadow-[4px_4px_0_0_#171B22]">
-            {name ? name.charAt(0).toUpperCase() : 'U'}
+          <div className="w-24 h-24 bg-primary rounded-none flex items-center justify-center border-4 border-text-primary shadow-[4px_4px_0_0_#171B22] overflow-hidden">
+            {avatarDisplay}
           </div>
           <div className="absolute inset-0 bg-text-primary/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
             <Camera size={24} className="text-surface" />
@@ -56,7 +163,7 @@ export const Profile = () => {
           onClick={() => setIsAvatarOpen(true)}
           className="text-sm font-black text-text-primary mt-4 cursor-pointer hover:underline uppercase tracking-wider"
         >
-          Ganti Foto Profil
+          {isUploading ? 'Mengunggah...' : 'Ganti Foto Profil'}
         </p>
       </div>
 
@@ -134,14 +241,28 @@ export const Profile = () => {
       {/* Avatar Bottom Sheet */}
       <BottomSheet isOpen={isAvatarOpen} onClose={() => setIsAvatarOpen(false)} title="Foto Profil">
         <div className="space-y-4 pt-4">
-          <button className="w-full flex items-center gap-4 p-4 bg-surface border-2 border-text-primary rounded-none hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all text-left">
+          <input 
+            type="file" 
+            ref={galleryInputRef} 
+            onChange={handleFileChange} 
+            accept="image/*" 
+            className="hidden" 
+          />
+          
+          <button 
+            onClick={openWebcam}
+            className="w-full flex items-center gap-4 p-4 bg-surface border-2 border-text-primary rounded-none hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all text-left"
+          >
             <div className="w-12 h-12 bg-primary rounded-none flex items-center justify-center border-2 border-text-primary text-text-primary">
               <Camera size={20} className="stroke-[3]" />
             </div>
             <p className="font-black text-text-primary text-base uppercase">Ambil Foto</p>
           </button>
           
-          <button className="w-full flex items-center gap-4 p-4 bg-surface border-2 border-text-primary rounded-none hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all text-left">
+          <button 
+            onClick={() => galleryInputRef.current?.click()}
+            className="w-full flex items-center gap-4 p-4 bg-surface border-2 border-text-primary rounded-none hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all text-left"
+          >
             <div className="w-12 h-12 bg-accent rounded-none flex items-center justify-center border-2 border-text-primary text-text-primary">
               <ImageIcon size={20} className="stroke-[3]" />
             </div>
@@ -205,6 +326,28 @@ export const Profile = () => {
           >
             Perbarui Password
           </button>
+        </div>
+      </BottomSheet>
+
+      {/* Webcam Bottom Sheet */}
+      <BottomSheet isOpen={isWebcamOpen} onClose={closeWebcam} title="Ambil Foto">
+        <div className="flex flex-col items-center justify-center p-4">
+          <div className="w-full max-w-[300px] h-[300px] bg-black border-4 border-text-primary rounded-none shadow-[8px_8px_0_0_#171B22] overflow-hidden relative mb-6">
+            <video 
+              ref={videoRef} 
+              autoPlay 
+              playsInline 
+              muted 
+              className="w-full h-full object-cover transform scale-x-[-1]"
+            />
+          </div>
+          <button 
+            onClick={capturePhoto}
+            className="w-[80px] h-[80px] rounded-full bg-primary border-4 border-text-primary shadow-[4px_4px_0_0_#171B22] flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+          >
+            <div className="w-[60px] h-[60px] rounded-full bg-surface border-4 border-text-primary" />
+          </button>
+          <p className="mt-4 font-black uppercase text-sm">Jepret</p>
         </div>
       </BottomSheet>
 

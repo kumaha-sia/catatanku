@@ -20,10 +20,10 @@ export const useInviteMember = () => {
 };
 
 // Transaction Hooks
-export const useTransactions = (householdId?: string, page = 1) => 
+export const useTransactions = (householdId?: string, page = 1, month?: string, year?: string) => 
   useQuery({ 
-    queryKey: ['transactions', householdId, page], 
-    queryFn: () => api.getTransactions(householdId, page)
+    queryKey: ['transactions', householdId, page, month, year], 
+    queryFn: () => api.getTransactions(householdId, page, 20, month, year)
   });
 
 export const useCreateTransaction = () => {
@@ -152,6 +152,14 @@ export const useDeleteBudget = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: api.deleteBudget,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['budgets'] })
+  });
+};
+
+export const useRolloverBudgets = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: api.rolloverBudgets,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['budgets'] })
   });
 };

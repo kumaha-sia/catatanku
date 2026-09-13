@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, AlertTriangle, Trash2 } from 'lucide-react';
 import { BottomSheet } from '../components/BottomSheet';
-import { useBudgets, useCreateBudget, useUpdateBudget, useDeleteBudget, useCategories, useHouseholds } from '../hooks/useFinances';
+import { useBudgets, useCreateBudget, useUpdateBudget, useDeleteBudget, useCategories, useHouseholds, useRolloverBudgets } from '../hooks/useFinances';
 
 export const Budgets = () => {
   const [activeTab, setActiveTab] = useState<'ME' | 'FAMILY'>('ME');
@@ -27,6 +27,21 @@ export const Budgets = () => {
   const createBudget = useCreateBudget();
   const updateBudget = useUpdateBudget();
   const deleteBudget = useDeleteBudget();
+  const rolloverBudgets = useRolloverBudgets();
+
+  const handleRollover = async () => {
+    if (!currentHouseholdId) return;
+    try {
+      await rolloverBudgets.mutateAsync({
+        household_id: currentHouseholdId,
+        month: currentMonth,
+        year: currentYear
+      });
+      alert('Berhasil menyalin anggaran dari bulan lalu!');
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Gagal menyalin anggaran');
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -143,25 +158,27 @@ export const Budgets = () => {
       </div>
 
       {/* Summary Block */}
-      <div className="bg-surface border-4 border-text-primary p-6 shadow-[6px_6px_0_0_#171B22]">
-        <div className="flex justify-between items-end mb-4">
-          <div>
-            <p className="text-xs font-black uppercase tracking-widest text-text-secondary mb-1">Total Terpakai</p>
-            <p className="text-3xl font-black text-text-primary">Rp {totalSpent.toLocaleString('id-ID')}</p>
+      <div className="bg-surface border-4 border-text-primary p-5 md:p-6 shadow-[6px_6px_0_0_#171B22]">
+        <div className="flex flex-col gap-3 md:gap-4 mb-5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-text-primary pb-3 gap-1">
+            <p className="text-xs font-black uppercase tracking-widest text-text-secondary">Total Terpakai</p>
+            <p className="text-2xl md:text-3xl font-black text-text-primary truncate">Rp {totalSpent.toLocaleString('id-ID')}</p>
           </div>
-          <div className="text-right">
-            <p className="text-xs font-black uppercase tracking-widest text-text-secondary mb-1">Dari Total</p>
-            <p className="text-xl font-bold text-text-primary">Rp {totalBudget.toLocaleString('id-ID')}</p>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-1">
+            <p className="text-xs font-black uppercase tracking-widest text-text-secondary">Dari Total Anggaran</p>
+            <p className="text-lg md:text-xl font-black text-text-primary truncate">Rp {totalBudget.toLocaleString('id-ID')}</p>
           </div>
         </div>
-        <div className="h-4 w-full bg-surface-muted border-2 border-text-primary relative overflow-hidden">
+        <div className="h-6 w-full bg-surface border-4 border-text-primary relative overflow-hidden">
           <div 
-            className={`absolute top-0 left-0 h-full ${isOverBudget ? 'bg-error' : 'bg-primary'} transition-all`} 
+            className={`absolute top-0 left-0 h-full ${isOverBudget ? 'bg-[#FFA6A6]' : 'bg-[#A3E635]'} ${totalPct > 0 ? 'border-r-4 border-text-primary' : ''} transition-all`} 
             style={{ width: `${Math.min(totalPct, 100)}%` }}
           />
         </div>
         {isOverBudget && (
-          <p className="text-error font-bold mt-2 text-sm uppercase tracking-wide">! Melebihi Total Anggaran</p>
+          <div className="mt-4 bg-error text-surface font-black text-[10px] md:text-xs uppercase tracking-wider py-1.5 px-3 border-2 border-text-primary inline-block shadow-[2px_2px_0_0_#171B22]">
+            ⚠️ Melebihi Total Anggaran
+          </div>
         )}
       </div>
 
@@ -169,14 +186,23 @@ export const Budgets = () => {
       <div className="space-y-4">
         {budgets?.length === 0 ? (
           <div className="p-8 text-center border-4 border-text-primary bg-surface shadow-[6px_6px_0_0_#171B22]">
-            <p className="text-text-secondary font-bold text-lg mb-4">Belum ada anggaran bulan ini.</p>
+            <p className="text-text-primary font-black uppercase tracking-widest text-sm mb-6">Belum ada anggaran bulan ini.</p>
             {currentHouseholdId && (
-              <button 
-                onClick={openAdd}
-                className="px-6 py-3 bg-primary text-surface font-black uppercase tracking-wider border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
-              >
-                Buat Anggaran
-              </button>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button 
+                  onClick={handleRollover}
+                  disabled={rolloverBudgets.isPending}
+                  className="w-full sm:w-auto px-6 py-3 bg-[#A3E635] text-text-primary font-black uppercase tracking-wider border-4 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none disabled:opacity-50 transition-all"
+                >
+                  {rolloverBudgets.isPending ? 'Menyalin...' : 'Salin dari Bulan Lalu'}
+                </button>
+                <button 
+                  onClick={openAdd}
+                  className="w-full sm:w-auto px-6 py-3 bg-primary text-surface font-black uppercase tracking-wider border-4 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
+                >
+                  Buat Baru
+                </button>
+              </div>
             )}
           </div>
         ) : (
@@ -188,28 +214,37 @@ export const Budgets = () => {
               <div 
                 key={budget.id}
                 onClick={() => openEdit(budget)}
-                className="bg-surface border-4 border-text-primary p-4 shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] transition-all cursor-pointer"
+                className="bg-surface border-4 border-text-primary p-4 shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] transition-all cursor-pointer group"
               >
-                <div className="flex justify-between items-center mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-none bg-surface-muted border-2 border-text-primary flex items-center justify-center text-lg shadow-[2px_2px_0_0_#171B22]">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3 flex-1 min-w-0 pr-4">
+                    <div className="w-12 h-12 flex-shrink-0 rounded-none bg-accent border-2 border-text-primary flex items-center justify-center text-xl shadow-[2px_2px_0_0_#171B22] group-hover:-translate-y-0.5 transition-transform">
                       {cat?.icon || '💰'}
                     </div>
-                    <div>
-                      <h3 className="font-black text-text-primary uppercase tracking-wide">{cat?.name || 'Kategori'}</h3>
-                      <p className="text-sm font-bold text-text-secondary">Sisa: Rp {(budget.amount - budget.spent).toLocaleString('id-ID')}</p>
+                    <div className="min-w-0">
+                      <h3 className="font-black text-text-primary uppercase tracking-wide truncate">{cat?.name || 'Kategori'}</h3>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary mt-0.5 truncate">{pct.toFixed(0)}% Terpakai</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-black text-text-primary">Rp {budget.spent.toLocaleString('id-ID')}</p>
-                    <p className="text-xs font-bold text-text-secondary">dari Rp {budget.amount.toLocaleString('id-ID')}</p>
+                  
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary mb-0.5">Sisa Anggaran</p>
+                    <p className={`font-black text-lg leading-none ${over ? 'text-expense' : 'text-text-primary'}`}>
+                      {over ? '-' : ''}Rp {Math.abs(budget.amount - budget.spent).toLocaleString('id-ID')}
+                    </p>
                   </div>
                 </div>
-                <div className="h-3 w-full bg-surface-muted border-2 border-text-primary relative overflow-hidden">
+
+                <div className="h-4 w-full bg-surface border-2 border-text-primary relative overflow-hidden mb-2">
                   <div 
-                    className={`absolute top-0 left-0 h-full ${over ? 'bg-error' : 'bg-primary'} transition-all`} 
+                    className={`absolute top-0 left-0 h-full ${over ? 'bg-[#FFA6A6]' : 'bg-[#A3E635]'} ${pct > 0 ? 'border-r-2 border-text-primary' : ''} transition-all`} 
                     style={{ width: `${Math.min(pct, 100)}%` }}
                   />
+                </div>
+                
+                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-secondary">
+                  <span className="truncate pr-2">Terpakai: Rp {budget.spent.toLocaleString('id-ID')}</span>
+                  <span className="truncate pl-2 text-right">Total: Rp {budget.amount.toLocaleString('id-ID')}</span>
                 </div>
               </div>
             );
@@ -223,16 +258,21 @@ export const Budgets = () => {
           
           <div>
             <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block px-1">Kategori</label>
-            <select 
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full bg-surface border-2 border-text-primary rounded-none px-4 py-3 font-bold text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] focus:ring-0 appearance-none"
-            >
-              <option value="" disabled>Pilih Kategori</option>
-              {expenseCategories.map((c: any) => (
-                <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select 
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full bg-surface border-4 border-text-primary rounded-none px-4 py-3 font-bold text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] focus:ring-0 appearance-none"
+              >
+                <option value="" disabled>Pilih Kategori</option>
+                {expenseCategories.map((c: any) => (
+                  <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-text-primary border-l-4 border-text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -244,7 +284,7 @@ export const Budgets = () => {
                 placeholder="0"
                 value={budgetAmount}
                 onChange={(e) => setBudgetAmount(e.target.value)}
-                className="w-full bg-surface border-2 border-text-primary rounded-none pl-12 pr-4 py-3 font-bold text-lg text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] focus:ring-0 transition-all"
+                className="w-full bg-surface border-4 border-text-primary rounded-none pl-12 pr-4 py-3 font-bold text-lg text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] focus:ring-0 transition-all"
               />
             </div>
           </div>
@@ -252,7 +292,7 @@ export const Budgets = () => {
           <button 
             onClick={handleSave}
             disabled={!selectedCategory || !budgetAmount}
-            className="w-full py-4 bg-primary text-surface rounded-none border-2 border-text-primary font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:shadow-none transition-all mt-4"
+            className="w-full py-4 bg-primary text-surface rounded-none border-4 border-text-primary font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:shadow-none transition-all mt-4"
           >
             {editMode ? "Simpan Perubahan" : "Simpan Anggaran"}
           </button>
@@ -260,7 +300,7 @@ export const Budgets = () => {
           {editMode && (
             <button 
               onClick={handleDelete}
-              className="w-full py-4 bg-error text-surface border-2 border-text-primary rounded-none font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all mt-2 flex items-center justify-center gap-2"
+              className="w-full py-4 bg-error text-surface border-4 border-text-primary rounded-none font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all mt-2 flex items-center justify-center gap-2"
             >
               <Trash2 size={20} />
               Hapus Anggaran

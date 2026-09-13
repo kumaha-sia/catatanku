@@ -55,7 +55,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           ) : (
             <div className="w-10" />
           )}
-          <h2 className="font-black uppercase tracking-wider text-xl text-text-primary">{title}</h2>
+          <h2 className="font-black uppercase tracking-wider text-xl text-surface">{title}</h2>
           <button 
             onClick={onClose}
             className="w-10 h-10 flex items-center justify-center rounded-none border-2 border-text-primary bg-accent shadow-[2px_2px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
