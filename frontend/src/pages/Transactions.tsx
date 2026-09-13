@@ -172,52 +172,38 @@ export const Transactions = () => {
           </div>
         ) : (
           Object.keys(grouped).map((date) => (
-            <div key={date} className="bg-surface border-4 border-text-primary shadow-[4px_4px_0_0_#171B22] mb-6 last:mb-0">
-              
-              {/* Date Header Block */}
-              <div className="flex justify-between items-center border-b-4 border-text-primary p-3 bg-surface-muted/30">
-                <p className="text-xs font-black text-text-primary uppercase tracking-widest">{date}</p>
-                <p className={`text-sm font-black ${grouped[date].total > 0 ? 'text-income' : 'text-expense'}`}>
+            <div key={date} className="space-y-3">
+              <div className="flex justify-between items-center border-b-4 border-text-primary pb-2">
+                <p className="text-xs md:text-sm font-black text-text-primary uppercase tracking-widest">{date}</p>
+                <p className={`text-xs md:text-sm font-black px-2 py-1 bg-surface border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] ${grouped[date].total > 0 ? 'text-income' : 'text-expense'}`}>
                   {grouped[date].total > 0 ? '+' : ''}{grouped[date].total.toLocaleString('id-ID')}
                 </p>
               </div>
-
-              {/* Transactions List */}
-              <div className="flex flex-col">
-                {grouped[date].transactions.map((tx: any, index: number) => (
-                  <div 
-                    key={tx.id} 
-                    onClick={() => openDetail(tx)} 
-                    className={`flex items-center justify-between p-3 md:p-4 cursor-pointer hover:bg-surface-muted transition-colors ${index !== grouped[date].transactions.length - 1 ? 'border-b-2 border-text-primary' : ''}`}
-                  >
+              <div className="space-y-3">
+                {grouped[date].transactions.map((tx: any) => (
+                  <div key={tx.id} onClick={() => openDetail(tx)} className="bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] flex items-center justify-between p-3 md:p-4 cursor-pointer hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-[2px_2px_0_0_#171B22] transition-all group">
                     <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-                      
-                      {/* Emoji Icon */}
-                      <div className={`w-10 h-10 flex-shrink-0 border-2 border-text-primary rounded-none flex items-center justify-center text-lg shadow-[2px_2px_0_0_#171B22] ${tx.type === 'INCOME' ? 'bg-[#A3E635]' : tx.type === 'EXPENSE' ? 'bg-[#FFA6A6]' : 'bg-[#89CFF0]'}`}>
+                      <div className={`w-12 h-12 flex-shrink-0 border-2 border-text-primary rounded-none flex items-center justify-center text-xl shadow-[2px_2px_0_0_#171B22] ${tx.type === 'INCOME' ? 'bg-[#A3E635]' : tx.type === 'EXPENSE' ? 'bg-[#FFA6A6]' : 'bg-[#89CFF0]'}`}>
                         {tx.category?.icon || (tx.type === 'INCOME' ? '💰' : '💸')}
                       </div>
-                      
-                      {/* Details */}
-                      <div className="flex-1 min-w-0 flex flex-col justify-center">
-                        <p className="font-black text-text-primary uppercase text-sm md:text-base truncate leading-tight mb-1">
-                          {tx.note || tx.category?.name || 'Transaksi'}
-                        </p>
-                        
-                        <div className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-text-primary/70 uppercase tracking-wider truncate">
-                          <span className="truncate">{tx.category?.name || 'Umum'}</span>
-                          <span>•</span>
-                          <span className="truncate">{tx.wallet?.name || 'Dompet'}</span>
-                          
-                          {/* Creator Badge (Only box left) */}
-                          <span className={`ml-1 px-1.5 py-0.5 border-2 border-text-primary text-[9px] font-black uppercase tracking-wider flex items-center gap-1 ${tx.creator?.id === user?.id ? 'bg-primary text-surface' : 'bg-accent text-text-primary'}`}>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-black text-text-primary uppercase text-sm md:text-base truncate">{tx.note || tx.category?.name || 'Transaksi'}</p>
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                          {tx.category && (
+                            <span className="bg-[#89CFF0] px-1.5 py-0.5 border-2 border-text-primary text-[10px] font-black uppercase tracking-wider truncate max-w-[100px]">
+                              {tx.category.name}
+                            </span>
+                          )}
+                          <span className="bg-surface-muted px-1.5 py-0.5 border-2 border-text-primary text-[10px] font-black uppercase tracking-wider truncate max-w-[80px]">
+                            {tx.wallet?.name}
+                          </span>
+                          <span className={`px-1.5 py-0.5 border-2 border-text-primary text-[10px] font-black uppercase tracking-wider flex items-center gap-1 ${tx.creator?.id === user?.id ? 'bg-primary text-surface' : 'bg-accent text-text-primary'}`}>
                             {tx.creator?.id === user?.id ? <Lock size={10} className="stroke-[3]" /> : <Users size={10} className="stroke-[3]" />}
                             {tx.creator?.id === user?.id ? 'PRIBADI' : tx.creator?.name?.split(' ')[0] || 'KELUARGA'}
                           </span>
                         </div>
                       </div>
                     </div>
-                    
-                    {/* Amount */}
                     <div className="text-right ml-3 flex-shrink-0">
                       <p className={`font-black text-sm md:text-base leading-none ${tx.type === 'INCOME' ? 'text-income' : 'text-expense'}`}>
                         {tx.type === 'INCOME' ? '+' : '-'} {tx.amount.toLocaleString('id-ID')}
