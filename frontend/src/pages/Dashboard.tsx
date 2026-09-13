@@ -34,24 +34,15 @@ export const Dashboard = () => {
     <div className="space-y-6 pb-6">
       
       {/* Header & Controls */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-        <div className="flex justify-between w-full lg:w-auto items-start">
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-black uppercase tracking-wide leading-tight">Halo, {user?.name?.split(' ')[0]} 👋</h1>
-            <p className="font-bold text-sm mt-1 uppercase tracking-widest opacity-70">
-              {activeTab === 'ME' ? 'Ringkasan Keuangan Pribadi' : 'Ringkasan Keuangan Keluarga'}
-            </p>
-          </div>
-          {/* Profile Icon on Mobile (if any) or Desktop */}
-          <div 
-            onClick={() => navigate('/profile')}
-            className="hidden lg:flex w-12 h-12 rounded-none border-2 border-text-primary bg-primary text-surface shadow-[4px_4px_0_0_#171B22] items-center justify-center font-black cursor-pointer hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all text-xl"
-          >
-            {user?.name?.[0]?.toUpperCase()}
-          </div>
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+        <div>
+          <h1 className="text-3xl lg:text-4xl font-black uppercase tracking-wide leading-tight">Halo, {user?.name?.split(' ')[0]} 👋</h1>
+          <p className="font-bold text-sm mt-2 uppercase tracking-widest opacity-70">
+            {activeTab === 'ME' ? 'Ringkasan Keuangan Pribadi' : 'Ringkasan Keuangan Keluarga'}
+          </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full xl:w-auto">
           {/* Month Selector */}
           <div className="flex items-center gap-2">
             <button 
@@ -93,6 +84,14 @@ export const Dashboard = () => {
             >
               Keluarga
             </button>
+          </div>
+          
+          {/* Profile Icon Desktop */}
+          <div 
+            onClick={() => navigate('/profile')}
+            className="hidden xl:flex w-12 h-12 rounded-none border-2 border-text-primary bg-primary text-surface shadow-[4px_4px_0_0_#171B22] items-center justify-center font-black cursor-pointer hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all text-xl shrink-0 ml-2"
+          >
+            {user?.name?.[0]?.toUpperCase()}
           </div>
         </div>
       </div>
@@ -147,9 +146,9 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
     const colors = ['bg-primary', 'bg-accent', 'bg-error', 'bg-income'];
 
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 animate-fade-in">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 animate-fade-in">
         {/* Main Column (Left on Desktop) */}
-        <div className="lg:col-span-7 xl:col-span-8 space-y-6">
+        <div className="lg:col-span-2 space-y-6">
           {/* Hero Card: Total Saldo Bersama */}
           <div className="bg-primary text-surface rounded-none border-4 border-text-primary p-6 shadow-[8px_8px_0_0_#171B22] relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
@@ -162,23 +161,20 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
               </button>
             </div>
             
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mt-2">
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight break-all sm:break-words leading-none">
+            <div className="flex flex-col gap-6 mt-4">
+              <h2 className="text-4xl md:text-5xl font-black tracking-tight leading-none whitespace-nowrap overflow-hidden text-ellipsis">
                 {hideBalance ? 'Rp        ' : `Rp ${totalBalance.toLocaleString('id-ID')}`}
               </h2>
               
-              <div className="flex items-center gap-4 mt-4 md:mt-0 shrink-0">
-                <p className="font-bold text-sm hidden md:block">
+              <div className="flex items-center justify-between border-t-2 border-surface/30 pt-4">
+                <p className="font-bold text-sm">
                   {(wallets?.family_members?.length || 0) + 1} anggota terhubung
                 </p>
-                <button onClick={() => navigate('/wallets')} className="px-6 py-3 bg-surface text-text-primary border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none font-black uppercase text-sm tracking-wider transition-all">
+                <button onClick={() => navigate('/wallets')} className="px-6 py-2 bg-surface text-text-primary border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none font-black uppercase text-sm tracking-wider transition-all">
                   Dompet
                 </button>
               </div>
             </div>
-            <p className="font-bold text-sm mt-4 md:hidden">
-              {(wallets?.family_members?.length || 0) + 1} anggota terhubung
-            </p>
           </div>
 
           {/* Recent Family Transactions */}
@@ -218,7 +214,7 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
         </div>
 
         {/* Widget Column (Right on Desktop) */}
-        <div className="lg:col-span-5 xl:col-span-4 space-y-6">
+        <div className="lg:col-span-1 space-y-6">
           {/* Split Insight Card */}
           <div className="bg-surface border-4 border-text-primary p-5 shadow-[6px_6px_0_0_#171B22]">
             <div className="flex justify-between items-start mb-4">
@@ -272,10 +268,10 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
   const personalTx = transactions?.filter((t: any) => t.creator?.id === user?.id) || [];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 animate-fade-in">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 animate-fade-in">
       
       {/* Main Column (Left on Desktop) */}
-      <div className="lg:col-span-7 xl:col-span-8 space-y-6">
+      <div className="lg:col-span-2 space-y-6">
         
         {/* Balance Card */}
         <div className={`bg-primary text-surface rounded-none border-4 border-text-primary p-6 shadow-[8px_8px_0_0_#171B22] relative overflow-hidden`}>
@@ -289,23 +285,20 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
             </button>
           </div>
           
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mt-2">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight break-all sm:break-words leading-none">
+          <div className="flex flex-col gap-6 mt-4">
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight leading-none whitespace-nowrap overflow-hidden text-ellipsis">
               {hideBalance ? 'Rp        ' : `Rp ${totalBalance.toLocaleString('id-ID')}`}
             </h2>
             
-            <div className="flex items-center gap-4 mt-4 md:mt-0 shrink-0">
-              <p className={`font-bold text-sm hidden md:block`}>
+            <div className="flex items-center justify-between border-t-2 border-surface/30 pt-4">
+              <p className={`font-bold text-sm`}>
                 {personalWallets.length} dompet terhubung
               </p>
-              <button onClick={() => navigate('/wallets')} className={`px-6 py-3 bg-surface text-text-primary border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none rounded-none text-sm font-black uppercase tracking-wider transition-all`}>
+              <button onClick={() => navigate('/wallets')} className={`px-6 py-2 bg-surface text-text-primary border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none rounded-none text-sm font-black uppercase tracking-wider transition-all`}>
                 Dompet
               </button>
             </div>
           </div>
-          <p className={`font-bold text-sm mt-4 md:hidden`}>
-            {personalWallets.length} dompet terhubung
-          </p>
         </div>
 
         {/* Recent Transactions */}
@@ -343,7 +336,7 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
       </div>
 
       {/* Widget Column (Right on Desktop) */}
-      <div className="lg:col-span-5 xl:col-span-4 space-y-6">
+      <div className="lg:col-span-1 space-y-6">
         {/* Income / Expense */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
           <div className="bg-surface p-5 rounded-none shadow-[4px_4px_0_0_#171B22] border-2 border-text-primary">
