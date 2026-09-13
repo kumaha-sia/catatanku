@@ -244,9 +244,9 @@ export const useDeleteGoal = () => {
 };
 
 // Reports
-export const useReportSummary = (householdId: string, month?: string, year?: string) => 
+export const useReportSummary = (householdId: string, month?: string, year?: string, scope?: string) => 
   useQuery({
-    queryKey: ['reports', householdId, month, year],
-    queryFn: () => api.getReportSummary(householdId, month, year),
+    queryKey: ['reports', householdId, month, year, scope],
+    queryFn: () => api.getReportSummary(householdId, month, year, scope),
     enabled: !!householdId
   });

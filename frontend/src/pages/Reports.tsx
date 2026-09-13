@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts';
-import { useHouseholds, useReportSummary } from '../hooks/useFinances';
+import { useHouseholds, useReportSummary, useMembers } from '../hooks/useFinances';
 
 const formatIDR = (value: number) => {
   if (value >= 1000000) {

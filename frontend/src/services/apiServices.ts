@@ -55,8 +55,8 @@ export const updateGoal = (id: string, data: any) => api.put(`/goals/${id}`, dat
 export const deleteGoal = (id: string) => api.delete(`/goals/${id}`).then(res => res.data);
 
 // Reports
-export const getReportSummary = (householdId: string, month?: string, year?: string) => 
-  api.get('/reports/summary', { params: { household_id: householdId, month, year } }).then(res => res.data.data);
+export const getReportSummary = (householdId: string, month?: string, year?: string, scope?: string) => 
+  api.get('/reports/summary', { params: { household_id: householdId, month, year, scope } }).then(res => res.data.data);
 
 // Notifications
 export const getNotifications = () => api.get('/notifications').then(res => res.data.data);
