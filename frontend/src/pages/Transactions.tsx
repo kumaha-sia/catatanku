@@ -274,34 +274,48 @@ export const Transactions = () => {
       {/* Transaction Detail Modal */}
       <BottomSheet isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} title="Detail Transaksi">
         {selectedTx && (
-          <div className="space-y-6 pt-4">
-            <div className="flex flex-col items-center justify-center text-center">
-              <div className={`w-24 h-24 rounded-none border-4 border-text-primary shadow-[4px_4px_0_0_#171B22] flex items-center justify-center text-5xl mb-6 ${selectedTx.type === 'INCOME' ? 'bg-income' : selectedTx.type === 'EXPENSE' ? 'bg-expense' : 'bg-[#89CFF0]'}`}>
-                {selectedTx.category?.icon || (selectedTx.type === 'INCOME' ? '💰' : '💸')}
-              </div>
-              <h2 className="text-2xl font-black text-text-primary uppercase mb-2">{selectedTx.note || selectedTx.category?.name || 'Transaksi'}</h2>
-              <p className={`text-4xl font-black bg-text-primary px-4 py-2 ${selectedTx.type === 'EXPENSE' ? 'text-expense' : 'text-income'}`}>
-                {selectedTx.type === 'EXPENSE' ? '-' : '+'}Rp {Math.abs(selectedTx.amount).toLocaleString('id-ID')}
-              </p>
-            </div>
-
-            <div className="bg-surface border-4 border-text-primary rounded-none p-5 space-y-4 shadow-[4px_4px_0_0_#171B22]">
-
-              <div className="flex justify-between items-center pb-4 border-b-2 border-text-primary">
-                <span className="text-xs font-black text-text-primary uppercase tracking-widest">Dompet</span>
-                <span className="text-sm font-black text-text-primary uppercase">{selectedTx.wallet?.name}</span>
-              </div>
-              {selectedTx.creator && (
-                <div className="flex justify-between items-center pb-4 border-b-2 border-text-primary">
-                  <span className="text-xs font-black text-text-primary uppercase tracking-widest">Dibuat oleh</span>
-                  <span className="text-sm font-black text-text-primary uppercase">{selectedTx.creator?.name}</span>
+          <div className="pt-2 pb-6 px-1">
+            <div className="bg-surface border-4 border-text-primary shadow-[8px_8px_0_0_#171B22] flex flex-col mb-2">
+              {/* Header / Amount */}
+              <div className="p-6 flex flex-col items-center text-center border-b-4 border-dashed border-text-primary relative overflow-hidden">
+                {/* Background Tint */}
+                <div className={`absolute inset-0 opacity-10 ${selectedTx.type === 'INCOME' ? 'bg-[#A3E635]' : selectedTx.type === 'EXPENSE' ? 'bg-[#FFA6A6]' : 'bg-[#89CFF0]'}`} />
+                
+                <div className="w-20 h-20 rounded-none border-4 border-text-primary shadow-[4px_4px_0_0_#171B22] flex items-center justify-center text-4xl mb-4 relative z-10 bg-surface">
+                  {selectedTx.category?.icon || (selectedTx.type === 'INCOME' ? '💰' : '💸')}
                 </div>
-              )}
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-black text-text-primary uppercase tracking-widest">Tanggal</span>
-                <span className="text-sm font-black text-text-primary uppercase">
-                  {new Date(selectedTx.date).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
-                </span>
+                
+                <h2 className="text-xl font-black text-text-primary uppercase leading-tight mb-2 relative z-10">
+                  {selectedTx.note || selectedTx.category?.name || 'Transaksi'}
+                </h2>
+                
+                <p className={`text-4xl md:text-5xl font-black tracking-tighter relative z-10 ${selectedTx.type === 'EXPENSE' ? 'text-expense' : 'text-income'}`}>
+                  {selectedTx.type === 'EXPENSE' ? '-' : '+'}Rp {Math.abs(selectedTx.amount).toLocaleString('id-ID')}
+                </p>
+              </div>
+
+              {/* Details List */}
+              <div className="p-6 bg-surface space-y-4">
+                <div className="flex justify-between items-center pb-4 border-b-2 border-text-primary/20">
+                  <span className="text-xs font-black text-text-primary/60 uppercase tracking-widest">Kategori</span>
+                  <span className="text-sm font-black text-text-primary uppercase text-right">{selectedTx.category?.name || '-'}</span>
+                </div>
+                <div className="flex justify-between items-center pb-4 border-b-2 border-text-primary/20">
+                  <span className="text-xs font-black text-text-primary/60 uppercase tracking-widest">Dompet</span>
+                  <span className="text-sm font-black text-text-primary uppercase text-right">{selectedTx.wallet?.name}</span>
+                </div>
+                {selectedTx.creator && (
+                  <div className="flex justify-between items-center pb-4 border-b-2 border-text-primary/20">
+                    <span className="text-xs font-black text-text-primary/60 uppercase tracking-widest">Dibuat Oleh</span>
+                    <span className="text-sm font-black text-text-primary uppercase text-right">{selectedTx.creator?.name}</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-text-primary/60 uppercase tracking-widest">Waktu</span>
+                  <span className="text-sm font-black text-text-primary uppercase text-right">
+                    {new Date(selectedTx.date).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
+                  </span>
+                </div>
               </div>
             </div>
 
