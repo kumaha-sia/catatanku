@@ -128,18 +128,18 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
     const totalBalance = (wallets?.family_members?.reduce((acc: number, m: any) => acc + (m.total_balance || 0), 0) || 0) +
                          calculateTotal(wallets?.personal || []);
     
-    // Filter only family transactions
-    const familyTx = transactions?.filter((t: any) => t.visibility === 'FAMILY') || [];
+    // Filter transactions to ONLY include OTHER family members' activities
+    const familyTx = transactions?.filter((t: any) => t.creator?.id !== user?.id) || [];
     const expenses = familyTx.filter((t: any) => t.type === 'EXPENSE');
     
-    const spendByUser = expenses.reduce((acc: any, t: any) => {
-      const name = t.creator?.name || 'Unknown';
-      acc[name] = (acc[name] || 0) + t.amount;
+    const spendByCategory = expenses.reduce((acc: any, t: any) => {
+      const catName = t.category?.name || 'Lainnya';
+      acc[catName] = (acc[catName] || 0) + t.amount;
       return acc;
     }, {} as Record<string, number>);
     
-    const totalFamilyExpense = Object.values(spendByUser).reduce((a: any, b: any) => a + b, 0) as number;
-    const spendArray = Object.entries(spendByUser)
+    const totalFamilyExpense = Object.values(spendByCategory).reduce((a: any, b: any) => a + b, 0) as number;
+    const spendArray = Object.entries(spendByCategory)
       .map(([name, amount]) => ({ name, amount: amount as number, percentage: totalFamilyExpense ? ((amount as number) / totalFamilyExpense) * 100 : 0 }))
       .sort((a, b) => b.amount - a.amount);
 
@@ -147,11 +147,6 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
 
     return (
       <div className="space-y-6 animate-fade-in">
-        {/* Top Banner Context */}
-        <div className="bg-accent border-4 border-text-primary p-4 shadow-[6px_6px_0_0_#171B22] flex justify-between items-center">
-          <h2 className="font-black text-xl uppercase tracking-wider text-text-primary">Kekayaan Keluarga</h2>
-          <Users size={24} className="text-text-primary" />
-        </div>
 
         {/* Hero Card: Total Saldo Bersama */}
         <div className="bg-primary text-surface rounded-none border-4 border-text-primary p-6 shadow-[8px_8px_0_0_#171B22] relative overflow-hidden">
@@ -179,34 +174,34 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
 
         {/* Split Insight Card */}
         <div className="bg-surface border-4 border-text-primary p-5 shadow-[6px_6px_0_0_#171B22]">
-          <h3 className="font-black text-sm uppercase tracking-widest mb-4">Beban Pengeluaran Bulan Ini</h3>
+          <h3 className="font-black text-sm uppercase tracking-widest mb-4">Pengeluaran Anggota Keluarga</h3>
           
           {totalFamilyExpense === 0 ? (
-             <p className="text-sm font-bold opacity-70">Belum ada pengeluaran keluarga bulan ini.</p>
+             <p className="text-sm font-bold opacity-70">Belum ada pengeluaran dari anggota keluarga bulan ini.</p>
           ) : (
              <div className="space-y-4">
                {/* Progress Bar */}
                <div className="w-full h-8 flex border-2 border-text-primary shadow-[2px_2px_0_0_#171B22]">
-                 {spendArray.map((userSpend, i) => (
+                 {spendArray.map((catSpend, i) => (
                    <div 
-                     key={userSpend.name} 
-                     style={{ width: `${userSpend.percentage}%` }}
+                     key={catSpend.name} 
+                     style={{ width: `${catSpend.percentage}%` }}
                      className={`${colors[i % colors.length]} h-full border-r-2 border-text-primary last:border-r-0 flex items-center justify-center overflow-hidden`}
                    >
-                     {userSpend.percentage > 15 && <span className="text-[10px] font-black text-surface px-1">{userSpend.percentage.toFixed(0)}%</span>}
+                     {catSpend.percentage > 15 && <span className="text-[10px] font-black text-surface px-1">{catSpend.percentage.toFixed(0)}%</span>}
                    </div>
                  ))}
                </div>
                
                {/* Legend */}
                <div className="grid grid-cols-1 gap-2">
-                 {spendArray.map((userSpend, i) => (
-                   <div key={userSpend.name} className="flex justify-between items-center text-sm">
+                 {spendArray.map((catSpend, i) => (
+                   <div key={catSpend.name} className="flex justify-between items-center text-sm">
                      <div className="flex items-center gap-2 font-black uppercase">
                        <div className={`w-3 h-3 border-2 border-text-primary ${colors[i % colors.length]}`} />
-                       {userSpend.name} {userSpend.name === user?.name && '(Anda)'}
+                       {catSpend.name}
                      </div>
-                     <span className="font-bold text-expense">Rp {userSpend.amount.toLocaleString('id-ID')}</span>
+                     <span className="font-bold text-expense">Rp {catSpend.amount.toLocaleString('id-ID')}</span>
                    </div>
                  ))}
                </div>
