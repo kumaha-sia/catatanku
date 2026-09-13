@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Wallet, Tags, Download, Trash2, HelpCircle, ChevronRight, LogOut, Info, Loader2 } from 'lucide-react';
+import { Users, Wallet, Tags, Download, Trash2, HelpCircle, ChevronRight, LogOut, Info, Loader2, Target } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../components/BottomSheet';
@@ -94,6 +94,14 @@ export const Settings = () => {
             subtitle="Buat atau ubah kategori"
             onClick={() => navigate('/categories')}
             iconBg="bg-income"
+          />
+          {/* Tambahkan Goals di sini khusus untuk kemudahan akses di Mobile */}
+          <SettingsItem 
+            icon={<Target size={18} className="stroke-[3]" />}
+            title="Tujuan Finansial (Goals)"
+            subtitle="Kelola target tabungan Anda"
+            onClick={() => navigate('/goals')}
+            iconBg="bg-primary text-surface"
           />
         </div>
       </section>
