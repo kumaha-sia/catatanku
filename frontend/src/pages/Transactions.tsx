@@ -319,30 +319,32 @@ export const Transactions = () => {
               </div>
             </div>
 
-            <div className="flex gap-4 pt-4">
-              <button 
-                onClick={async () => {
-                  window.appConfirm('Yakin ingin menghapus transaksi ini?', async () => {
-                    await deleteTx.mutateAsync(selectedTx.id);
+            {selectedTx.created_by === user?.id && (
+              <div className="flex gap-4 pt-4">
+                <button 
+                  onClick={async () => {
+                    window.appConfirm('Yakin ingin menghapus transaksi ini?', async () => {
+                      await deleteTx.mutateAsync(selectedTx.id);
+                      setIsDetailOpen(false);
+                    });
+                  }}
+                  className="flex-1 py-4 bg-error text-text-primary border-4 border-text-primary rounded-none font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all flex items-center justify-center gap-2"
+                >
+                  <Trash2 size={24} className="stroke-[3]" />
+                  Hapus
+                </button>
+                <button 
+                  onClick={() => {
                     setIsDetailOpen(false);
-                  });
-                }}
-                className="flex-1 py-4 bg-error text-text-primary border-4 border-text-primary rounded-none font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all flex items-center justify-center gap-2"
-              >
-                <Trash2 size={24} className="stroke-[3]" />
-                Hapus
-              </button>
-              <button 
-                onClick={() => {
-                  setIsDetailOpen(false);
-                  openAddTransaction(selectedTx);
-                }}
-                className="flex-1 py-4 bg-primary text-surface rounded-none border-4 border-text-primary font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all flex items-center justify-center gap-2"
-              >
-                <Edit3 size={24} className="stroke-[3]" />
-                Edit
-              </button>
-            </div>
+                    openAddTransaction(selectedTx);
+                  }}
+                  className="flex-1 py-4 bg-primary text-surface rounded-none border-4 border-text-primary font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all flex items-center justify-center gap-2"
+                >
+                  <Edit3 size={24} className="stroke-[3]" />
+                  Edit
+                </button>
+              </div>
+            )}
           </div>
         )}
       </BottomSheet>
