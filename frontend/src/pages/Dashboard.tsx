@@ -125,8 +125,8 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
   const calculateTotal = (walletList: any[]) => walletList?.reduce((acc, w) => acc + (w.balance || 0), 0) || 0;
   
   if (type === 'FAMILY') {
-    const familyWallets = wallets?.shared || [];
-    const totalBalance = calculateTotal(familyWallets);
+    const totalBalance = (wallets?.family_members?.reduce((acc: number, m: any) => acc + (m.total_balance || 0), 0) || 0) +
+                         calculateTotal(wallets?.personal || []);
     
     // Filter only family transactions
     const familyTx = transactions?.filter((t: any) => t.visibility === 'FAMILY') || [];
@@ -149,14 +149,14 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
       <div className="space-y-6 animate-fade-in">
         {/* Top Banner Context */}
         <div className="bg-accent border-4 border-text-primary p-4 shadow-[6px_6px_0_0_#171B22] flex justify-between items-center">
-          <h2 className="font-black text-xl uppercase tracking-wider text-text-primary">Kas Keluarga</h2>
+          <h2 className="font-black text-xl uppercase tracking-wider text-text-primary">Kekayaan Keluarga</h2>
           <Users size={24} className="text-text-primary" />
         </div>
 
         {/* Hero Card: Total Saldo Bersama */}
         <div className="bg-primary text-surface rounded-none border-4 border-text-primary p-6 shadow-[8px_8px_0_0_#171B22] relative overflow-hidden">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-sm font-black uppercase tracking-widest">Total Saldo Bersama</p>
+            <p className="text-sm font-black uppercase tracking-widest">Total Kekayaan Bersama</p>
             <button 
               onClick={() => setHideBalance(!hideBalance)}
               className="w-8 h-8 rounded-none bg-surface/20 flex items-center justify-center border-2 border-text-primary hover:bg-surface/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
