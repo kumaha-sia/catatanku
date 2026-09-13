@@ -149,7 +149,7 @@ export const Family = () => {
             onChange={(e) => setActiveHouseholdId(e.target.value)}
           >
             {households.map((h: any) => (
-              <option key={h.id} value={h.id}>{h.name} {h.role === 'OWNER' ? '(Milikku)' : ''}</option>
+              <option key={h.id} value={h.id}>{h.name.replace(/Household/gi, 'Family')} {h.role === 'OWNER' ? '(Milikku)' : ''}</option>
             ))}
           </select>
         )}
@@ -172,7 +172,7 @@ export const Family = () => {
           <Users size={28} />
         </div>
         <div className="relative z-10">
-          <h2 className="text-xl font-black text-text-primary leading-tight uppercase">{activeHousehold.name}</h2>
+          <h2 className="text-xl font-black text-text-primary leading-tight uppercase">{activeHousehold.name.replace(/Household/gi, 'Family')}</h2>
           <p className="text-sm font-bold text-text-primary mt-1">{members?.length || 1} anggota • sejak {joinDateStr}</p>
         </div>
       </div>
