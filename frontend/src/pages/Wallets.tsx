@@ -16,6 +16,7 @@ export const Wallets = () => {
 
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
+  const [showTransferForm, setShowTransferForm] = useState(false);
   const [transferAmount, setTransferAmount] = useState('');
   const [transferSourceWalletId, setTransferSourceWalletId] = useState('');
   const [transferDestWalletId, setTransferDestWalletId] = useState('');
@@ -193,6 +194,7 @@ export const Wallets = () => {
                 setTransferDestWalletId('');
                 setTransferSourceWalletId('');
                 setTransferAmount('');
+                setShowTransferForm(false);
                 setIsMemberModalOpen(true);
               }}
               className="w-full flex items-center justify-between p-3 md:p-4 bg-surface hover:bg-text-primary/5 transition-colors group text-left cursor-pointer"
@@ -288,66 +290,81 @@ export const Wallets = () => {
               </p>
             </div>
 
-            <div className="bg-surface border-4 border-text-primary p-5 shadow-[4px_4px_0_0_#171B22] space-y-5">
-              <h3 className="font-black text-text-primary uppercase tracking-widest border-b-2 border-text-primary pb-2 flex items-center gap-2">
-                <ArrowRightLeft size={16} className="text-transfer" />
-                Kirim Saldo
-              </h3>
-
-              <div>
-                <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block">Pilih Dompet Sumber (Anda)</label>
-                <select 
-                  value={transferSourceWalletId}
-                  onChange={(e) => setTransferSourceWalletId(e.target.value)}
-                  className="w-full bg-surface border-4 border-text-primary rounded-none px-4 py-3 font-black text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] cursor-pointer"
-                >
-                  <option value="">-- Pilih Dompet --</option>
-                  {wallets?.personal?.map((w: any) => (
-                    <option key={w.id} value={w.id}>{w.name} (Rp {w.balance?.toLocaleString('id-ID')})</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block">Pilih Dompet Tujuan ({selectedMember.name})</label>
-                <select 
-                  value={transferDestWalletId}
-                  onChange={(e) => setTransferDestWalletId(e.target.value)}
-                  className="w-full bg-surface border-4 border-text-primary rounded-none px-4 py-3 font-black text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] cursor-pointer"
-                >
-                  <option value="">-- Pilih Dompet --</option>
-                  {selectedMember.wallets?.map((w: any) => (
-                    <option key={w.id} value={w.id}>{w.name}</option>
-                  ))}
-                </select>
-                {(!selectedMember.wallets || selectedMember.wallets.length === 0) && (
-                  <p className="text-xs font-bold text-error mt-2">Anggota ini belum memiliki dompet.</p>
-                )}
-              </div>
-
-              <div>
-                <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block">Jumlah Transfer (Rp)</label>
-                <input 
-                  type="text" 
-                  inputMode="numeric"
-                  placeholder="0"
-                  value={transferAmount}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, '');
-                    setTransferAmount(val ? parseInt(val, 10).toLocaleString('id-ID') : '');
-                  }}
-                  className="w-full bg-surface border-4 border-text-primary rounded-none px-4 py-3 font-black text-xl text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A]"
-                />
-              </div>
-
+            {!showTransferForm ? (
               <button 
-                onClick={handleTransferToMember}
-                disabled={!transferSourceWalletId || !transferDestWalletId || !transferAmount || createTransaction.isPending}
-                className="w-full py-4 bg-primary text-surface border-4 border-text-primary rounded-none font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0_0_#171B22] transition-all flex items-center justify-center gap-2"
+                onClick={() => setShowTransferForm(true)}
+                className="w-full py-4 bg-primary text-surface border-4 border-text-primary rounded-none font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all flex items-center justify-center gap-2"
               >
-                {createTransaction.isPending ? 'Memproses...' : 'Kirim Sekarang'}
+                <ArrowRightLeft size={24} className="stroke-[3]" />
+                Kirim Saldo ke {selectedMember.name}
               </button>
-            </div>
+            ) : (
+              <div className="bg-surface border-4 border-text-primary p-5 shadow-[4px_4px_0_0_#171B22] space-y-5 animate-slide-down">
+                <h3 className="font-black text-text-primary uppercase tracking-widest border-b-2 border-text-primary pb-2 flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <ArrowRightLeft size={16} className="text-transfer" />
+                    Kirim Saldo
+                  </span>
+                  <button onClick={() => setShowTransferForm(false)} className="text-text-primary hover:scale-110 transition-transform">
+                    Tutup
+                  </button>
+                </h3>
+
+                <div>
+                  <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block">Pilih Dompet Sumber (Anda)</label>
+                  <select 
+                    value={transferSourceWalletId}
+                    onChange={(e) => setTransferSourceWalletId(e.target.value)}
+                    className="w-full bg-surface border-4 border-text-primary rounded-none px-4 py-3 font-black text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] cursor-pointer"
+                  >
+                    <option value="">-- Pilih Dompet --</option>
+                    {wallets?.personal?.map((w: any) => (
+                      <option key={w.id} value={w.id}>{w.name} (Rp {w.balance?.toLocaleString('id-ID')})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block">Pilih Dompet Tujuan ({selectedMember.name})</label>
+                  <select 
+                    value={transferDestWalletId}
+                    onChange={(e) => setTransferDestWalletId(e.target.value)}
+                    className="w-full bg-surface border-4 border-text-primary rounded-none px-4 py-3 font-black text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] cursor-pointer"
+                  >
+                    <option value="">-- Pilih Dompet --</option>
+                    {selectedMember.wallets?.map((w: any) => (
+                      <option key={w.id} value={w.id}>{w.name}</option>
+                    ))}
+                  </select>
+                  {(!selectedMember.wallets || selectedMember.wallets.length === 0) && (
+                    <p className="text-xs font-bold text-error mt-2">Anggota ini belum memiliki dompet.</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block">Jumlah Transfer (Rp)</label>
+                  <input 
+                    type="text" 
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={transferAmount}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      setTransferAmount(val ? parseInt(val, 10).toLocaleString('id-ID') : '');
+                    }}
+                    className="w-full bg-surface border-4 border-text-primary rounded-none px-4 py-3 font-black text-xl text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A]"
+                  />
+                </div>
+
+                <button 
+                  onClick={handleTransferToMember}
+                  disabled={!transferSourceWalletId || !transferDestWalletId || !transferAmount || createTransaction.isPending}
+                  className="w-full py-4 bg-primary text-surface border-4 border-text-primary rounded-none font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0_0_#171B22] transition-all flex items-center justify-center gap-2"
+                >
+                  {createTransaction.isPending ? 'Memproses...' : 'Kirim Sekarang'}
+                </button>
+              </div>
+            )}
 
           </div>
         )}
