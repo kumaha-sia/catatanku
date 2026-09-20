@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Wallet, Tags, Download, Trash2, HelpCircle, ChevronRight, LogOut, Info, Loader2, Target } from 'lucide-react';
+import { Users, Wallet, Tags, Download, HelpCircle, ChevronRight, LogOut, Info, Loader2, Target } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../components/BottomSheet';
@@ -10,13 +10,11 @@ export const Settings = () => {
   const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
   const navigate = useNavigate();
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState<'csv' | 'pdf'>('csv');
   const [isExporting, setIsExporting] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState('');
 
   const { data: households } = useHouseholds();
   const myHouseholdId = households?.find((h: any) => h.role === 'OWNER' && h.name.includes('Household'))?.id;
@@ -157,19 +155,6 @@ export const Settings = () => {
             </div>
             <ChevronRight size={18} className="text-text-primary stroke-[3] flex-shrink-0 group-hover:translate-x-1 transition-transform" />
           </button>
-
-          <button 
-            onClick={() => setIsDeleteOpen(true)}
-            className="w-full flex items-center gap-4 p-4 bg-[#FFA6A6] border-4 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all text-left group"
-          >
-            <div className="w-10 h-10 bg-error flex items-center justify-center border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] flex-shrink-0 group-hover:-translate-y-0.5 transition-transform">
-              <Trash2 size={18} className="text-surface stroke-[3]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-black uppercase text-text-primary text-sm tracking-wider">Hapus Akun</p>
-              <p className="text-[10px] font-bold text-text-primary/70 uppercase tracking-wider mt-0.5">Tindakan ini tidak dapat dibatalkan</p>
-            </div>
-          </button>
         </div>
       </section>
 
@@ -234,38 +219,6 @@ export const Settings = () => {
           <p className="text-center text-[10px] font-black text-text-secondary uppercase tracking-widest py-2">
             © 2026 FinBareng. All rights reserved.
           </p>
-        </div>
-      </BottomSheet>
-
-      {/* Delete Account Confirmation */}
-      <BottomSheet isOpen={isDeleteOpen} onClose={() => { setIsDeleteOpen(false); setDeleteConfirm(''); }} title="Hapus Akun">
-        <div className="space-y-6 pt-4">
-          <div className="bg-[#FFA6A6] border-4 border-text-primary p-4 shadow-[4px_4px_0_0_#171B22]">
-            <p className="text-xs font-black uppercase tracking-widest text-text-primary mb-2">⚠️ Peringatan</p>
-            <p className="text-sm font-bold text-text-primary leading-relaxed">
-              Semua data transaksi, anggaran, dan dompet Anda akan <span className="font-black uppercase">dihapus permanen</span>. Tindakan ini tidak dapat dibatalkan.
-            </p>
-          </div>
-          
-          <div>
-            <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block">
-              Ketik "HAPUS" untuk konfirmasi
-            </label>
-            <input 
-              type="text"
-              value={deleteConfirm}
-              onChange={(e) => setDeleteConfirm(e.target.value)}
-              placeholder="HAPUS"
-              className="w-full bg-surface border-4 border-text-primary px-4 py-3 font-black text-text-primary uppercase tracking-wider focus:outline-none focus:shadow-[4px_4px_0_0_#FF0000] transition-all"
-            />
-          </div>
-
-          <button 
-            disabled={deleteConfirm !== 'HAPUS'}
-            className="w-full py-4 bg-error text-surface border-4 border-text-primary font-black text-lg uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none disabled:opacity-30 disabled:shadow-none disabled:translate-y-0 transition-all"
-          >
-            Hapus Akun Saya
-          </button>
         </div>
       </BottomSheet>
 
