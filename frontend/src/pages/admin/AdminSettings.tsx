@@ -1,23 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useAdminSettings, useUpdateAdminSettings } from '../../hooks/useAdmin';
-import { Save, BrainCircuit, RefreshCw, Settings2, ShieldCheck } from 'lucide-react';
+import { Save, BrainCircuit, RefreshCw, ShieldCheck, MessageCircle } from 'lucide-react';
 
 export const AdminSettings: React.FC = () => {
   const { data: settingsData, isLoading } = useAdminSettings();
   const updateSettings = useUpdateAdminSettings();
 
-  const [activeTab, setActiveTab] = useState<'AI' | 'PLATFORM' | 'SECURITY'>('AI');
+  const [activeTab, setActiveTab] = useState<'AI' | 'WHATSAPP' | 'SECURITY'>('AI');
 
+  // AI State
   const [aiBaseUrl, setAiBaseUrl] = useState('');
   const [aiApiKey, setAiApiKey] = useState('');
   const [aiModel, setAiModel] = useState('');
 
+  // WA State
+  const [waEndpoint, setWaEndpoint] = useState('');
+  const [waApiKey, setWaApiKey] = useState('');
+  const [waSessionId, setWaSessionId] = useState('');
+
   useEffect(() => {
     if (settingsData) {
       const getVal = (key: string) => settingsData.find((s: any) => s.key === key)?.value || '';
+      
       setAiBaseUrl(getVal('AI_BASE_URL'));
       setAiApiKey(getVal('AI_API_KEY'));
       setAiModel(getVal('AI_MODEL') || 'gpt-4o'); 
+      
+      setWaEndpoint(getVal('WA_ENDPOINT'));
+      setWaApiKey(getVal('WA_API_KEY'));
+      setWaSessionId(getVal('WA_SESSION_ID'));
     }
   }, [settingsData]);
 
@@ -26,6 +37,14 @@ export const AdminSettings: React.FC = () => {
       { key: 'AI_BASE_URL', value: aiBaseUrl },
       { key: 'AI_API_KEY', value: aiApiKey },
       { key: 'AI_MODEL', value: aiModel },
+    ]);
+  };
+
+  const handleSaveWA = () => {
+    updateSettings.mutate([
+      { key: 'WA_ENDPOINT', value: waEndpoint },
+      { key: 'WA_API_KEY', value: waApiKey },
+      { key: 'WA_SESSION_ID', value: waSessionId },
     ]);
   };
 
@@ -48,13 +67,13 @@ export const AdminSettings: React.FC = () => {
           Integrasi AI
         </button>
         <button
-          onClick={() => setActiveTab('PLATFORM')}
+          onClick={() => setActiveTab('WHATSAPP')}
           className={`flex items-center gap-2 px-6 py-3 font-black uppercase text-sm border-4 border-text-primary shadow-[4px_4px_0_0_#171B22] transition-all
-            ${activeTab === 'PLATFORM' ? 'bg-accent text-text-primary -translate-y-1' : 'bg-surface text-text-primary hover:-translate-y-1 hover:bg-surface-muted'}
+            ${activeTab === 'WHATSAPP' ? 'bg-[#25D366] text-surface -translate-y-1' : 'bg-surface text-text-primary hover:-translate-y-1 hover:bg-surface-muted'}
           `}
         >
-          <Settings2 size={18} className="stroke-[3]" />
-          Platform (Umum)
+          <MessageCircle size={18} className="stroke-[3]" />
+          Integrasi WhatsApp
         </button>
         <button
           onClick={() => setActiveTab('SECURITY')}
@@ -130,11 +149,60 @@ export const AdminSettings: React.FC = () => {
             </div>
           )}
 
-          {activeTab === 'PLATFORM' && (
-            <div className="bg-surface border-4 border-text-primary p-6 shadow-[8px_8px_0_0_#171B22] animate-fade-in flex flex-col items-center justify-center py-16 text-center">
-              <Settings2 size={48} className="stroke-[3] text-text-secondary mb-4 opacity-50" />
-              <h2 className="text-xl font-black uppercase mb-2">Pengaturan Umum Platform</h2>
-              <p className="text-text-secondary font-bold max-w-md">Fitur untuk mengubah nama aplikasi, mata uang *default*, dan bahasa sedang dalam tahap pengembangan.</p>
+          {activeTab === 'WHATSAPP' && (
+            <div className="bg-surface border-4 border-text-primary p-6 shadow-[8px_8px_0_0_#171B22] animate-fade-in">
+              <div className="flex items-center gap-2 mb-6 border-b-4 border-text-primary pb-2">
+                <MessageCircle size={28} className="stroke-[3] text-[#25D366]" />
+                <h2 className="text-xl font-black uppercase">Konfigurasi OpenWA (WhatsApp)</h2>
+              </div>
+              
+              <p className="text-sm font-bold text-text-secondary mb-6">
+                Hubungkan platform ke layanan WhatsApp Bot (OpenWA) untuk fitur pengingat dan notifikasi transaksi keluarga.
+              </p>
+
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm font-black uppercase text-text-primary mb-2">Endpoint URL</label>
+                  <input
+                    type="text"
+                    value={waEndpoint}
+                    onChange={e => setWaEndpoint(e.target.value)}
+                    placeholder="http://localhost:3000 atau https://wa.domain.com"
+                    className="w-full bg-background border-4 border-text-primary p-3 font-bold text-text-primary outline-none focus:bg-surface-muted transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-black uppercase text-text-primary mb-2">API Key / Token</label>
+                  <input
+                    type="password"
+                    value={waApiKey}
+                    onChange={e => setWaApiKey(e.target.value)}
+                    placeholder="Masukkan API Key OpenWA Anda"
+                    className="w-full bg-background border-4 border-text-primary p-3 font-bold text-text-primary outline-none focus:bg-surface-muted transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-black uppercase text-text-primary mb-2">Session ID / Nomor Aktif</label>
+                  <input
+                    type="text"
+                    value={waSessionId}
+                    onChange={e => setWaSessionId(e.target.value)}
+                    placeholder="Misal: default atau 62812345678"
+                    className="w-full bg-background border-4 border-text-primary p-3 font-bold text-text-primary outline-none focus:bg-surface-muted transition-colors"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={handleSaveWA}
+                disabled={updateSettings.isPending}
+                className="mt-8 w-full bg-[#25D366] text-surface border-4 border-text-primary p-4 font-black uppercase tracking-widest hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {updateSettings.isPending ? <RefreshCw className="animate-spin" size={20} /> : <Save size={20} />}
+                {updateSettings.isPending ? 'Menyimpan...' : 'Simpan Pengaturan WhatsApp'}
+              </button>
             </div>
           )}
 

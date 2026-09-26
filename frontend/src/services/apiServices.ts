@@ -6,6 +6,7 @@ export const register = (data: any) => api.post('/auth/register', data).then(res
 export const uploadAvatar = (formData: FormData) => api.put('/auth/avatar', formData, {
   headers: { 'Content-Type': 'multipart/form-data' }
 }).then(res => res.data);
+export const updateProfile = (data: { name: string, whatsapp?: string }) => api.put('/auth/profile', data).then(res => res.data);
 
 export const getHouseholds = () => api.get('/households').then(res => res.data.data);
 export const getMembers = (householdId: string) => api.get(`/households/${householdId}/members`).then(res => res.data.data);

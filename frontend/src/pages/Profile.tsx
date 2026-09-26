@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Mail, User, Shield, CheckCircle2, Image as ImageIcon, Trash2, KeyRound } from 'lucide-react';
+import { Camera, Mail, User, Shield, CheckCircle2, Image as ImageIcon, Trash2, KeyRound, Phone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../components/BottomSheet';
 
 import { useAuthStore } from '../store/authStore';
-import { uploadAvatar } from '../services/apiServices';
+import { uploadAvatar, updateProfile } from '../services/apiServices';
 import { API_URL } from '../api';
 
 export const Profile = () => {
@@ -14,6 +14,7 @@ export const Profile = () => {
   
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
+  const [whatsapp, setWhatsapp] = useState(user?.whatsapp || '');
   const [isSaved, setIsSaved] = useState(false);
 
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
@@ -93,10 +94,20 @@ export const Profile = () => {
     }
   };
 
-  const handleSave = () => {
-    setIsSaved(true);
-    // TODO: Call API to update profile if needed
-    setTimeout(() => setIsSaved(false), 3000);
+  const handleSave = async () => {
+    try {
+      const res = await updateProfile({ name, whatsapp });
+      if (user) {
+        const updatedUser = { ...user, name: res.data.name, whatsapp: res.data.whatsapp };
+        const token = localStorage.getItem('catatu_token') || '';
+        loginAuth(updatedUser, token);
+      }
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 3000);
+    } catch (err: any) {
+      console.error(err);
+      window.toast.error(err.response?.data?.message || 'Gagal menyimpan profil');
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -177,6 +188,20 @@ export const Profile = () => {
               type="text" 
               value={name}
               onChange={(e) => setName(e.target.value)}
+              className="w-full bg-surface border-2 border-text-primary rounded-none pl-11 pr-4 py-3.5 font-bold text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] transition-all"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="text-sm font-black text-text-primary uppercase tracking-wider mb-2 block">Nomor WhatsApp</label>
+          <div className="relative">
+            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-text-primary" size={18} />
+            <input 
+              type="text" 
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(e.target.value)}
+              placeholder="Contoh: 081234567890"
               className="w-full bg-surface border-2 border-text-primary rounded-none pl-11 pr-4 py-3.5 font-bold text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] transition-all"
             />
           </div>
