@@ -17,6 +17,7 @@ export const AdminSettings: React.FC = () => {
   const [waEndpoint, setWaEndpoint] = useState('');
   const [waApiKey, setWaApiKey] = useState('');
   const [waSessionId, setWaSessionId] = useState('');
+  const [waWebhookSecret, setWaWebhookSecret] = useState('');
 
   useEffect(() => {
     if (settingsData) {
@@ -29,6 +30,7 @@ export const AdminSettings: React.FC = () => {
       setWaEndpoint(getVal('WA_ENDPOINT'));
       setWaApiKey(getVal('WA_API_KEY'));
       setWaSessionId(getVal('WA_SESSION_ID'));
+      setWaWebhookSecret(getVal('WA_WEBHOOK_SECRET'));
     }
   }, [settingsData]);
 
@@ -45,6 +47,7 @@ export const AdminSettings: React.FC = () => {
       { key: 'WA_ENDPOINT', value: waEndpoint },
       { key: 'WA_API_KEY', value: waApiKey },
       { key: 'WA_SESSION_ID', value: waSessionId },
+      { key: 'WA_WEBHOOK_SECRET', value: waWebhookSecret },
     ]);
   };
 
@@ -192,6 +195,32 @@ export const AdminSettings: React.FC = () => {
                     placeholder="Misal: default atau 62812345678"
                     className="w-full bg-background border-4 border-text-primary p-3 font-bold text-text-primary outline-none focus:bg-surface-muted transition-colors"
                   />
+                </div>
+
+                <div className="pt-4 border-t-4 border-text-primary border-dashed">
+                  <h3 className="text-lg font-black uppercase mb-4">Webhook (Pesan Masuk)</h3>
+                  <div className="space-y-5">
+                    <div>
+                      <label className="block text-sm font-black uppercase text-text-primary mb-2">Webhook URL Tujuan</label>
+                      <div className="w-full bg-background border-4 border-text-primary p-3 font-bold text-text-secondary select-all">
+                        {window.location.origin.replace(':5173', ':5000')}/api/v1/webhook/wa
+                      </div>
+                      <p className="text-xs font-bold text-text-secondary mt-2">
+                        * Salin URL ini ke pengaturan Webhook OpenWA. Jika via Ngrok, ganti domain dengan URL Ngrok Anda.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-black uppercase text-text-primary mb-2">Webhook Secret Token</label>
+                      <input
+                        type="text"
+                        value={waWebhookSecret}
+                        onChange={e => setWaWebhookSecret(e.target.value)}
+                        placeholder="Token rahasia untuk memvalidasi request (Opsional)"
+                        className="w-full bg-background border-4 border-text-primary p-3 font-bold text-text-primary outline-none focus:bg-surface-muted transition-colors"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
