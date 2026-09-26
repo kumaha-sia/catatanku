@@ -162,7 +162,7 @@ export const Settings = () => {
         <div className="bg-surface border-4 border-text-primary shadow-[4px_4px_0_0_#171B22] divide-y-4 divide-text-primary">
           <SettingsItem 
             icon={<Info size={18} className="stroke-[3]" />}
-            title="Pengingat Harian (WA)"
+            title="Pengingat Harian"
             subtitle={user?.reminder_enabled ? `Aktif pada ${user?.reminder_time}` : "Tidak Aktif"}
             onClick={() => setIsReminderOpen(true)}
             iconBg={user?.reminder_enabled ? "bg-[#A3E635]" : "bg-surface-muted"}
@@ -275,15 +275,15 @@ export const Settings = () => {
       </BottomSheet>
 
       {/* Reminder BottomSheet */}
-      <BottomSheet isOpen={isReminderOpen} onClose={() => setIsReminderOpen(false)} title="Pengingat WA">
+      <BottomSheet isOpen={isReminderOpen} onClose={() => setIsReminderOpen(false)} title="Pengingat Harian">
         <div className="space-y-6 pt-4">
           <div className="bg-accent border-4 border-text-primary p-4 shadow-[4px_4px_0_0_#171B22]">
             <p className="text-sm font-bold text-text-primary leading-relaxed">
-              Dapatkan pesan WhatsApp otomatis jika Anda <span className="font-black">belum mencatat transaksi</span> pada hari itu.
+              Dapatkan pesan pengingat otomatis jika Anda <span className="font-black">belum mencatat transaksi</span> pada hari itu.
             </p>
             {!user?.whatsapp && (
-              <p className="text-xs font-black text-error mt-2">
-                * Anda harus menambahkan Nomor WhatsApp di Profil terlebih dahulu.
+              <p className="text-xs font-black text-text-secondary mt-2">
+                * Nomor WhatsApp belum diatur. Pengingat akan dikirim ke Notifikasi Aplikasi (Lonceng).
               </p>
             )}
           </div>
@@ -293,10 +293,9 @@ export const Settings = () => {
               <span className="font-black text-text-primary uppercase tracking-wider">Aktifkan Pengingat</span>
               <button 
                 onClick={() => setReminderEnabled(!reminderEnabled)}
-                disabled={!user?.whatsapp}
                 className={`w-14 h-8 border-4 border-text-primary relative transition-colors ${
                   reminderEnabled ? 'bg-primary' : 'bg-surface-muted'
-                } ${!user?.whatsapp ? 'opacity-50 cursor-not-allowed' : ''}`}
+                }`}
               >
                 <div className={`absolute top-0.5 w-5 h-5 bg-text-primary transition-transform ${
                   reminderEnabled ? 'translate-x-7' : 'translate-x-1'
@@ -319,7 +318,7 @@ export const Settings = () => {
 
           <button 
             onClick={handleSaveReminder}
-            disabled={isSavingReminder || (!user?.whatsapp && reminderEnabled)}
+            disabled={isSavingReminder}
             className="w-full py-4 bg-primary text-surface border-4 border-text-primary font-black text-sm uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all disabled:opacity-50 disabled:translate-y-0"
           >
             {isSavingReminder ? 'Menyimpan...' : 'Simpan Pengaturan'}
