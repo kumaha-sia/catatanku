@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Receipt, Target, PieChart, Wallet, Users, Settings, Plus, Bell } from 'lucide-react';
+import { Home, Receipt, Target, PieChart, Wallet, Users, Settings, Plus, Bell, ArrowRightLeft } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useUIStore } from '../store/uiStore';
 import { AddTransactionSheet } from './AddTransactionSheet';
@@ -80,6 +80,7 @@ export const Layout = () => {
             <nav className="space-y-2">
               <NavItem to="/budgets" icon={<Target size={20} />} label="Budgets" />
               <NavItem to="/goals" icon={<PieChart size={20} />} label="Goals" />
+              <NavItem to="/debts" icon={<ArrowRightLeft size={20} />} label="Hutang Piutang" />
               <NavItem to="/reports" icon={<PieChart size={20} />} label="Laporan & Analitik" />
             </nav>
           </div>
@@ -126,7 +127,7 @@ export const Layout = () => {
         className="hidden md:flex fixed bottom-12 right-12 z-40 w-16 h-16 items-center justify-center bg-primary text-surface border-4 border-text-primary shadow-[8px_8px_0_0_#171B22] hover:-translate-y-2 hover:shadow-[12px_12px_0_0_#171B22] hover:text-text-primary hover:bg-accent active:translate-y-0 active:shadow-[2px_2px_0_0_#171B22] transition-all group"
         title="Catat Transaksi"
       >
-        <Plus size={36} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-300" />
+        <Plus size={36}  className="group-hover:rotate-90 transition-transform duration-300" />
       </button>
 
       <AddTransactionSheet />

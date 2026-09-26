@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Wallet, Tags, Download, HelpCircle, ChevronRight, LogOut, Info, Loader2, Target } from 'lucide-react';
+import { Users, Wallet, Tags, Download, HelpCircle, ChevronRight, LogOut, Info, Loader2, Target, ArrowRightLeft } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../components/BottomSheet';
@@ -100,6 +100,13 @@ export const Settings = () => {
             subtitle="Kelola target tabungan Anda"
             onClick={() => navigate('/goals')}
             iconBg="bg-primary text-surface"
+          />
+          <SettingsItem 
+            icon={<ArrowRightLeft size={18} className="stroke-[3]" />}
+            title="Hutang Piutang"
+            subtitle="Catat & kelola utang dan piutang"
+            onClick={() => navigate('/debts')}
+            iconBg="bg-error text-surface"
           />
         </div>
       </section>

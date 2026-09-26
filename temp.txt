@@ -1,0 +1,215 @@
+  const id = req.params.id;
+
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true, name: true, email: true, role: true, avatar_url: true,
+      created_at: true, deleted_at: true,
+      households: {
+        include: { household: { select: { id: true, name: true } } }
+      },
+      wallets: { select: { id: true, name: true, type: true, scope: true, initial_balance: true } },
+      transactions: {
+        take: 10,
+        orderBy: { date: 'desc' },
+        select: { id: true, type: true, amount: true, date: true, note: true, category: { select: { name: true } } }
+      },
+      debts: {
+        where: { status: 'ACTIVE' },
+        select: { id: true, type: true, person_name: true, amount: true, remaining_amount: true }
+      },
+    }
+  });
+
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  res.json({ status: 'success', data: user });
+});
+
+export const updateUserRole = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const id = req.params.id;
+  const { role } = req.body;
+
+  if (!['USER', 'ADMIN'].includes(role)) {
+    res.status(400);
+    throw new Error('Invalid role');
+  }
+
+  // Prevent self-demotion
+  if (id === req.user?.userId && role !== 'ADMIN') {
+    res.status(400);
+    throw new Error('Cannot demote yourself');
+  }
+
+  const updated = await prisma.user.update({ where: { id }, data: { role } });
+  res.json({ status: 'success', data: { id: updated.id, role: updated.role } });
+});
+
+export const suspendUser = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const id = req.params.id;
+
+  if (id === req.user?.userId) {
+    res.status(400);
+    throw new Error('Cannot suspend yourself');
+  }
+
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  const updated = await prisma.user.update({
+    where: { id },
+    data: { deleted_at: user.deleted_at ? null : new Date() }
+  });
+
+  res.json({
+    status: 'success',
+    data: { id: updated.id, suspended: !!updated.deleted_at }
+  });
+});
+
+export const deleteUser = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const id = req.params.id;
+
+  if (id === req.user?.userId) {
+    res.status(400);
+    throw new Error('Cannot delete yourself');
+  }
+
+  await prisma.user.delete({ where: { id } });
+  res.json({ status: 'success', message: 'User deleted' });
+});
+
+// ==================== HOUSEHOLD MANAGEMENT ====================
+
+export const getHouseholds = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 20;
+  const search = (req.query.search as string) || '';
+  const skip = (page - 1) * limit;
+
+  const where: any = { deleted_at: null };
+  if (search) {
+    where.name = { contains: search };
+  }
+
+  const [households, total] = await Promise.all([
+    prisma.household.findMany({
+      where,
+      include: {
+        owner: { select: { id: true, name: true, email: true } },
+        _count: { select: { members: true, transactions: true } }
+      },
+      orderBy: { created_at: 'desc' },
+      take: limit,
+      skip,
+    }),
+    prisma.household.count({ where }),
+  ]);
+
+  res.json({ status: 'success', data: { households, total, page, limit } });
+});
+
+export const getHouseholdDetail = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const id = req.params.id;
+
+  const household = await prisma.household.findUnique({
+    where: { id },
+    include: {
+      owner: { select: { id: true, name: true, email: true } },
+      members: { include: { user: { select: { id: true, name: true, email: true } } } },
+      _count: { select: { transactions: true, wallets: true, goals: true, budgets: true } }
+    }
+  });
+
+  if (!household) {
+    res.status(404);
+    throw new Error('Household not found');
+  }
+
+  res.json({ status: 'success', data: household });
+});
+
+export const deleteHousehold = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const id = req.params.id;
+  await prisma.household.delete({ where: { id } });
+  res.json({ status: 'success', message: 'Household deleted' });
+});
+
+// ==================== TRANSACTION MONITOR ====================
+
+export const getTransactions = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 50;
+  const type = req.query.type as string;
+  const search = req.query.search as string;
+  const skip = (page - 1) * limit;
+
+  const where: any = {};
+  if (type && type !== 'ALL') where.type = type;
+  if (search) {
+    where.OR = [
+      { note: { contains: search } },
+      { creator: { name: { contains: search } } },
+    ];
+  }
+
+  const [transactions, total] = await Promise.all([
+    prisma.transaction.findMany({
+      where,
+      include: {
+        creator: { select: { id: true, name: true } },
+        category: { select: { name: true, icon: true } },
+        wallet: { select: { name: true } },
+      },
+      orderBy: { date: 'desc' },
+      take: limit,
+      skip,
+    }),
+    prisma.transaction.count({ where }),
+  ]);
+
+  res.json({ status: 'success', data: { transactions, total, page, limit } });
+});
+
+// ==================== SYSTEM CATEGORIES ====================
+
+export const getSystemCategories = asyncHandler(async (_req: AuthRequest, res: Response) => {
+  const categories = await prisma.category.findMany({
+    where: { user_id: null, household_id: null },
+    orderBy: { sort_order: 'asc' }
+  });
+  res.json({ status: 'success', data: categories });
+});
+
+export const createSystemCategory = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { name, type, icon } = req.body;
+  const category = await prisma.category.create({
+    data: { name, type, icon, is_default: true }
+  });
+  res.status(201).json({ status: 'success', data: category });
+});
+
+export const updateSystemCategory = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const id = req.params.id;
+  const { name, type, icon } = req.body;
+  const category = await prisma.category.update({
+    where: { id },
+    data: { name, type, icon }
+  });
+  res.json({ status: 'success', data: category });
+});
+
+export const deleteSystemCategory = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const id = req.params.id;
+  await prisma.category.delete({ where: { id } });
+  res.json({ status: 'success', message: 'Category deleted' });
+});
+
+// ==================== DEBT MONITOR ====================
+

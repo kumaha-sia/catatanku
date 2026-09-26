@@ -21,4 +21,17 @@ api.interceptors.request.use(
   }
 );
 
+// Response interceptor to handle 401 Unauthorized
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Token is invalid or expired
+      useAuthStore.getState().logout();
+      // Optionally redirect to login page, but the protected routes wrapper in App.tsx usually handles this if token is null
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

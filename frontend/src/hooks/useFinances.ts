@@ -243,6 +243,49 @@ export const useDeleteGoal = () => {
   });
 };
 
+// Debt Hooks
+export const useDebts = (householdId?: string) => 
+  useQuery({
+    queryKey: ['debts', householdId],
+    queryFn: () => api.getDebts(householdId)
+  });
+
+export const useCreateDebt = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: api.createDebt,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['debts'] })
+  });
+};
+
+export const useUpdateDebt = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string, data: any }) => api.updateDebt(id, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['debts'] })
+  });
+};
+
+export const usePayDebt = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string, data: any }) => api.payDebt(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['debts'] });
+      qc.invalidateQueries({ queryKey: ['wallets'] }); // Mutasi dompet
+      qc.invalidateQueries({ queryKey: ['transactions'] }); // Riwayat transaksi
+    }
+  });
+};
+
+export const useDeleteDebt = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: api.deleteDebt,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['debts'] })
+  });
+};
+
 // Reports
 export const useReportSummary = (householdId: string, month?: string, year?: string, scope?: string) => 
   useQuery({

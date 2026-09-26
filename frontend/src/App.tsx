@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Layout } from './components/Layout';
 import { AuthGuard } from './components/AuthGuard';
-
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
@@ -15,9 +14,19 @@ import { Settings } from './pages/Settings';
 import { Reports } from './pages/Reports';
 import { Categories } from './pages/Categories';
 import { Profile } from './pages/Profile';
+import { Debts } from './pages/Debts';
 import { JoinHousehold } from './pages/JoinHousehold';
 import { ToastContainer } from './components/ToastContainer';
 import { ConfirmDialog } from './components/ConfirmDialog';
+
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminGuard from './components/AdminGuard';
+import AdminLayout from './components/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import { AdminUsers } from './pages/admin/AdminUsers';
+import { AdminHouseholds } from './pages/admin/AdminHouseholds';
+import { AdminTransactions } from './pages/admin/AdminTransactions';
+import { AdminCategories } from './pages/admin/AdminCategories';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,6 +57,7 @@ function App() {
             <Route path="wallets" element={<Wallets />} />
             <Route path="budgets" element={<Budgets />} />
             <Route path="goals" element={<Goals />} />
+            <Route path="debts" element={<Debts />} />
             <Route path="family" element={<Family />} />
             <Route path="settings" element={<Settings />} />
             <Route path="reports" element={<Reports />} />
@@ -60,6 +70,19 @@ function App() {
               <JoinHousehold />
             </AuthGuard>
           } />
+
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={
+            <AdminGuard>
+              <AdminLayout />
+            </AdminGuard>
+          }>
+            <Route index element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="households" element={<AdminHouseholds />} />
+            <Route path="transactions" element={<AdminTransactions />} />
+            <Route path="categories" element={<AdminCategories />} />
+          </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

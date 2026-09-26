@@ -54,6 +54,14 @@ export const createGoal = (data: any) => api.post('/goals', data).then(res => re
 export const updateGoal = (id: string, data: any) => api.put(`/goals/${id}`, data).then(res => res.data.data);
 export const deleteGoal = (id: string) => api.delete(`/goals/${id}`).then(res => res.data);
 
+// Debts
+export const getDebts = (householdId?: string) => 
+  api.get('/debts', { params: { household_id: householdId } }).then(res => res.data.data);
+export const createDebt = (data: any) => api.post('/debts', data).then(res => res.data.data);
+export const updateDebt = (id: string, data: any) => api.put(`/debts/${id}`, data).then(res => res.data.data);
+export const payDebt = (id: string, data: any) => api.post(`/debts/${id}/pay`, data).then(res => res.data.data);
+export const deleteDebt = (id: string) => api.delete(`/debts/${id}`).then(res => res.data);
+
 // Reports
 export const getReportSummary = (householdId: string, month?: string, year?: string, scope?: string) => 
   api.get('/reports/summary', { params: { household_id: householdId, month, year, scope } }).then(res => res.data.data);
