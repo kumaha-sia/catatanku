@@ -27,6 +27,7 @@ import { AdminUsers } from './pages/admin/AdminUsers';
 import { AdminHouseholds } from './pages/admin/AdminHouseholds';
 import { AdminTransactions } from './pages/admin/AdminTransactions';
 import { AdminCategories } from './pages/admin/AdminCategories';
+import { AdminSettings } from './pages/admin/AdminSettings';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -82,6 +83,7 @@ function App() {
             <Route path="households" element={<AdminHouseholds />} />
             <Route path="transactions" element={<AdminTransactions />} />
             <Route path="categories" element={<AdminCategories />} />
+            <Route path="settings" element={<AdminSettings />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

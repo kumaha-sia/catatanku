@@ -70,3 +70,13 @@ export const getReportSummary = (householdId: string, month?: string, year?: str
 export const getNotifications = () => api.get('/notifications').then(res => res.data.data);
 export const markNotificationAsRead = (id: string) => api.put(`/notifications/${id}/read`).then(res => res.data.data);
 export const markAllNotificationsAsRead = () => api.put('/notifications/read-all').then(res => res.data);
+
+
+export const scanReceipt = async (file: File) => {
+  const formData = new FormData();
+  formData.append('receipt', file);
+  const res = await api.post('/transactions/scan', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return res.data.data;
+};

@@ -31,3 +31,14 @@ export const getAdminDebts = (params?: any) => api.get('/admin/debts', { params 
 export const getAdminGrowth = () => api.get('/admin/analytics/growth').then(res => res.data.data);
 export const getAdminTopCategories = () => api.get('/admin/analytics/top-categories').then(res => res.data.data);
 export const getAdminActivity = () => api.get('/admin/analytics/activity').then(res => res.data.data);
+
+
+export const getSettings = async () => {
+  const res = await api.get('/admin/settings');
+  return res.data.data;
+};
+
+export const updateSettings = async (settings: { key: string, value: string }[]) => {
+  const res = await api.put('/admin/settings', { settings });
+  return res.data.data;
+};

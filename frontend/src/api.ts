@@ -1,7 +1,15 @@
 import axios from 'axios';
 import { useAuthStore } from './store/authStore';
 
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+const getBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.includes('localhost')) {
+    return import.meta.env.VITE_API_URL;
+  }
+  // Fallback dynamic IP support for mobile testing
+  return `http://${window.location.hostname}:5000/api/v1`;
+};
+
+export const API_URL = getBaseUrl();
 
 const api = axios.create({
   baseURL: API_URL,

@@ -1,9 +1,10 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { BottomSheet } from './BottomSheet';
 import { useUIStore } from '../store/uiStore';
-import { ChevronRight, ChevronLeft, Search } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Search, Camera, Loader } from 'lucide-react';
 import { useWallets, useCategories, useCreateTransaction, useUpdateTransaction, useHouseholds } from '../hooks/useFinances';
 import { useAuthStore } from '../store/authStore';
+import { scanReceipt } from '../services/apiServices';
 
 export const AddTransactionSheet = () => {
   const { isAddTransactionOpen, closeAddTransaction, editTransactionData } = useUIStore();
@@ -35,6 +36,57 @@ export const AddTransactionSheet = () => {
   const [searchCat, setSearchCat] = useState('');
   
   const updateTx = useUpdateTransaction();
+
+  // AI Scanner Logic
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isScanning, setIsScanning] = useState(false);
+
+  const handleScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsScanning(true);
+      // Compress image via Canvas before uploading
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      await new Promise(res => { img.onload = res; });
+
+      const canvas = document.createElement('canvas');
+      const MAX_WIDTH = 800;
+      const scaleSize = MAX_WIDTH / img.width;
+      canvas.width = MAX_WIDTH;
+      canvas.height = img.height * scaleSize;
+
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) throw new Error('Compression failed');
+        const compressedFile = new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() });
+        
+        try {
+          const result = await scanReceipt(compressedFile);
+          if (result) {
+            if (result.amount) setAmountStr(result.amount.toString());
+            if (result.note) setNote(result.note);
+            if (result.date) setDate(result.date);
+            setType('EXPENSE'); // Receipts usually default to expense
+            window.toast.success('Struk berhasil dipindai!');
+          }
+        } catch (apiErr: any) {
+          window.toast.error(apiErr.response?.data?.message || 'Gagal memindai struk (Cek API Key/URL di Pengaturan)');
+        } finally {
+          setIsScanning(false);
+          if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+      }, 'image/jpeg', 0.8);
+
+    } catch (err: any) {
+      window.toast.error('Gagal memproses gambar');
+      setIsScanning(false);
+    }
+  };
 
   // Populate data when editing
   useEffect(() => {
@@ -176,6 +228,19 @@ export const AddTransactionSheet = () => {
               </button>
             </div>
           )}
+
+          {/* AI Scanner Button */}
+          <div className="flex gap-2 mb-4">
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isScanning}
+              className="w-full bg-surface border-4 border-text-primary p-3 font-black uppercase text-sm flex items-center justify-center gap-2 shadow-[6px_6px_0_0_#171B22] hover:-translate-y-1 hover:bg-surface-muted transition-all disabled:opacity-70 disabled:hover:translate-y-0"
+            >
+              {isScanning ? <Loader className="animate-spin" size={20} /> : <Camera size={20} />}
+              {isScanning ? 'Membaca Struk...' : 'Scan Struk Otomatis (AI)'}
+            </button>
+            <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={handleScan} />
+          </div>
 
           {/* Amount Input */}
           <div className="py-6 px-4 bg-surface border-4 border-text-primary shadow-[6px_6px_0_0_#171B22] mb-4">

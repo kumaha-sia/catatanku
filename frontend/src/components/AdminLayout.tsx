@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { LayoutDashboard, Users, UserCog, LogOut, ArrowRightLeft, Tags, BarChart } from 'lucide-react';
+import { LayoutDashboard, Users, UserCog, LogOut, ArrowRightLeft, Tags, Settings } from 'lucide-react';
 
 const AdminLayout: React.FC = () => {
   const { logout } = useAuthStore();
@@ -19,6 +19,7 @@ const AdminLayout: React.FC = () => {
     { name: 'Manajemen Keluarga', path: '/admin/households', icon: <UserCog size={20} className="stroke-[3]" /> },
     { name: 'Monitor Transaksi', path: '/admin/transactions', icon: <ArrowRightLeft size={20} className="stroke-[3]" /> },
     { name: 'Kategori Sistem', path: '/admin/categories', icon: <Tags size={20} className="stroke-[3]" /> },
+    { name: 'Pengaturan Sistem', path: '/admin/settings', icon: <Settings size={20} className="stroke-[3]" /> },
   ];
 
   return (

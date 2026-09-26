@@ -104,3 +104,24 @@ export const useAdminDebts = (params?: any) => useQuery({ queryKey: ['adminDebts
 export const useAdminGrowth = () => useQuery({ queryKey: ['adminGrowth'], queryFn: api.getAdminGrowth });
 export const useAdminTopCategories = () => useQuery({ queryKey: ['adminTopCategories'], queryFn: api.getAdminTopCategories });
 export const useAdminActivity = () => useQuery({ queryKey: ['adminActivity'], queryFn: api.getAdminActivity });
+
+
+export const useAdminSettings = () => useQuery({
+  queryKey: ['adminSettings'],
+  queryFn: api.getSettings
+});
+
+export const useUpdateAdminSettings = () => {
+  const queryClient = useQueryClient();
+  const showToast = useToastStore(state => state.showToast);
+  return useMutation({
+    mutationFn: api.updateSettings,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminSettings'] });
+      showToast('success', 'Pengaturan sistem berhasil disimpan');
+    },
+    onError: (err: any) => {
+      showToast('error', err.response?.data?.message || 'Gagal menyimpan pengaturan');
+    }
+  });
+};
