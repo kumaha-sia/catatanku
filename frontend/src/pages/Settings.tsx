@@ -4,9 +4,11 @@ import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../components/BottomSheet';
 import { useHouseholds } from '../hooks/useFinances';
+import { updateProfile } from '../services/apiServices';
 
 export const Settings = () => {
   const logout = useAuthStore((state) => state.logout);
+  const loginAuth = useAuthStore((state) => state.login);
   const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
   const navigate = useNavigate();
@@ -15,6 +17,10 @@ export const Settings = () => {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState<'csv' | 'pdf'>('csv');
   const [isExporting, setIsExporting] = useState(false);
+  const [isReminderOpen, setIsReminderOpen] = useState(false);
+  const [reminderEnabled, setReminderEnabled] = useState(user?.reminder_enabled || false);
+  const [reminderTime, setReminderTime] = useState(user?.reminder_time || '20:00');
+  const [isSavingReminder, setIsSavingReminder] = useState(false);
 
   const { data: households } = useHouseholds();
   const myHouseholdId = households?.find((h: any) => h.role === 'OWNER' && h.name.includes('Household'))?.id;
@@ -42,6 +48,31 @@ export const Settings = () => {
       window.toast.error('Gagal mengekspor data. Coba lagi.');
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleSaveReminder = async () => {
+    try {
+      setIsSavingReminder(true);
+      const res = await updateProfile({ 
+        name: user?.name || '', 
+        reminder_enabled: reminderEnabled,
+        reminder_time: reminderTime
+      });
+      if (user) {
+        const updatedUser = { 
+          ...user, 
+          reminder_enabled: res.data.reminder_enabled,
+          reminder_time: res.data.reminder_time
+        };
+        loginAuth(updatedUser, token || '');
+      }
+      setIsReminderOpen(false);
+      window.toast.success('Pengaturan pengingat berhasil disimpan!');
+    } catch (err) {
+      window.toast.error('Gagal menyimpan pengaturan pengingat.');
+    } finally {
+      setIsSavingReminder(false);
     }
   };
 
@@ -125,6 +156,20 @@ export const Settings = () => {
         </div>
       </section>
 
+      {/* Notifikasi */}
+      <section>
+        <SectionHeader label="Notifikasi" />
+        <div className="bg-surface border-4 border-text-primary shadow-[4px_4px_0_0_#171B22] divide-y-4 divide-text-primary">
+          <SettingsItem 
+            icon={<Info size={18} className="stroke-[3]" />}
+            title="Pengingat Harian (WA)"
+            subtitle={user?.reminder_enabled ? `Aktif pada ${user?.reminder_time}` : "Tidak Aktif"}
+            onClick={() => setIsReminderOpen(true)}
+            iconBg={user?.reminder_enabled ? "bg-[#A3E635]" : "bg-surface-muted"}
+          />
+        </div>
+      </section>
+
       {/* Tentang */}
       <section>
         <SectionHeader label="Tentang" />
@@ -190,7 +235,7 @@ export const Settings = () => {
         </div>
       </BottomSheet>
 
-      {/* About / Bantuan BottomSheet */}
+      {/* Tentang / Bantuan BottomSheet */}
       <BottomSheet isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} title="Bantuan & Kebijakan">
         <div className="space-y-4 pt-4">
           <div className="bg-primary border-4 border-text-primary p-5 shadow-[4px_4px_0_0_#171B22]">
@@ -226,6 +271,59 @@ export const Settings = () => {
           <p className="text-center text-[10px] font-black text-text-secondary uppercase tracking-widest py-2">
             © 2026 FinBareng. All rights reserved.
           </p>
+        </div>
+      </BottomSheet>
+
+      {/* Reminder BottomSheet */}
+      <BottomSheet isOpen={isReminderOpen} onClose={() => setIsReminderOpen(false)} title="Pengingat WA">
+        <div className="space-y-6 pt-4">
+          <div className="bg-accent border-4 border-text-primary p-4 shadow-[4px_4px_0_0_#171B22]">
+            <p className="text-sm font-bold text-text-primary leading-relaxed">
+              Dapatkan pesan WhatsApp otomatis jika Anda <span className="font-black">belum mencatat transaksi</span> pada hari itu.
+            </p>
+            {!user?.whatsapp && (
+              <p className="text-xs font-black text-error mt-2">
+                * Anda harus menambahkan Nomor WhatsApp di Profil terlebih dahulu.
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="font-black text-text-primary uppercase tracking-wider">Aktifkan Pengingat</span>
+              <button 
+                onClick={() => setReminderEnabled(!reminderEnabled)}
+                disabled={!user?.whatsapp}
+                className={`w-14 h-8 border-4 border-text-primary relative transition-colors ${
+                  reminderEnabled ? 'bg-primary' : 'bg-surface-muted'
+                } ${!user?.whatsapp ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <div className={`absolute top-0.5 w-5 h-5 bg-text-primary transition-transform ${
+                  reminderEnabled ? 'translate-x-7' : 'translate-x-1'
+                }`} />
+              </button>
+            </div>
+            
+            {reminderEnabled && (
+              <div>
+                <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block">Jam Pengingat</label>
+                <input 
+                  type="time" 
+                  value={reminderTime}
+                  onChange={(e) => setReminderTime(e.target.value)}
+                  className="w-full bg-surface border-4 border-text-primary p-3 font-black text-lg text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#171B22] transition-shadow"
+                />
+              </div>
+            )}
+          </div>
+
+          <button 
+            onClick={handleSaveReminder}
+            disabled={isSavingReminder || (!user?.whatsapp && reminderEnabled)}
+            className="w-full py-4 bg-primary text-surface border-4 border-text-primary font-black text-sm uppercase tracking-wider shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all disabled:opacity-50 disabled:translate-y-0"
+          >
+            {isSavingReminder ? 'Menyimpan...' : 'Simpan Pengaturan'}
+          </button>
         </div>
       </BottomSheet>
 

@@ -6,6 +6,8 @@ export interface User {
   email: string;
   avatarUrl?: string;
   whatsapp?: string;
+  reminder_enabled?: boolean;
+  reminder_time?: string;
   role?: string;
 }
 
