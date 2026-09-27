@@ -12,6 +12,7 @@ export const Profile = () => {
   const navigate = useNavigate();
   const user = useAuthStore(state => state.user);
   const loginAuth = useAuthStore(state => state.login);
+  const showConfirm = useConfirmStore(state => state.showConfirm);
   
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
