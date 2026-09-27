@@ -29,6 +29,40 @@ export const handleOpenWaWebhook = async (req: Request, res: Response) => {
 
     console.log(`[Webhook] Incoming message from ${from}: ${msgText}`);
 
+    // ----------------------------------------------------
+    // CHECK FOR BIND COMMAND (Even if user is already known)
+    // ----------------------------------------------------
+    if (isText && msgText.startsWith('BIND-')) {
+      const token = msgText.trim();
+      
+      if (token) {
+        const userToBind = await prisma.user.findUnique({
+          where: { wa_bind_token: token }
+        });
+
+        if (userToBind && userToBind.wa_bind_expires_at && userToBind.wa_bind_expires_at > new Date()) {
+          // Fallback phone
+          let fallbackPhone = from.split('@')[0];
+
+          await prisma.user.update({
+            where: { id: userToBind.id },
+            data: {
+              wa_lid: from,
+              whatsapp: fallbackPhone,
+              wa_bind_token: null,
+              wa_bind_expires_at: null
+            }
+          });
+
+          await sendWhatsAppMessage(from, '✅ *Berhasil!* 🎉\n\nWhatsApp Anda telah terhubung ke akun FinBareng. Mulai sekarang Anda bisa mencatat transaksi langsung dari sini!', payload.data.id);
+          return;
+        } else {
+          await sendWhatsAppMessage(from, '❌ *Kode Kadaluarsa/Tidak Valid*\n\nSilakan generate ulang tautan dari menu Profil di web ya!', payload.data.id);
+          return;
+        }
+      }
+    }
+
     // Check if user is known by this LID/JID
     const user = await prisma.user.findFirst({
       where: {
@@ -43,43 +77,6 @@ export const handleOpenWaWebhook = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      // ----------------------------------------------------
-            // UNKNOWN USER (LID/JID NOT LINKED)
-      // ----------------------------------------------------
-      if (isText && msgText.startsWith('BIND-')) {
-        const token = msgText.trim();
-        
-        if (token) {
-          const userToBind = await prisma.user.findUnique({
-            where: { wa_bind_token: token }
-          });
-
-          if (userToBind && userToBind.wa_bind_expires_at && userToBind.wa_bind_expires_at > new Date()) {
-            // Extract fallback phone from JID if possible
-            let fallbackPhone = '';
-            if (from.endsWith('@s.whatsapp.net')) {
-              fallbackPhone = from.split('@')[0];
-            }
-
-            await prisma.user.update({
-              where: { id: userToBind.id },
-              data: {
-                wa_lid: from,
-                whatsapp: fallbackPhone.length > 5 ? fallbackPhone : userToBind.whatsapp,
-                wa_bind_token: null,
-                wa_bind_expires_at: null
-              }
-            });
-
-            await sendWhatsAppMessage(from, '✅ *Berhasil!* 🎉\n\nWhatsApp Anda telah terhubung ke akun FinBareng. Mulai sekarang Anda bisa mencatat transaksi langsung dari sini!', payload.data.id);
-            return;
-          } else {
-            await sendWhatsAppMessage(from, '❌ *Kode Kadaluarsa/Tidak Valid*\n\nSilakan generate ulang tautan dari menu Profil di web ya!', payload.data.id);
-            return;
-          }
-        }
-      }
-
       // Default response for completely unknown user
       await sendWhatsAppMessage(from, '❓ *Akun Belum Terhubung*\n\nSilakan tautkan WhatsApp Anda melalui menu Profil di aplikasi web FinBareng. Klik tombol "Hubungkan WhatsApp".', payload.data.id);
       return;
@@ -164,7 +161,7 @@ export const handleOpenWaWebhook = async (req: Request, res: Response) => {
     } catch (aiError: any) {
       console.error('[Webhook] Error processing AI logic:', aiError);
       // Send error fallback to WA so user isn't left hanging
-      const errorMsg = '⚠️ Maaf, terjadi kesalahan saat memproses pesan Anda. (Error: ' + (aiError.message || 'Unknown') + ')';
+      const errorMsg = '🙏 Maaf, terjadi kesalahan saat memproses pesan Anda. (Error: ' + (aiError.message || 'Unknown') + ')';
       await sendWhatsAppMessage(targetId, errorMsg, quoteId);
     }
 
