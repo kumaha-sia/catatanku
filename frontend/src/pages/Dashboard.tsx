@@ -14,15 +14,6 @@ export const Dashboard = () => {
   const [hideBalance, setHideBalance] = useState(false);
   const openAddTransaction = useUIStore((state) => state.openAddTransaction);
   
-    const { data: roastData, isLoading: isLoadingRoast } = useQuery({
-    queryKey: ['ai-roast'],
-    queryFn: async () => {
-      const res = await api.get('/ai/roast?persona=savage');
-      return res.data;
-    },
-    staleTime: 1000 * 60 * 60 * 24, // 24 hours
-  });
-  
   const now = new Date();
   const [currentMonth, setCurrentMonth] = useState(now.getMonth() + 1);
   const [currentYear, setCurrentYear] = useState(now.getFullYear());
@@ -125,6 +116,15 @@ export const Dashboard = () => {
 
 const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type, hasFamily, currentMonth, currentYear }: { hideBalance: boolean, setHideBalance: (h: boolean) => void, navigate: any, householdId?: string, type: string, hasFamily: boolean, currentMonth: number, currentYear: number }) => {
   
+  const { data: roastData, isLoading: isLoadingRoast } = useQuery({
+    queryKey: ['ai-roast'],
+    queryFn: async () => {
+      const res = await api.get('/ai/roast?persona=savage');
+      return res.data;
+    },
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+  });
+
   const { data: report } = useReportSummary(householdId || '', currentMonth + "", currentYear + "");
   const { data: wallets } = useWallets(householdId);
   const { data: transactions } = useTransactions(householdId || '', 1, currentMonth + "", currentYear + "");

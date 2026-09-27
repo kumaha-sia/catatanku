@@ -10,9 +10,6 @@ export const generateRoast = async (userId: string, persona: string = 'savage') 
     const todayStr = now.toISOString().slice(0, 10);
     const lastRoastStr = user.last_roast_date ? new Date(user.last_roast_date).toISOString().slice(0, 10) : null;
 
-    // We can also cache based on the persona so if they switch persona it regenerates.
-    // For now, if they switch persona, it will just use the cached one unless we force it.
-    // Let's just check if it's the same day.
     if (lastRoastStr === todayStr && user.last_roast_text) {
       return user.last_roast_text;
     }
@@ -24,7 +21,7 @@ export const generateRoast = async (userId: string, persona: string = 'savage') 
       where: { key: { in: ['AI_BASE_URL', 'AI_API_KEY', 'AI_MODEL'] } }
     });
     
-    const getVal = (k) => settings.find(s => s.key === k)?.value;
+    const getVal = (k: string) => settings.find(s => s.key === k)?.value;
     const apiKey = getVal('AI_API_KEY');
     const baseUrl = getVal('AI_BASE_URL');
     const aiModel = getVal('AI_MODEL') || 'gpt-4o'; 
@@ -33,25 +30,38 @@ export const generateRoast = async (userId: string, persona: string = 'savage') 
       throw new Error('Konfigurasi AI (AI_BASE_URL, AI_API_KEY) belum diatur di sistem.');
     }
 
-    // 2. Fetch Data for Current Month
+    // 2. Fetch Deep Context Data in Parallel
     const start = new Date(now.getFullYear(), now.getMonth(), 1);
     const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-    const transactions = await prisma.transaction.findMany({
-      where: {
-        created_by: userId,
-        date: { gte: start, lte: end }
-      },
-      include: {
-        category: true,
-      }
+    const [transactions, wallets, allTimeAgg, goals, debts] = await Promise.all([
+      prisma.transaction.findMany({
+        where: { created_by: userId, date: { gte: start, lte: end } },
+        include: { category: true }
+      }),
+      prisma.wallet.findMany({ where: { user_id: userId } }),
+      prisma.transaction.groupBy({
+        by: ['type'],
+        where: { created_by: userId },
+        _sum: { amount: true }
+      }),
+      prisma.goal.findMany({ where: { user_id: userId, status: 'ACTIVE' } }),
+      prisma.debt.findMany({ where: { user_id: userId, status: 'ACTIVE' } })
+    ]);
+
+    // Process Wallets & Balances
+    let totalBalance = wallets.reduce((acc, w) => acc + (w.initial_balance || 0), 0);
+    allTimeAgg.forEach(agg => {
+      if (agg.type === 'INCOME') totalBalance += (agg._sum.amount || 0);
+      if (agg.type === 'EXPENSE') totalBalance -= (agg._sum.amount || 0);
     });
 
+    // Process Transactions
     let totalIncome = 0;
     let totalExpense = 0;
-    const expenseByCategory = {};
+    const expenseByCategory: Record<string, number> = {};
 
-    transactions.forEach(t => {
+    transactions.forEach((t: any) => {
       if (t.type === 'INCOME') totalIncome += t.amount;
       if (t.type === 'EXPENSE') {
         totalExpense += t.amount;
@@ -60,17 +70,27 @@ export const generateRoast = async (userId: string, persona: string = 'savage') 
       }
     });
 
-    // Top 3 Expense Categories
     const topExpenses = Object.entries(expenseByCategory)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
       .map(([name, amount]) => `- ${name}: Rp ${amount.toLocaleString('id-ID')}`)
       .join('\n');
 
+    // Process Goals
+    const goalsList = goals.map(g => `- ${g.name}: Terkumpul Rp ${g.current_amount.toLocaleString('id-ID')} dari target Rp ${g.target_amount.toLocaleString('id-ID')}`).join('\n');
+
+    // Process Debts
+    let totalBorrow = 0;
+    let totalLend = 0;
+    debts.forEach((d) => {
+      if (d.type === 'BORROW') totalBorrow += d.remaining_amount;
+      if (d.type === 'LEND') totalLend += d.remaining_amount;
+    });
+
     // 3. Build Prompt
     let personaInstruction = '';
     if (persona === 'savage') {
-      personaInstruction = 'Kamu adalah penasihat keuangan yang SANGAT GALAK, SARKAS, PEDAS, dan SAVAGE (Roast Mode). Marahi kebodohan finansial pengguna. Gunakan bahasa gaul Jakarta (lo/gue). JANGAN PERNAH sopan.';
+      personaInstruction = 'Kamu adalah penasihat keuangan yang SANGAT GALAK, SARKAS, PEDAS, dan SAVAGE (Roast Mode). Marahi kebodohan finansial pengguna berdasarkan konteks kekayaan, hutang, dan tujuannya. Gunakan bahasa gaul Jakarta (lo/gue). JANGAN PERNAH sopan.';
     } else if (persona === 'chill') {
       personaInstruction = 'Kamu adalah penasihat keuangan yang santai, gaya anak skena (Chill Bro). Gunakan bahasa gaul (lo/gue, ngab, cuy).';
     } else {
@@ -80,13 +100,22 @@ export const generateRoast = async (userId: string, persona: string = 'savage') 
     const systemInstruction = `
 ${personaInstruction}
 
-Tugasmu adalah menganalisa data keuangan pengguna bulan ini dan memberikan TEPAT 1-2 paragraf singkat, padat, dan langsung menohok. Buat semenarik mungkin untuk ditampilkan sebagai Sticky Note di Dashboard mereka. JANGAN pakai kata pembuka bertele-tele.
+Tugasmu adalah menganalisa KONDISI FINANSIAL MENDALAM pengguna saat ini dan memberikan TEPAT 1-2 paragraf singkat, padat, dan langsung menohok. Buat semenarik mungkin untuk ditampilkan sebagai Sticky Note di Dashboard mereka. JANGAN pakai kata pembuka bertele-tele. Kaitkan pengeluaran mereka dengan hutang, tabungan (goals), atau saldo tersisa jika relevan.
 
-DATA PENGGUNA BULAN INI:
-- Total Pemasukan: Rp ${totalIncome.toLocaleString('id-ID')}
-- Total Pengeluaran: Rp ${totalExpense.toLocaleString('id-ID')}
-- 3 Pengeluaran Terbesar:
+DATA KEUANGAN PENGGUNA SAAT INI:
+- Sisa Saldo Semua Dompet: Rp ${totalBalance.toLocaleString('id-ID')}
+- Total Pemasukan (Bulan Ini): Rp ${totalIncome.toLocaleString('id-ID')}
+- Total Pengeluaran (Bulan Ini): Rp ${totalExpense.toLocaleString('id-ID')}
+
+3 PENGELUARAN TERBESAR (BULAN INI):
 ${topExpenses || '- Belum ada pengeluaran'}
+
+HUTANG & PIUTANG AKTIF:
+- Total Hutang (Harus Dibayar): Rp ${totalBorrow.toLocaleString('id-ID')}
+- Total Piutang (Uang di Orang Lain): Rp ${totalLend.toLocaleString('id-ID')}
+
+TARGET TABUNGAN (GOALS) AKTIF:
+${goalsList || '- Tidak ada target tabungan (Parah, hidup ngalir aja?)'}
 
 Berikan hasil teks biasa.`;
 
@@ -102,7 +131,7 @@ Berikan hasil teks biasa.`;
         stream: false,
         messages: [
           { role: 'system', content: systemInstruction },
-          { role: 'user', content: "Roast saya hari ini." }
+          { role: 'user', content: "Roast kondisi keuanganku hari ini berdasarkan semua data." }
         ],
         max_tokens: 300,
         temperature: 0.8
