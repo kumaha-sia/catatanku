@@ -44,50 +44,44 @@ export const handleOpenWaWebhook = async (req: Request, res: Response) => {
 
     if (!user) {
       // ----------------------------------------------------
-      // UNKNOWN USER (LID/JID NOT LINKED)
+            // UNKNOWN USER (LID/JID NOT LINKED)
       // ----------------------------------------------------
-      if (isText && msgText.startsWith('/link')) {
-        const parts = msgText.split(' ');
-        const phone = parts[1]?.replace(/\D/g, ''); // Extract only numbers
+      if (isText && msgText.startsWith('/bind ')) {
+        const token = msgText.split(' ')[1]?.trim();
         
-        if (phone) {
-          // Normalize phone to both '08...' and '628...' formats for the DB search
-          let altPhone = phone;
-          if (phone.startsWith('62')) {
-            altPhone = '0' + phone.substring(2);
-          } else if (phone.startsWith('0')) {
-            altPhone = '62' + phone.substring(1);
-          }
-
-          // Find user by phone number
-          const linkedUser = await prisma.user.findFirst({
-            where: { 
-              OR: [
-                { whatsapp: phone },
-                { whatsapp: altPhone }
-              ]
-            }
+        if (token) {
+          const userToBind = await prisma.user.findUnique({
+            where: { wa_bind_token: token }
           });
 
-          if (linkedUser) {
+          if (userToBind && userToBind.wa_bind_expires_at && userToBind.wa_bind_expires_at > new Date()) {
+            // Extract fallback phone from JID if possible
+            let fallbackPhone = '';
+            if (from.endsWith('@s.whatsapp.net')) {
+              fallbackPhone = from.split('@')[0];
+            }
+
             await prisma.user.update({
-              where: { id: linkedUser.id },
-              data: { wa_lid: from }
+              where: { id: userToBind.id },
+              data: {
+                wa_lid: from,
+                whatsapp: fallbackPhone.length > 5 ? fallbackPhone : userToBind.whatsapp,
+                wa_bind_token: null,
+                wa_bind_expires_at: null
+              }
             });
-            await sendWhatsAppMessage(from, '✅ *Hore! Akun FinBareng kamu berhasil terhubung!* 🥳\n\nMulai sekarang, kamu bisa langsung *chat* aku buat nyatet pengeluaran. Contohnya:\n💬 _"Beli kopi 20rb pake BCA"_\n\nAtau kamu juga bisa langsung kirim *foto struk belanja* ke sini! Asik kan? 🚀', payload.data.id);
+
+            await sendWhatsAppMessage(from, '✅ *Berhasil!* 🎉\n\nWhatsApp Anda telah terhubung ke akun FinBareng. Mulai sekarang Anda bisa mencatat transaksi langsung dari sini!', payload.data.id);
+            return;
           } else {
-            await sendWhatsAppMessage(from, `❌ *Duh, nomor WA (${phone} / ${altPhone}) gak ketemu nih.* 🥺\n\nPastikan nomornya udah bener dan sesuai sama yang kamu simpan di halaman *Profil* aplikasi FinBareng ya!`, payload.data.id);
+            await sendWhatsAppMessage(from, '❌ *Kode Kadaluarsa/Tidak Valid*\n\nSilakan generate ulang tautan dari menu Profil di web ya!', payload.data.id);
+            return;
           }
-        } else {
-          await sendWhatsAppMessage(from, '❌ *Formatnya salah, kak!* 😅\n\nKetik kayak gini ya:\n👉 */link 62812345678*', payload.data.id);
         }
-      } else {
-        await sendWhatsAppMessage(
-          from, 
-          'Halo kak! 👋 Kenalin, aku asisten cerdas dari *FinBareng*.\n\nKayaknya nomor WA kamu belum terhubung nih. Biar aku bisa bantu catatin pengeluaranmu secara otomatis, balas pesan ini dengan perintah:\n👉 */link 62812345678*\n\n_(Ganti angkanya dengan nomor WA yang terdaftar di aplikasi kamu ya! 🚀)_',
-          payload.data.id
-        );
       }
+
+      // Default response for completely unknown user
+      await sendWhatsAppMessage(from, '❓ *Akun Belum Terhubung*\n\nSilakan tautkan WhatsApp Anda melalui menu Profil di aplikasi web FinBareng. Klik tombol "Hubungkan WhatsApp".', payload.data.id);
       return;
     }
 

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login, uploadAvatar, updateProfile } from '../controllers/authController';
+import { register, login, uploadAvatar, updateProfile, generateWaBindToken, checkWaBindStatus, unbindWa } from '../controllers/authController';
 import { validate } from '../middlewares/validate';
 import { registerSchema, loginSchema } from '../validators/auth.schema';
 
@@ -42,4 +42,10 @@ router.post('/login', validate(loginSchema), login);
 router.put('/avatar', authenticate, upload.single('avatar'), uploadAvatar);
 router.put('/profile', authenticate, updateProfile);
 
+
+router.post('/wa/bind/generate', authenticate, generateWaBindToken);
+router.get('/wa/bind/status', authenticate, checkWaBindStatus);
+router.post('/wa/unbind', authenticate, unbindWa);
+
 export default router;
+

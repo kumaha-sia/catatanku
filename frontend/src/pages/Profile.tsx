@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Mail, User, Shield, CheckCircle2, Image as ImageIcon, Trash2, KeyRound, Phone } from 'lucide-react';
+import { Camera, Mail, User, Shield, CheckCircle2, Image as ImageIcon, Trash2, KeyRound, Phone, Smartphone, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../components/BottomSheet';
 
 import { useAuthStore } from '../store/authStore';
-import { uploadAvatar, updateProfile } from '../services/apiServices';
+import { uploadAvatar, updateProfile, generateWaBindToken, checkWaBindStatus, unbindWa } from '../services/apiServices';
 import { API_URL } from '../api';
 
 export const Profile = () => {
@@ -20,6 +20,10 @@ export const Profile = () => {
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [waBindOpen, setWaBindOpen] = useState(false);
+  const [waBindToken, setWaBindToken] = useState<string | null>(null);
+  const [isWaLoading, setIsWaLoading] = useState(false);
+  
 
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -94,6 +98,69 @@ export const Profile = () => {
     }
   };
 
+  
+  // Polling for WA Binding
+  React.useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (waBindOpen && waBindToken) {
+      interval = setInterval(async () => {
+        try {
+          const res = await checkWaBindStatus();
+          if (res.status === 'success') {
+            clearInterval(interval);
+            if (user) {
+              const updatedUser = { ...user, whatsapp: res.data.whatsapp };
+              const token = localStorage.getItem('catatu_token') || '';
+              loginAuth(updatedUser, token);
+            }
+            window.toast.success('WhatsApp berhasil dihubungkan!');
+            setWaBindOpen(false);
+            setWaBindToken(null);
+          }
+        } catch (err: any) {
+          if (err.response?.status !== 202) {
+            clearInterval(interval);
+            window.toast.error('Gagal memverifikasi status. Coba buka ulang.');
+            setWaBindOpen(false);
+            setWaBindToken(null);
+          }
+        }
+      }, 2000);
+    }
+    return () => clearInterval(interval);
+  }, [waBindOpen, waBindToken, user, loginAuth]);
+
+  const handleOpenWaBind = async () => {
+    try {
+      setIsWaLoading(true);
+      const res = await generateWaBindToken();
+      setWaBindToken(res.data.token);
+      setWaBindOpen(true);
+    } catch (err) {
+      window.toast.error('Gagal membuat kode tautan');
+    } finally {
+      setIsWaLoading(false);
+    }
+  };
+
+  const handleUnbindWa = async () => {
+    if (!window.confirm('Yakin ingin memutuskan koneksi WhatsApp ini?')) return;
+    try {
+      setIsWaLoading(true);
+      await unbindWa();
+      if (user) {
+        const updatedUser = { ...user, whatsapp: '' };
+        const token = localStorage.getItem('catatu_token') || '';
+        loginAuth(updatedUser, token);
+      }
+      window.toast.success('WhatsApp berhasil diputuskan');
+    } catch (err) {
+      window.toast.error('Gagal memutuskan koneksi WhatsApp');
+    } finally {
+      setIsWaLoading(false);
+    }
+  };
+  
   const handleSave = async () => {
     try {
       const res = await updateProfile({ name, whatsapp });
@@ -168,8 +235,43 @@ export const Profile = () => {
           </div>
           <div className="absolute bottom-0 right-0 w-8 h-8 bg-accent flex items-center justify-center border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] text-text-primary">
             <Camera size={14} />
+          
+      {/* WA Bind Bottom Sheet */}
+      <BottomSheet isOpen={waBindOpen} onClose={() => { setWaBindOpen(false); setWaBindToken(null); }} title="Hubungkan WhatsApp">
+        <div className="space-y-6 text-center">
+          <div className="w-16 h-16 bg-accent border-4 border-text-primary mx-auto flex items-center justify-center shadow-[4px_4px_0_0_#171B22]">
+            <Smartphone size={32} className="text-text-primary" />
+          </div>
+          
+          <div>
+            <h3 className="font-black text-lg text-text-primary mb-2 uppercase">1-Click Verifikasi</h3>
+            <p className="text-sm font-bold text-text-secondary">Tidak perlu mengetik nomor atau kode OTP. Cukup klik tombol di bawah ini untuk mengirim pesan rahasia ke Bot FinBareng.</p>
+          </div>
+
+          <div className="p-4 bg-surface-muted border-2 border-text-primary border-dashed mb-4">
+            <p className="text-xs font-bold text-text-secondary uppercase mb-1">Kode Sesi Anda</p>
+            <p className="text-xl font-black text-text-primary tracking-widest">{waBindToken || '...'}</p>
+          </div>
+
+          <a 
+            href={`https://wa.me/6287811750971?text=/bind%20${waBindToken}`} 
+            target="_blank" 
+            rel="noreferrer"
+            className="w-full flex items-center justify-center gap-2 py-4 bg-[#25D366] text-surface font-black uppercase tracking-widest border-4 border-text-primary shadow-[6px_6px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[8px_8px_0_0_#171B22] active:translate-y-1 active:shadow-none transition-all"
+          >
+            Buka WhatsApp Sekarang
+          </a>
+          
+          <div className="flex items-center justify-center gap-2 mt-4 text-xs font-bold text-text-secondary">
+            <Loader2 size={14} className="animate-spin" />
+            Menunggu balasan dari WhatsApp Anda...
           </div>
         </div>
+      </BottomSheet>
+  
+    </div>
+  </div>
+
         <p 
           onClick={() => setIsAvatarOpen(true)}
           className="text-sm font-black text-text-primary mt-4 cursor-pointer hover:underline uppercase tracking-wider"

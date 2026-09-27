@@ -81,3 +81,9 @@ export const scanReceipt = async (file: File) => {
   });
   return res.data.data;
 };
+
+
+// --- WhatsApp Binding ---
+export const generateWaBindToken = () => api.post('/auth/wa/bind/generate').then(res => res.data);
+export const checkWaBindStatus = () => api.get('/auth/wa/bind/status').then(res => res.data);
+export const unbindWa = () => api.post('/auth/wa/unbind').then(res => res.data);

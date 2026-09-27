@@ -168,3 +168,60 @@ export const updateProfile = asyncHandler(async (req: AuthRequest, res: Response
     }
   });
 });
+
+
+// --- WhatsApp Binding ---
+
+export const generateWaBindToken = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.userId;
+  if (!userId) {
+    res.status(401); throw new Error('Not authorized');
+  }
+
+  const token = 'BIND-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  // Token expires in 15 minutes
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      wa_bind_token: token,
+      wa_bind_expires_at: expiresAt
+    }
+  });
+
+  res.status(200).json({ status: 'success', data: { token } });
+});
+
+export const checkWaBindStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.userId;
+  if (!userId) {
+    res.status(401); throw new Error('Not authorized');
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    res.status(404); throw new Error('User not found');
+  }
+
+  // If whatsapp is filled and token is cleared, it means webhook succeeded
+  if (user.whatsapp && !user.wa_bind_token) {
+    res.status(200).json({ status: 'success', data: { whatsapp: user.whatsapp } });
+  } else {
+    res.status(202).json({ status: 'pending', message: 'Waiting for WhatsApp binding' });
+  }
+});
+
+export const unbindWa = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.userId;
+  if (!userId) {
+    res.status(401); throw new Error('Not authorized');
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { whatsapp: null, wa_lid: null, wa_bind_token: null, wa_bind_expires_at: null }
+  });
+
+  res.status(200).json({ status: 'success', message: 'WhatsApp disconnected' });
+});
