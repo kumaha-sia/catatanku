@@ -254,7 +254,7 @@ export const Profile = () => {
           </div>
 
           <a 
-            href={`https://wa.me/6287811750971?text=/bind%20${waBindToken}`} 
+            href={`https://wa.me/6287811750971?text=${waBindToken}`} 
             target="_blank" 
             rel="noreferrer"
             className="w-full flex items-center justify-center gap-2 py-4 bg-[#25D366] text-surface font-black uppercase tracking-widest border-4 border-text-primary shadow-[6px_6px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[8px_8px_0_0_#171B22] active:translate-y-1 active:shadow-none transition-all"
@@ -295,17 +295,26 @@ export const Profile = () => {
           </div>
         </div>
 
-        <div>
+                <div>
           <label className="text-sm font-black text-text-primary uppercase tracking-wider mb-2 block">Nomor WhatsApp</label>
-          <div className="relative">
-            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-text-primary" size={18} />
-            <input 
-              type="text" 
-              value={whatsapp}
-              onChange={(e) => setWhatsapp(e.target.value)}
-              placeholder="Contoh: 081234567890"
-              className="w-full bg-surface border-2 border-text-primary rounded-none pl-11 pr-4 py-3.5 font-bold text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] transition-all"
-            />
+          <div className="flex items-center justify-between border-2 border-text-primary p-4 bg-surface shadow-[4px_4px_0_0_#171B22]">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 flex items-center justify-center border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] ${user?.whatsapp ? 'bg-[#25D366] text-surface' : 'bg-surface-muted text-text-secondary'}`}>
+                <Smartphone size={20} />
+              </div>
+              <div>
+                <p className="font-bold text-text-primary">{user?.whatsapp ? `+62 ${user.whatsapp}` : 'Belum Terhubung'}</p>
+                <p className="text-xs font-bold text-text-secondary">{user?.whatsapp ? 'Status: Terverifikasi' : 'Bot AI tidak dapat menghubungi'}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={user?.whatsapp ? handleUnbindWa : handleOpenWaBind}
+              disabled={isWaLoading}
+              className={`px-4 py-2 font-black uppercase text-xs border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] active:translate-y-1 active:shadow-none transition-all ${user?.whatsapp ? 'bg-error text-surface hover:bg-red-600' : 'bg-accent text-text-primary hover:bg-[#FFB43A]'}`}
+            >
+              {isWaLoading ? 'Memproses...' : user?.whatsapp ? 'Putuskan' : 'Hubungkan'}
+            </button>
           </div>
         </div>
 

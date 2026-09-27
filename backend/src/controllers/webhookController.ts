@@ -46,8 +46,8 @@ export const handleOpenWaWebhook = async (req: Request, res: Response) => {
       // ----------------------------------------------------
             // UNKNOWN USER (LID/JID NOT LINKED)
       // ----------------------------------------------------
-      if (isText && msgText.startsWith('/bind ')) {
-        const token = msgText.split(' ')[1]?.trim();
+      if (isText && msgText.startsWith('BIND-')) {
+        const token = msgText.trim();
         
         if (token) {
           const userToBind = await prisma.user.findUnique({
