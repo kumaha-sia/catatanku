@@ -4,6 +4,8 @@ import { useUIStore } from '../store/uiStore';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Eye, EyeOff, Plus, ArrowUpRight, ArrowDownRight, Users, Lock, ChevronDown, Check } from 'lucide-react';
 import { useHouseholds, useTransactions, useWallets, useReportSummary, useMembers } from '../hooks/useFinances';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../services/api';
 import { FinRoastWidget } from '../components/FinRoastWidget';
 
 export const Dashboard = () => {
@@ -12,6 +14,15 @@ export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<'ME' | 'FAMILY'>('ME');
   const [hideBalance, setHideBalance] = useState(false);
   const openAddTransaction = useUIStore((state) => state.openAddTransaction);
+  
+    const { data: roastData, isLoading: isLoadingRoast } = useQuery({
+    queryKey: ['ai-roast'],
+    queryFn: async () => {
+      const res = await api.get('/ai/roast?persona=savage');
+      return res.data;
+    },
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+  });
   
   const now = new Date();
   const [currentMonth, setCurrentMonth] = useState(now.getMonth() + 1);
@@ -150,7 +161,7 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 animate-fade-in">
         {/* Main Column (Left on Desktop) */}
         <div className="lg:col-span-2 space-y-6">
-          <FinRoastWidget />
+          
           {/* Hero Card: Total Saldo Bersama */}
           <div className="bg-primary text-surface rounded-none border-4 border-text-primary p-6 shadow-[8px_8px_0_0_#171B22] relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
@@ -274,6 +285,7 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
       
       {/* Main Column (Left on Desktop) */}
       <div className="lg:col-span-2 space-y-6">
+        
         
         {/* Balance Card */}
         <div className={`bg-primary text-surface rounded-none border-4 border-text-primary p-6 shadow-[8px_8px_0_0_#171B22] relative overflow-hidden`}>

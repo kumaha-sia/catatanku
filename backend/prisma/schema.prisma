@@ -22,7 +22,9 @@ model User {
   last_reminder_sent_at DateTime?
   locale                String    @default("id")
   timezone      String    @default("Asia/Jakarta")
-  role          String    @default("USER") // "USER" | "ADMIN"
+  role                  String    @default("USER") // "USER" | "ADMIN"
+  last_roast_text       String?
+  last_roast_date       DateTime?
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
   deleted_at    DateTime?
