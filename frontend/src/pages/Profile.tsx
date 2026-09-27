@@ -306,8 +306,8 @@ export const Profile = () => {
                 <Smartphone size={20} />
               </div>
               <div>
-                <p className="font-bold text-text-primary">{user?.whatsapp ? `+62 ${user.whatsapp}` : 'Belum Terhubung'}</p>
-                <p className="text-xs font-bold text-text-secondary">{user?.whatsapp ? 'Status: Terverifikasi' : 'Bot AI tidak dapat menghubungi'}</p>
+                <p className="font-bold text-text-primary">{user?.whatsapp ? 'Akun WhatsApp Terhubung' : 'Belum Terhubung'}</p>
+                <p className="text-xs font-bold text-text-secondary">{user?.whatsapp ? 'Status: Terverifikasi (Bot Siap Digunakan)' : 'Bot AI tidak dapat menghubungi'}</p>
               </div>
             </div>
             <button
