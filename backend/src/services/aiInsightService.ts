@@ -72,7 +72,7 @@ export const generateRoast = async (userId: string, persona: string = 'savage') 
 
     const topExpenses = Object.entries(expenseByCategory)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
+      .slice(0, 5)
       .map(([name, amount]) => `- ${name}: Rp ${amount.toLocaleString('id-ID')}`)
       .join('\n');
 
@@ -107,7 +107,7 @@ DATA KEUANGAN PENGGUNA SAAT INI:
 - Total Pemasukan (Bulan Ini): Rp ${totalIncome.toLocaleString('id-ID')}
 - Total Pengeluaran (Bulan Ini): Rp ${totalExpense.toLocaleString('id-ID')}
 
-3 PENGELUARAN TERBESAR (BULAN INI):
+5 PENGELUARAN TERBESAR (BULAN INI):
 ${topExpenses || '- Belum ada pengeluaran'}
 
 HUTANG & PIUTANG AKTIF:
