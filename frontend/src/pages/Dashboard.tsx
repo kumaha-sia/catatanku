@@ -5,8 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Bell, Eye, EyeOff, Plus, ArrowUpRight, ArrowDownRight, Users, Lock, ChevronDown, Check } from 'lucide-react';
 import { useHouseholds, useTransactions, useWallets, useReportSummary, useMembers } from '../hooks/useFinances';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../services/api';
-import { FinRoastWidget } from '../components/FinRoastWidget';
+import api from '../api';
 
 export const Dashboard = () => {
   const navigate = useNavigate();
