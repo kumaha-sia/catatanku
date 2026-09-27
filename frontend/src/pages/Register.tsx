@@ -72,8 +72,8 @@ export const Register = () => {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="SI PALING HEMAT"
-                className="w-full px-5 py-4 bg-background border-4 border-text-primary rounded-none shadow-[4px_4px_0_0_#171B22] focus:outline-none focus:translate-y-1 focus:shadow-none transition-all font-black text-text-primary placeholder:text-text-primary/30 uppercase"
+                placeholder="Si Paling Hemat"
+                className="w-full px-5 py-4 bg-background border-4 border-text-primary rounded-none shadow-[4px_4px_0_0_#171B22] focus:outline-none focus:translate-y-1 focus:shadow-none transition-all font-semibold text-text-primary placeholder:text-text-primary/50"
                 required
               />
             </div>
@@ -84,8 +84,8 @@ export const Register = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="NAMA@EMAIL.COM"
-                className="w-full px-5 py-4 bg-background border-4 border-text-primary rounded-none shadow-[4px_4px_0_0_#171B22] focus:outline-none focus:translate-y-1 focus:shadow-none transition-all font-black text-text-primary placeholder:text-text-primary/30 uppercase"
+                placeholder="nama@email.com"
+                className="w-full px-5 py-4 bg-background border-4 border-text-primary rounded-none shadow-[4px_4px_0_0_#171B22] focus:outline-none focus:translate-y-1 focus:shadow-none transition-all font-semibold text-text-primary placeholder:text-text-primary/50"
                 required
               />
             </div>
@@ -96,8 +96,8 @@ export const Register = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="MINIMAL 8 KARAKTER"
-                className="w-full px-5 py-4 bg-background border-4 border-text-primary rounded-none shadow-[4px_4px_0_0_#171B22] focus:outline-none focus:translate-y-1 focus:shadow-none transition-all font-black text-text-primary placeholder:text-text-primary/30"
+                placeholder="minimal 8 karakter"
+                className="w-full px-5 py-4 bg-background border-4 border-text-primary rounded-none shadow-[4px_4px_0_0_#171B22] focus:outline-none focus:translate-y-1 focus:shadow-none transition-all font-semibold text-text-primary placeholder:text-text-primary/50"
                 required
                 minLength={8}
               />
