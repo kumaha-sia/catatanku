@@ -1,0 +1,254 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  password_hash String
+  avatar_url            String?
+  whatsapp              String?
+  wa_lid                String?   @unique
+  reminder_enabled      Boolean   @default(false)
+  reminder_time         String    @default("20:00")
+  last_reminder_sent_at DateTime?
+  locale                String    @default("id")
+  timezone      String    @default("Asia/Jakarta")
+  role          String    @default("USER") // "USER" | "ADMIN"
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  owned_households    Household[]
+  households          HouseholdMember[]
+  wallets             Wallet[]            @relation("PersonalWallets")
+  categories          Category[]          @relation("PersonalCategories")
+  tags                Tag[]               @relation("PersonalTags")
+  budgets             Budget[]            @relation("PersonalBudgets")
+  goals               Goal[]              @relation("PersonalGoals")
+  notifications       Notification[]      @relation("UserNotifications")
+  transactions        Transaction[]       @relation("TransactionCreator")
+  paid_transactions   Transaction[]       @relation("TransactionPayer")
+  debts               Debt[]              @relation("PersonalDebts")
+}
+
+model Household {
+  id            String    @id @default(uuid())
+  name          String
+  base_currency String    @default("IDR")
+  logo_url      String?
+  invite_code   String?   @unique
+  owner_id      String
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  owner               User                @relation(fields: [owner_id], references: [id])
+  members             HouseholdMember[]
+  wallets             Wallet[]            @relation("SharedWallets")
+  categories          Category[]          @relation("SharedCategories")
+  tags                Tag[]               @relation("SharedTags")
+  budgets             Budget[]            @relation("SharedBudgets")
+  goals               Goal[]              @relation("SharedGoals")
+  transactions        Transaction[]
+  notifications       Notification[]
+  debts               Debt[]              @relation("SharedDebts")
+}
+
+model HouseholdMember {
+  id                    String   @id @default(uuid())
+  household_id          String
+  user_id               String
+  role                  String // "OWNER", "ADMIN", "MEMBER"
+  nickname              String?
+  color                 String?
+  status                String   @default("ACTIVE")
+  share_private_summary Boolean  @default(false)
+  joined_at             DateTime @default(now())
+
+  household Household @relation(fields: [household_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([household_id, user_id])
+}
+
+model Wallet {
+  id              String   @id @default(uuid())
+  household_id    String? // Null means personal wallet
+  user_id         String? // Null means shared wallet
+  name            String
+  type            String // "CASH", "BANK", "EWALLET", "CC", "SAVINGS", "OTHER"
+  scope           String // "PERSONAL", "SHARED"
+  initial_balance Float    @default(0)
+  icon            String?
+  color           String?
+  is_archived     Boolean  @default(false)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  household Household? @relation("SharedWallets", fields: [household_id], references: [id], onDelete: Cascade)
+  user      User?      @relation("PersonalWallets", fields: [user_id], references: [id], onDelete: Cascade)
+
+  transactions_as_origin Transaction[]       @relation("OriginWallet")
+  transactions_as_dest   Transaction[]       @relation("DestinationWallet")
+  goals                  Goal[]
+}
+
+model Category {
+  id           String  @id @default(uuid())
+  household_id String?
+  user_id      String?
+  name         String
+  type         String // "INCOME", "EXPENSE"
+  icon         String
+  color        String?
+  parent_id    String?
+  is_default   Boolean @default(false)
+  is_archived  Boolean @default(false)
+  sort_order   Int     @default(0)
+
+  household Household? @relation("SharedCategories", fields: [household_id], references: [id], onDelete: Cascade)
+  user      User?      @relation("PersonalCategories", fields: [user_id], references: [id], onDelete: Cascade)
+
+  transactions        Transaction[]
+  budgets             Budget[]
+}
+
+model Transaction {
+  id                    String    @id @default(uuid())
+  household_id          String
+  wallet_id             String
+  destination_wallet_id String?
+  category_id           String?
+  debt_id               String?
+  type                  String // "INCOME", "EXPENSE", "TRANSFER"
+  amount                Float
+  date                  DateTime
+  note                  String?
+  visibility            String // "PRIVATE", "FAMILY"
+  created_by            String
+  paid_by_member_id     String? // Nullable, mostly for expenses/incomes
+  status                String    @default("COMPLETED")
+  receipt_url           String?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  deleted_at            DateTime?
+
+  household          Household @relation(fields: [household_id], references: [id], onDelete: Cascade)
+  wallet             Wallet    @relation("OriginWallet", fields: [wallet_id], references: [id], onDelete: Cascade)
+  destination_wallet Wallet?   @relation("DestinationWallet", fields: [destination_wallet_id], references: [id], onDelete: SetNull)
+  category           Category? @relation(fields: [category_id], references: [id], onDelete: SetNull)
+  creator            User      @relation("TransactionCreator", fields: [created_by], references: [id])
+  payer              User?     @relation("TransactionPayer", fields: [paid_by_member_id], references: [id])
+  debt               Debt?     @relation(fields: [debt_id], references: [id], onDelete: Cascade)
+
+  tags   TransactionTag[]
+}
+
+model Tag {
+  id           String   @id @default(uuid())
+  household_id String?
+  user_id      String?
+  name         String
+  color        String?
+  created_at   DateTime @default(now())
+
+  household Household? @relation("SharedTags", fields: [household_id], references: [id], onDelete: Cascade)
+  user      User?      @relation("PersonalTags", fields: [user_id], references: [id], onDelete: Cascade)
+
+  transactions TransactionTag[]
+}
+
+model TransactionTag {
+  transaction_id String
+  tag_id         String
+
+  transaction Transaction @relation(fields: [transaction_id], references: [id], onDelete: Cascade)
+  tag         Tag         @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+
+  @@id([transaction_id, tag_id])
+}
+
+model Budget {
+  id              String   @id @default(uuid())
+  household_id    String?
+  user_id         String?
+  category_id     String
+  period          String // "MONTHLY", "YEARLY"
+  period_month    Int? // specific month for tracking
+  period_year     Int?
+  amount          Float
+  alert_threshold Float    @default(80)
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  household Household? @relation("SharedBudgets", fields: [household_id], references: [id], onDelete: Cascade)
+  user      User?      @relation("PersonalBudgets", fields: [user_id], references: [id], onDelete: Cascade)
+  category  Category   @relation(fields: [category_id], references: [id], onDelete: Cascade)
+}
+
+model Goal {
+  id             String    @id @default(uuid())
+  household_id   String?
+  user_id        String?
+  name           String
+  target_amount  Float
+  current_amount Float     @default(0)
+  target_date    DateTime?
+  wallet_id      String?
+  icon           String?
+  status         String    @default("ACTIVE") // "ACTIVE", "ACHIEVED"
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  household Household? @relation("SharedGoals", fields: [household_id], references: [id], onDelete: Cascade)
+  user      User?      @relation("PersonalGoals", fields: [user_id], references: [id], onDelete: Cascade)
+  wallet    Wallet?    @relation(fields: [wallet_id], references: [id], onDelete: SetNull)
+}
+
+model Notification {
+  id           String   @id @default(uuid())
+  user_id      String
+  household_id String?
+  type         String
+  title        String
+  body         String
+  action_url   String?
+  is_read      Boolean  @default(false)
+  created_at   DateTime @default(now())
+
+  user      User       @relation("UserNotifications", fields: [user_id], references: [id], onDelete: Cascade)
+  household Household? @relation(fields: [household_id], references: [id], onDelete: Cascade)
+}
+
+model Debt {
+  id             String    @id @default(uuid())
+  household_id   String?
+  user_id        String?
+  type           String    // "LEND" (Piutang / Kita meminjamkan), "BORROW" (Hutang / Kita pinjam)
+  person_name    String    // Siapa yang berhutang / meminjamkan
+  amount         Float
+  remaining_amount Float
+  due_date       DateTime?
+  note           String?
+  status         String    @default("ACTIVE") // "ACTIVE", "PAID"
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  household Household? @relation("SharedDebts", fields: [household_id], references: [id], onDelete: Cascade)
+  user      User?      @relation("PersonalDebts", fields: [user_id], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+}
+
+
+model SystemSetting {
+  key   String @id
+  value String
+}

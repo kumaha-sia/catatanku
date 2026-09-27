@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const householdController_1 = require("../controllers/householdController");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const router = (0, express_1.Router)();
+router.use(authMiddleware_1.authenticate);
+router.get('/', householdController_1.getHouseholds);
+router.get('/:householdId/members', householdController_1.getMembers);
+router.post('/:householdId/invite', householdController_1.inviteMember);
+exports.default = router;
