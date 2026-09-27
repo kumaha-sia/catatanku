@@ -113,15 +113,15 @@ export const useAdminSettings = () => useQuery({
 
 export const useUpdateAdminSettings = () => {
   const queryClient = useQueryClient();
-  const showToast = useToastStore(state => state.showToast);
+  
   return useMutation({
     mutationFn: api.updateSettings,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminSettings'] });
-      showToast('success', 'Pengaturan sistem berhasil disimpan');
+      window.toast.success('Pengaturan sistem berhasil disimpan');
     },
     onError: (err: any) => {
-      showToast('error', err.response?.data?.message || 'Gagal menyimpan pengaturan');
+      window.toast.error(err.response?.data?.message || 'Gagal menyimpan pengaturan');
     }
   });
 };
