@@ -15,7 +15,6 @@ const defaultCategories = [
   { name: 'Perawatan Diri & Kosmetik', type: 'EXPENSE', icon: '💅' },
   { name: 'Pakaian & Sepatu', type: 'EXPENSE', icon: '👕' },
   { name: 'Cicilan & Utang', type: 'EXPENSE', icon: '💳' },
-  { name: 'Beri Pinjaman', type: 'EXPENSE', icon: '🤝' }, // <-- New
   { name: 'Amal & Donasi', type: 'EXPENSE', icon: '🤲' },
   { name: 'Hadiah & Sosial', type: 'EXPENSE', icon: '🎁' },
   { name: 'Hewan Peliharaan', type: 'EXPENSE', icon: '🐾' },
@@ -29,8 +28,7 @@ const defaultCategories = [
   { name: 'Hasil Investasi', type: 'INCOME', icon: '📈' },
   { name: 'Bisnis & Sampingan', type: 'INCOME', icon: '💼' },
   { name: 'Pencairan Tabungan', type: 'INCOME', icon: '🏦' },
-  { name: 'Terima Pinjaman', type: 'INCOME', icon: '🤝' }, // <-- New
-  { name: 'Piutang Dibayar', type: 'INCOME', icon: '💸' }, // <-- New
+  { name: 'Terima Pinjaman', type: 'INCOME', icon: '🤝' },
 
   // TRANSFER
   { name: 'Transfer Keluar', type: 'TRANSFER', icon: '📤' },
