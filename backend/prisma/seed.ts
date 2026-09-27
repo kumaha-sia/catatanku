@@ -15,7 +15,6 @@ const defaultCategories = [
   { name: 'Perawatan Diri & Kosmetik', type: 'EXPENSE', icon: '💅' },
   { name: 'Pakaian & Sepatu', type: 'EXPENSE', icon: '👕' },
   { name: 'Cicilan & Utang', type: 'EXPENSE', icon: '💳' },
-  { name: 'Bayar Utang', type: 'EXPENSE', icon: '💸' }, // <-- New
   { name: 'Beri Pinjaman', type: 'EXPENSE', icon: '🤝' }, // <-- New
   { name: 'Amal & Donasi', type: 'EXPENSE', icon: '🤲' },
   { name: 'Hadiah & Sosial', type: 'EXPENSE', icon: '🎁' },
