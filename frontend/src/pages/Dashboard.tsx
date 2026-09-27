@@ -4,6 +4,7 @@ import { useUIStore } from '../store/uiStore';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Eye, EyeOff, Plus, ArrowUpRight, ArrowDownRight, Users, Lock, ChevronDown, Check } from 'lucide-react';
 import { useHouseholds, useTransactions, useWallets, useReportSummary, useMembers } from '../hooks/useFinances';
+import { FinRoastWidget } from '../components/FinRoastWidget';
 
 export const Dashboard = () => {
   const navigate = useNavigate();
@@ -149,6 +150,7 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 animate-fade-in">
         {/* Main Column (Left on Desktop) */}
         <div className="lg:col-span-2 space-y-6">
+          <FinRoastWidget />
           {/* Hero Card: Total Saldo Bersama */}
           <div className="bg-primary text-surface rounded-none border-4 border-text-primary p-6 shadow-[8px_8px_0_0_#171B22] relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">

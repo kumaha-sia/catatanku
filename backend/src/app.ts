@@ -16,6 +16,7 @@ import notificationRoutes from './routes/notificationRoutes';
 import debtRoutes from './routes/debtRoutes';
 import adminRoutes from './routes/adminRoutes';
 import webhookRoutes from './routes/webhookRoutes';
+import aiRoutes from './routes/aiRoutes';
 import { startReminderCron } from './cron/reminderCron';
 
 import rateLimit from 'express-rate-limit';
@@ -55,6 +56,7 @@ app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/debts', debtRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/webhook', webhookRoutes);
+app.use('/api/v1/ai', aiRoutes);
 
 app.get('/', (req, res) => {
   res.send('FinBareng API is running');
