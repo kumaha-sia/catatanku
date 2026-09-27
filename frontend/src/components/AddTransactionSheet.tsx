@@ -147,7 +147,7 @@ export const AddTransactionSheet = () => {
   }, [categories, type, searchCat]);
 
   // View State for drill-down selectors
-  const [activeView, setActiveView] = useState<'MAIN' | 'CATEGORY' | 'WALLET_FROM' | 'WALLET_TO' | 'NOTE'>('MAIN');
+  const [activeView, setActiveView] = useState<'MAIN' | 'CATEGORY' | 'WALLET_FROM' | 'WALLET_TO'>('MAIN');
 
   const formattedAmount = parseInt(amountStr || '0', 10).toLocaleString('id-ID');
 
@@ -315,18 +315,18 @@ export const AddTransactionSheet = () => {
               )}
             </div>
 
-            <button 
-              onClick={() => setActiveView('NOTE')}
-              className="w-full flex items-center justify-between p-4 rounded-none border-2 border-text-primary bg-surface hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-[2px_2px_0_0_#171B22] transition-all text-left group shadow-[2px_2px_0_0_#171B22]"
-            >
-              <div>
+            <div className="w-full flex items-center justify-between p-4 rounded-none border-2 border-text-primary bg-surface shadow-[2px_2px_0_0_#171B22] focus-within:shadow-[4px_4px_0_0_#FFB43A] transition-all">
+              <div className="w-full flex flex-col">
                 <p className="text-xs font-black text-text-primary uppercase tracking-widest mb-1">Catatan</p>
-                <p className={`font-black text-lg truncate ${!note ? 'text-text-primary/50' : 'text-text-primary'}`}>
-                  {note || 'Tambahkan catatan opsional'}
-                </p>
+                <input 
+                  type="text"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Tambahkan catatan opsional"
+                  className="w-full font-black text-lg bg-transparent border-none focus:outline-none focus:ring-0 p-0 text-text-primary placeholder:text-text-primary/50"
+                />
               </div>
-              <ChevronRight size={24} className="text-text-primary" />
-            </button>
+            </div>
 
             {/* Date Picker */}
             <div className="w-full flex items-center justify-between p-4 rounded-none border-2 border-text-primary bg-surface shadow-[2px_2px_0_0_#171B22]">
@@ -400,24 +400,7 @@ export const AddTransactionSheet = () => {
         </div>
       )}
 
-      {/* NOTE VIEW */}
-      {activeView === 'NOTE' && (
-        <div className="animate-fade-in flex flex-col h-[300px]">
-          <textarea 
-            value={note}
-            onChange={e => setNote(e.target.value)}
-            placeholder="TULISKAN DETAIL TRANSAKSI DI SINI..."
-            className="w-full flex-1 bg-surface rounded-none border-2 border-text-primary p-4 font-black uppercase tracking-wider text-text-primary focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0_0_#FFB43A] shadow-[2px_2px_0_0_#171B22] resize-none"
-            autoFocus
-          />
-          <button 
-            onClick={() => setActiveView('MAIN')}
-            className="w-full py-4 bg-primary text-surface rounded-none border-2 border-text-primary font-black uppercase tracking-wider text-xl shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all mt-6"
-          >
-            Selesai
-          </button>
-        </div>
-      )}
+
 
     </BottomSheet>
   );
