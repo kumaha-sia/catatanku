@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../components/BottomSheet';
 
 import { useAuthStore } from '../store/authStore';
+import { useConfirmStore } from '../store/confirmStore';
 import { uploadAvatar, updateProfile, generateWaBindToken, checkWaBindStatus, unbindWa } from '../services/apiServices';
 import { API_URL } from '../api';
 
@@ -143,22 +144,23 @@ export const Profile = () => {
     }
   };
 
-  const handleUnbindWa = async () => {
-    if (!window.confirm('Yakin ingin memutuskan koneksi WhatsApp ini?')) return;
-    try {
-      setIsWaLoading(true);
-      await unbindWa();
-      if (user) {
-        const updatedUser = { ...user, whatsapp: '' };
-        const token = localStorage.getItem('catatu_token') || '';
-        loginAuth(updatedUser, token);
+  const handleUnbindWa = () => {
+    showConfirm('Yakin ingin memutuskan koneksi WhatsApp ini?', async () => {
+      try {
+        setIsWaLoading(true);
+        await unbindWa();
+        if (user) {
+          const updatedUser = { ...user, whatsapp: '' };
+          const token = localStorage.getItem('catatu_token') || '';
+          loginAuth(updatedUser, token);
+        }
+        window.toast.success('WhatsApp berhasil diputuskan');
+      } catch (err) {
+        window.toast.error('Gagal memutuskan koneksi WhatsApp');
+      } finally {
+        setIsWaLoading(false);
       }
-      window.toast.success('WhatsApp berhasil diputuskan');
-    } catch (err) {
-      window.toast.error('Gagal memutuskan koneksi WhatsApp');
-    } finally {
-      setIsWaLoading(false);
-    }
+    });
   };
   
   const handleSave = async () => {
