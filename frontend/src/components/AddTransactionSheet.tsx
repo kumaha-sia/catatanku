@@ -211,27 +211,23 @@ export const AddTransactionSheet = () => {
       {activeView === 'MAIN' && (
         <div className="flex flex-col gap-6 animate-fade-in">
           
-          {/* Type Selector */}
-          <div className="flex bg-surface border-2 border-text-primary rounded-none shadow-[4px_4px_0_0_#171B22]">
-            <button 
-              className={`flex-1 py-3 text-sm font-black uppercase tracking-wider transition-all border-r-2 border-text-primary ${type === 'EXPENSE' ? 'bg-expense text-text-primary' : 'bg-surface text-text-primary hover:bg-surface-muted'}`}
-              onClick={() => { setType('EXPENSE'); setSelectedCategory(null); }}
-            >
-              Keluar
-            </button>
-            <button 
-              className={`flex-1 py-3 text-sm font-black uppercase tracking-wider transition-all border-r-2 border-text-primary ${type === 'INCOME' ? 'bg-income text-text-primary' : 'bg-surface text-text-primary hover:bg-surface-muted'}`}
-              onClick={() => { setType('INCOME'); setSelectedCategory(null); }}
-            >
-              Masuk
-            </button>
-            <button 
-              className={`flex-1 py-3 text-sm font-black uppercase tracking-wider transition-all ${type === 'TRANSFER' ? 'bg-transfer text-text-primary' : 'bg-surface text-text-primary hover:bg-surface-muted'}`}
-              onClick={() => { setType('TRANSFER'); setSelectedCategory(null); }}
-            >
-              Transfer
-            </button>
-          </div>
+          {/* Type Selector (Hidden in Transfer mode) */}
+          {type !== 'TRANSFER' && (
+            <div className="flex bg-surface border-2 border-text-primary rounded-none shadow-[4px_4px_0_0_#171B22]">
+              <button 
+                className={`flex-1 py-3 text-sm font-black uppercase tracking-wider transition-all border-r-2 border-text-primary ${type === 'EXPENSE' ? 'bg-expense text-text-primary' : 'bg-surface text-text-primary hover:bg-surface-muted'}`}
+                onClick={() => { setType('EXPENSE'); setSelectedCategory(null); }}
+              >
+                Pengeluaran
+              </button>
+              <button 
+                className={`flex-1 py-3 text-sm font-black uppercase tracking-wider transition-all ${type === 'INCOME' ? 'bg-income text-text-primary' : 'bg-surface text-text-primary hover:bg-surface-muted'}`}
+                onClick={() => { setType('INCOME'); setSelectedCategory(null); }}
+              >
+                Pemasukan
+              </button>
+            </div>
+          )}
 
           {/* AI Scanner Button */}
           <div className="flex gap-2 mb-4">
