@@ -127,7 +127,8 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
 
   const { data: report } = useReportSummary(householdId || '', currentMonth + "", currentYear + "");
   const { data: wallets } = useWallets(householdId);
-  const { data: transactions } = useTransactions(householdId || '', 1, currentMonth + "", currentYear + "");
+  const { data: txResponse } = useTransactions(householdId || '', 1, currentMonth + "", currentYear + "");
+  const transactions = txResponse?.data || [];
   
   const user = useAuthStore(state => state.user);
 
