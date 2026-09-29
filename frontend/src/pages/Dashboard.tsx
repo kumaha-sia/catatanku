@@ -248,7 +248,7 @@ const DashboardTab = ({ hideBalance, setHideBalance, navigate, householdId, type
         >
           <div className="flex items-center gap-2">
             <span className="text-xl">🤖</span>
-            <span className="font-black text-sm uppercase tracking-widest text-text-primary">Nasihat Harian AI</span>
+            <span className="font-black text-sm uppercase tracking-widest text-text-primary">Nasihat Hari Ini</span>
           </div>
           {isRoastOpen ? <ChevronUp size={20} className="text-text-primary stroke-[3]" /> : <ChevronDown size={20} className="text-text-primary stroke-[3]" />}
         </button>
