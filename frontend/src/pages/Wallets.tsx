@@ -177,7 +177,11 @@ export const Wallets = () => {
             />
           ))}
           {(!wallets?.personal || wallets.personal.length === 0) && (
-             <div className="p-6 text-center text-text-primary font-black uppercase tracking-widest bg-surface">Belum ada dompet pribadi</div>
+             <div className="p-8 text-center bg-surface flex flex-col items-center">
+               <WalletIcon size={32} className="text-text-primary/30 mb-3" />
+               <p className="text-text-primary font-black uppercase tracking-widest mb-4">Belum ada dompet pribadi</p>
+               <button onClick={openAdd} className="bg-primary text-surface px-6 py-3 font-black uppercase tracking-wider border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-[2px_2px_0_0_#171B22] transition-all">Buat Dompet</button>
+             </div>
           )}
         </div>
       </section>
@@ -249,11 +253,33 @@ export const Wallets = () => {
                 value={walletBalance}
                 onChange={(e) => setWalletBalance(e.target.value)}
                 className="w-full bg-surface border-4 border-text-primary rounded-none pl-14 pr-4 py-3 font-black text-xl text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] transition-all"
+                disabled={editMode}
               />
             </div>
           </div>
 
-
+          <div>
+            <label className="text-xs font-black text-text-primary uppercase tracking-widest mb-2 block">Jenis Dompet</label>
+            <div className="flex bg-surface border-4 border-text-primary rounded-none shadow-[4px_4px_0_0_#171B22]">
+              <button 
+                type="button"
+                className={`flex-1 py-3 text-sm font-black uppercase tracking-wider transition-all border-r-4 border-text-primary ${walletType === 'PERSONAL' ? 'bg-primary text-surface' : 'bg-surface text-text-primary hover:bg-surface-muted'}`}
+                onClick={() => setWalletType('PERSONAL')}
+              >
+                Pribadi
+              </button>
+              <button 
+                type="button"
+                className={`flex-1 py-3 text-sm font-black uppercase tracking-wider transition-all ${walletType === 'SHARED' ? 'bg-accent text-text-primary' : 'bg-surface text-text-primary hover:bg-surface-muted'}`}
+                onClick={() => setWalletType('SHARED')}
+              >
+                Keluarga
+              </button>
+            </div>
+            <p className="text-[10px] font-bold text-text-primary/70 mt-2">
+              {walletType === 'PERSONAL' ? 'Dompet ini hanya bisa dilihat oleh Anda.' : 'Dompet ini bisa dilihat oleh seluruh anggota keluarga.'}
+            </p>
+          </div>
           <button 
             onClick={handleSave}
             disabled={!walletName || (!editMode && !walletBalance)}

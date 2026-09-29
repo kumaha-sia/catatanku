@@ -5,7 +5,7 @@ import { BottomSheet } from '../components/BottomSheet';
 
 import { useAuthStore } from '../store/authStore';
 import { useConfirmStore } from '../store/confirmStore';
-import { uploadAvatar, updateProfile, generateWaBindToken, checkWaBindStatus, unbindWa } from '../services/apiServices';
+import { uploadAvatar, updateProfile, deleteAvatar, changePassword, generateWaBindToken, checkWaBindStatus, unbindWa } from '../services/apiServices';
 import { API_URL } from '../api';
 
 export const Profile = () => {
@@ -25,7 +25,11 @@ export const Profile = () => {
   const [waBindOpen, setWaBindOpen] = useState(false);
   const [waBindToken, setWaBindToken] = useState<string | null>(null);
   const [isWaLoading, setIsWaLoading] = useState(false);
-  
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+
 
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -41,7 +45,7 @@ export const Profile = () => {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       window.toast.info('Akses kamera tidak diizinkan atau perangkat tidak ditemukan.');
       setIsWebcamOpen(false);
@@ -88,7 +92,7 @@ export const Profile = () => {
                 const token = localStorage.getItem('catatu_token') || '';
                 loginAuth(updatedUser, token);
               }
-            } catch (err) {
+            } catch (err: any) {
               console.error(err);
               window.toast.error('Gagal mengunggah foto profil');
             } finally {
@@ -138,7 +142,7 @@ export const Profile = () => {
       const res = await generateWaBindToken();
       setWaBindToken(res.data.token);
       setWaBindOpen(true);
-    } catch (err) {
+    } catch (err: any) {
       window.toast.error('Gagal membuat kode tautan');
     } finally {
       setIsWaLoading(false);
@@ -156,7 +160,7 @@ export const Profile = () => {
           loginAuth(updatedUser, token);
         }
         window.toast.success('WhatsApp berhasil diputuskan');
-      } catch (err) {
+      } catch (err: any) {
         window.toast.error('Gagal memutuskan koneksi WhatsApp');
       } finally {
         setIsWaLoading(false);
@@ -197,7 +201,7 @@ export const Profile = () => {
           loginAuth(updatedUser, token);
         }
         setIsAvatarOpen(false);
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
         window.toast.error('Gagal mengunggah foto profil');
       } finally {
@@ -217,6 +221,7 @@ export const Profile = () => {
       <div className="flex items-center gap-4 mb-8">
         <button 
           onClick={() => navigate('/settings')}
+          aria-label="Kembali"
           className="w-10 h-10 flex items-center justify-center bg-surface border-2 border-text-primary rounded-none text-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -238,7 +243,17 @@ export const Profile = () => {
           </div>
           <div className="absolute bottom-0 right-0 w-8 h-8 bg-accent flex items-center justify-center border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] text-text-primary">
             <Camera size={14} />
-          
+          </div>
+        </div>
+
+        <p 
+          onClick={() => setIsAvatarOpen(true)}
+          className="text-sm font-black text-text-primary mt-4 cursor-pointer hover:underline uppercase tracking-wider"
+        >
+          {isUploading ? 'Mengunggah...' : 'Ganti Foto Profil'}
+        </p>
+      </div>
+
       {/* WA Bind Bottom Sheet */}
       <BottomSheet isOpen={waBindOpen} onClose={() => { setWaBindOpen(false); setWaBindToken(null); }} title="Hubungkan WhatsApp">
         <div className="space-y-6 text-center">
@@ -271,17 +286,6 @@ export const Profile = () => {
           </div>
         </div>
       </BottomSheet>
-  
-    </div>
-  </div>
-
-        <p 
-          onClick={() => setIsAvatarOpen(true)}
-          className="text-sm font-black text-text-primary mt-4 cursor-pointer hover:underline uppercase tracking-wider"
-        >
-          {isUploading ? 'Mengunggah...' : 'Ganti Foto Profil'}
-        </p>
-      </div>
 
       {/* Form Section */}
       <div className="space-y-5">
@@ -408,7 +412,26 @@ export const Profile = () => {
             <p className="font-black text-text-primary text-base uppercase">Pilih dari Galeri</p>
           </button>
 
-          <button className="w-full flex items-center gap-4 p-4 bg-error text-text-primary border-2 border-text-primary rounded-none hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all text-left">
+          <button 
+            onClick={async () => {
+              try {
+                setIsUploading(true);
+                await deleteAvatar();
+                if (user) {
+                  const updatedUser = { ...user, avatarUrl: undefined };
+                  const token = localStorage.getItem('catatu_token') || '';
+                  loginAuth(updatedUser, token);
+                }
+                setIsAvatarOpen(false);
+                window.toast.success('Foto profil berhasil dihapus');
+              } catch (err: any) {
+                window.toast.error(err.response?.data?.message || 'Gagal menghapus foto profil');
+              } finally {
+                setIsUploading(false);
+              }
+            }}
+            disabled={!user?.avatarUrl}
+            className={`w-full flex items-center gap-4 p-4 border-2 border-text-primary rounded-none hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] active:translate-y-0 active:shadow-none transition-all text-left ${user?.avatarUrl ? 'bg-error text-text-primary' : 'bg-surface-muted text-text-secondary cursor-not-allowed opacity-60'}`}>
             <div className="w-12 h-12 bg-surface rounded-none flex items-center justify-center border-2 border-text-primary text-text-primary">
               <Trash2 size={20} className="stroke-[3]" />
             </div>
@@ -418,7 +441,7 @@ export const Profile = () => {
       </BottomSheet>
 
       {/* Password Bottom Sheet */}
-      <BottomSheet isOpen={isPasswordOpen} onClose={() => setIsPasswordOpen(false)} title="Ubah Password">
+      <BottomSheet isOpen={isPasswordOpen} onClose={() => { setIsPasswordOpen(false); setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); }} title="Ubah Password">
         <div className="space-y-6 pt-4">
           
           <div>
@@ -428,6 +451,8 @@ export const Profile = () => {
               <input 
                 type="password" 
                 placeholder="Masukkan password lama"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
                 className="w-full bg-surface border-2 border-text-primary rounded-none pl-11 pr-4 py-3.5 font-bold text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] transition-all"
               />
             </div>
@@ -441,6 +466,8 @@ export const Profile = () => {
                 <input 
                   type="password" 
                   placeholder="Minimal 8 karakter"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full bg-surface border-2 border-text-primary rounded-none pl-11 pr-4 py-3.5 font-bold text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] transition-all"
                 />
               </div>
@@ -453,6 +480,8 @@ export const Profile = () => {
                 <input 
                   type="password" 
                   placeholder="Ketik ulang password baru"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full bg-surface border-2 border-text-primary rounded-none pl-11 pr-4 py-3.5 font-bold text-text-primary focus:outline-none focus:shadow-[4px_4px_0_0_#FFB43A] transition-all"
                 />
               </div>
@@ -460,10 +489,37 @@ export const Profile = () => {
           </div>
 
           <button 
-            onClick={() => setIsPasswordOpen(false)}
+            onClick={async () => {
+              if (!currentPassword || !newPassword || !confirmPassword) {
+                window.toast.error('Semua field wajib diisi');
+                return;
+              }
+              if (newPassword.length < 8) {
+                window.toast.error('Password baru minimal 8 karakter');
+                return;
+              }
+              if (newPassword !== confirmPassword) {
+                window.toast.error('Konfirmasi password tidak cocok');
+                return;
+              }
+              try {
+                setIsPasswordLoading(true);
+                await changePassword({ currentPassword, newPassword });
+                window.toast.success('Password berhasil diperbarui');
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+                setIsPasswordOpen(false);
+              } catch (err: any) {
+                window.toast.error(err.response?.data?.message || 'Gagal mengubah password');
+              } finally {
+                setIsPasswordLoading(false);
+              }
+            }}
+            disabled={isPasswordLoading}
             className="w-full py-4 bg-primary text-surface rounded-none border-4 border-text-primary font-black text-lg shadow-[4px_4px_0_0_#171B22] hover:shadow-[6px_6px_0_0_#171B22] hover:-translate-y-1 active:translate-y-0 active:shadow-none transition-all uppercase tracking-wider mt-4"
           >
-            Perbarui Password
+            {isPasswordLoading ? 'Memproses...' : 'Perbarui Password'}
           </button>
         </div>
       </BottomSheet>

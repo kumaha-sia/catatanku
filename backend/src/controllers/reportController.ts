@@ -16,7 +16,7 @@ export const getSummary = asyncHandler(async (req: AuthRequest, res: Response) =
   const membership = await prisma.householdMember.findUnique({
     where: { household_id_user_id: { household_id: householdId, user_id: userId! } }
   });
-  if (!membership) {
+  if (!membership || membership.status !== 'ACTIVE') {
     res.status(403);
     throw new Error('Access denied to household');
   }
@@ -28,23 +28,32 @@ export const getSummary = asyncHandler(async (req: AuthRequest, res: Response) =
 
   if (isMonthly) {
     startDate = new Date(y, Number(month) - 1, 1);
-    endDate = new Date(y, Number(month), 0, 23, 59, 59);
+    endDate = new Date(y, Number(month), 0, 23, 59, 59, 999);
   } else {
     startDate = new Date(y, 0, 1);
-    endDate = new Date(y, 11, 31, 23, 59, 59);
+    endDate = new Date(y, 11, 31, 23, 59, 59, 999);
   }
 
   const allMembers = await prisma.householdMember.findMany({
-    where: { household_id: householdId }
+    where: { household_id: householdId, status: 'ACTIVE' }
   });
   const memberIds = allMembers.map(m => m.user_id);
 
   const creatorsToInclude = scope === 'PERSONAL' ? [userId!] : memberIds;
 
-  const whereClause = {
+  const whereClause: any = {
+    household_id: householdId,
     created_by: { in: creatorsToInclude },
-    date: { gte: startDate, lte: endDate }
+    date: { gte: startDate, lte: endDate },
+    status: 'COMPLETED'
   };
+
+  if (scope !== 'PERSONAL') {
+    whereClause.OR = [
+      { visibility: 'FAMILY' },
+      { created_by: userId }
+    ];
+  }
 
   const allTransactions = await prisma.transaction.findMany({
     where: whereClause,
@@ -114,13 +123,20 @@ export const exportCSV = asyncHandler(async (req: AuthRequest, res: Response) =>
   const membership = await prisma.householdMember.findUnique({
     where: { household_id_user_id: { household_id: householdId, user_id: userId! } }
   });
-  if (!membership) {
+  if (!membership || membership.status !== 'ACTIVE') {
     res.status(403);
     throw new Error('Access denied to household');
   }
 
   const transactions = await prisma.transaction.findMany({
-    where: { household_id: householdId },
+    where: {
+      household_id: householdId,
+      status: 'COMPLETED',
+      OR: [
+        { visibility: 'FAMILY' },
+        { created_by: userId }
+      ]
+    },
     include: { category: true, wallet: true, creator: { select: { name: true } } },
     orderBy: { date: 'desc' }
   });
@@ -164,19 +180,32 @@ export const exportPDF = asyncHandler(async (req: AuthRequest, res: Response) =>
   const membership = await prisma.householdMember.findUnique({
     where: { household_id_user_id: { household_id: householdId, user_id: userId! } }
   });
-  if (!membership) {
+  if (!membership || membership.status !== 'ACTIVE') {
     res.status(403);
     throw new Error('Access denied to household');
   }
 
   const allMembers = await prisma.householdMember.findMany({
-    where: { household_id: householdId }
+    where: { household_id: householdId, status: 'ACTIVE' }
   });
   const memberIds = allMembers.map(m => m.user_id);
   const creatorsToInclude = scope === 'PERSONAL' ? [userId!] : memberIds;
 
+  const whereClause: any = {
+    household_id: householdId,
+    created_by: { in: creatorsToInclude },
+    status: 'COMPLETED'
+  };
+
+  if (scope !== 'PERSONAL') {
+    whereClause.OR = [
+      { visibility: 'FAMILY' },
+      { created_by: userId }
+    ];
+  }
+
   const transactions = await prisma.transaction.findMany({
-    where: { created_by: { in: creatorsToInclude } },
+    where: whereClause,
     include: { category: true, wallet: true, creator: { select: { name: true } } },
     orderBy: { date: 'desc' }
   });

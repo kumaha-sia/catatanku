@@ -127,29 +127,48 @@ export const handleOpenWaWebhook = async (req: Request, res: Response) => {
           throw new Error('User does not belong to any household.');
         }
 
-        // Anti-Hallucination Fallback: Validate Wallet ID existence
-        if (wallet_id) {
-          const walletExists = await prisma.wallet.findUnique({ where: { id: wallet_id } });
-          if (!walletExists) wallet_id = undefined; // Let it fail gracefully or AI prompt will need a solid fallback
+        const validAmount = Math.abs(Number(amount));
+        if (!validAmount || isNaN(validAmount) || validAmount <= 0) {
+          throw new Error('Nominal transaksi tidak valid.');
+        }
+
+        // Fallback wallet if missing or invalid
+        let validWalletId = wallet_id;
+        if (validWalletId) {
+          const walletExists = await prisma.wallet.findUnique({ where: { id: validWalletId } });
+          if (!walletExists) validWalletId = null;
+        }
+        if (!validWalletId) {
+          const defaultWallet = await prisma.wallet.findFirst({
+            where: { user_id: user.id },
+            orderBy: { created_at: 'asc' }
+          });
+          if (!defaultWallet) {
+            throw new Error('Belum ada dompet terdaftar di akun Anda.');
+          }
+          validWalletId = defaultWallet.id;
         }
         
-        // Anti-Hallucination Fallback: Validate Category ID existence
+        // Validate Category ID existence
         if (category_id) {
           const catExists = await prisma.category.findUnique({ where: { id: category_id } });
           if (!catExists) category_id = null;
         }
 
+        // Force EXPENSE if TRANSFER was detected without destination
+        const safeType = trxType === 'TRANSFER' ? 'EXPENSE' : trxType;
+
         // Create transaction
         await prisma.transaction.create({
           data: {
-            amount: Number(amount),
-            type: trxType,
+            amount: validAmount,
+            type: safeType,
             note: note,
             date: new Date(),
             created_by: user.id,
             household_id: householdId,
             visibility: 'PRIVATE',
-            wallet_id: wallet_id,
+            wallet_id: validWalletId,
             category_id: category_id || null
           }
         });

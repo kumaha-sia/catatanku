@@ -15,6 +15,7 @@ export const Transactions = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [sortOrder, setSortOrder] = useState<'NEWEST' | 'OLDEST' | 'HIGHEST' | 'LOWEST'>('NEWEST');
+  const [page, setPage] = useState(1);
   
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -28,7 +29,9 @@ export const Transactions = () => {
   const familyHousehold = joinedHousehold || personalHousehold;
   const activeHouseholdId = activeVisibility === 'PRIVATE' ? personalHousehold?.id : familyHousehold?.id;
 
-  const { data: transactions } = useTransactions(familyHousehold?.id, 1, currentMonth + "", currentYear + "");
+  const { data: txResponse, isFetching } = useTransactions(familyHousehold?.id, page, currentMonth + "", currentYear + "");
+  const transactions = txResponse?.data || [];
+  const pagination = txResponse?.pagination;
   const { data: categories } = useCategories();
   const deleteTx = useDeleteTransaction();
   const openAddTransaction = useUIStore(state => state.openAddTransaction);
@@ -84,8 +87,8 @@ export const Transactions = () => {
           <div className="flex items-center gap-2">
             <button 
               onClick={() => {
-                if (currentMonth === 1) { setCurrentMonth(12); setCurrentYear(y => y - 1); }
-                else setCurrentMonth(m => m - 1);
+                { setPage(1); if (currentMonth === 1) { setCurrentMonth(12); setCurrentYear(y => y - 1); }
+                else { setCurrentMonth(m => m - 1); } }
               }}
               className="w-10 h-10 flex items-center justify-center bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] transition-all active:translate-y-0 active:shadow-none"
             >
@@ -96,8 +99,8 @@ export const Transactions = () => {
             </div>
             <button 
               onClick={() => {
-                if (currentMonth === 12) { setCurrentMonth(1); setCurrentYear(y => y + 1); }
-                else setCurrentMonth((m: number) => m + 1);
+                { setPage(1); if (currentMonth === 12) { setCurrentMonth(1); setCurrentYear(y => y + 1); }
+                else { setCurrentMonth((m: number) => m + 1); } }
               }}
               className="w-10 h-10 flex items-center justify-center bg-surface border-2 border-text-primary shadow-[4px_4px_0_0_#171B22] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#171B22] transition-all active:translate-y-0 active:shadow-none"
             >
@@ -214,6 +217,29 @@ export const Transactions = () => {
               </div>
             </div>
           ))
+        )}
+      
+        {/* Pagination Controls */}
+        {pagination && pagination.total > 0 && (
+          <div className="flex items-center justify-between bg-surface border-4 border-text-primary p-4 shadow-[4px_4px_0_0_#171B22] mt-6">
+            <button 
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1 || isFetching}
+              className="px-4 py-2 bg-accent text-text-primary border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] disabled:opacity-50 disabled:shadow-none hover:-translate-y-0.5 transition-all font-black uppercase text-sm"
+            >
+              Sebelumnya
+            </button>
+            <div className="text-sm font-black uppercase tracking-wider">
+              Hal {page} / {Math.ceil(pagination.total / pagination.limit)}
+            </div>
+            <button 
+              onClick={() => setPage(p => p + 1)}
+              disabled={page >= Math.ceil(pagination.total / pagination.limit) || isFetching}
+              className="px-4 py-2 bg-accent text-text-primary border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] disabled:opacity-50 disabled:shadow-none hover:-translate-y-0.5 transition-all font-black uppercase text-sm"
+            >
+              Selanjutnya
+            </button>
+          </div>
         )}
       </div>
 

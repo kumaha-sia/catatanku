@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login, uploadAvatar, updateProfile, generateWaBindToken, checkWaBindStatus, unbindWa } from '../controllers/authController';
+import { register, login, uploadAvatar, deleteAvatar, updateProfile, changePassword, generateWaBindToken, checkWaBindStatus, unbindWa } from '../controllers/authController';
 import { validate } from '../middlewares/validate';
 import { registerSchema, loginSchema } from '../validators/auth.schema';
 
@@ -27,7 +27,7 @@ const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
+    if (file.mimetype.startsWith('image/') && file.mimetype !== 'image/svg+xml') {
       cb(null, true);
     } else {
       cb(new Error('Only images are allowed'));
@@ -40,6 +40,8 @@ const router = Router();
 router.post('/register', validate(registerSchema), register);
 router.post('/login', validate(loginSchema), login);
 router.put('/avatar', authenticate, upload.single('avatar'), uploadAvatar);
+router.delete('/avatar', authenticate, deleteAvatar);
+router.post('/change-password', authenticate, changePassword);
 router.put('/profile', authenticate, updateProfile);
 
 

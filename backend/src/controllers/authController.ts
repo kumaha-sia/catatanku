@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import prisma from '../db';
+import fs from 'fs';
+import path from 'path';
 import asyncHandler from 'express-async-handler';
 import { z } from 'zod';
 
@@ -224,4 +226,56 @@ export const unbindWa = asyncHandler(async (req: AuthRequest, res: Response) => 
   });
 
   res.status(200).json({ status: 'success', message: 'WhatsApp disconnected' });
+});
+
+export const deleteAvatar = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.userId;
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (user?.avatar_url) {
+    const filename = path.basename(user.avatar_url);
+    const filePath = path.join(__dirname, '../../uploads', filename);
+    if (fs.existsSync(filePath)) {
+      try { fs.unlinkSync(filePath); } catch (e) {}
+    }
+  }
+  await prisma.user.update({
+    where: { id: userId },
+    data: { avatar_url: null }
+  });
+  res.status(200).json({ status: 'success', message: 'Avatar deleted' });
+});
+
+export const changePassword = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.userId;
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    res.status(400);
+    throw new Error('Password saat ini dan password baru wajib diisi');
+  }
+
+  if (newPassword.length < 6) {
+    res.status(400);
+    throw new Error('Password baru minimal 6 karakter');
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+  if (!isMatch) {
+    res.status(400);
+    throw new Error('Password saat ini salah');
+  }
+
+  const newHash = await bcrypt.hash(newPassword, 10);
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password_hash: newHash }
+  });
+
+  res.status(200).json({ status: 'success', message: 'Password berhasil diubah' });
 });

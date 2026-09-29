@@ -23,10 +23,10 @@ const payDebtSchema = z.object({
 // Helper to ensure system categories for debts exist
 const ensureDebtCategories = async () => {
   const categoriesToEnsure = [
-    { name: 'Utang', type: 'INCOME', icon: '📥' },
-    { name: 'Piutang', type: 'EXPENSE', icon: '📤' },
-    { name: 'Bayar Utang', type: 'EXPENSE', icon: '💸' },
-    { name: 'Terima Piutang', type: 'INCOME', icon: '💰' },
+    { name: 'Terima Pinjaman', type: 'INCOME', icon: '🤝' },
+    { name: 'Piutang', type: 'EXPENSE', icon: '💸' },
+    { name: 'Cicilan & Utang', type: 'EXPENSE', icon: '💳' },
+    { name: 'Terima Piutang', type: 'INCOME', icon: '🤝' },
   ];
 
   for (const cat of categoriesToEnsure) {
@@ -60,6 +60,13 @@ export const getDebts = asyncHandler(async (req: AuthRequest, res: Response) => 
 
   let whereClause: any = {};
   if (householdId) {
+    const membership = await prisma.householdMember.findUnique({
+      where: { household_id_user_id: { household_id: householdId, user_id: userId! } }
+    });
+    if (!membership || membership.status !== 'ACTIVE') {
+      res.status(403);
+      throw new Error('Access denied to household');
+    }
     whereClause = { household_id: householdId };
   } else {
     whereClause = { user_id: userId, household_id: null };
@@ -88,7 +95,7 @@ export const createDebt = asyncHandler(async (req: AuthRequest, res: Response) =
     const membership = await prisma.householdMember.findUnique({
       where: { household_id_user_id: { household_id: targetHouseholdId, user_id: userId } }
     });
-    if (!membership) {
+    if (!membership || membership.status !== 'ACTIVE') {
       res.status(403);
       throw new Error('Access denied to household');
     }
@@ -105,11 +112,15 @@ export const createDebt = asyncHandler(async (req: AuthRequest, res: Response) =
     }
   }
 
-  // Check wallet exists
+  // Check wallet exists and user has access
   const wallet = await prisma.wallet.findUnique({ where: { id: data.wallet_id } });
   if (!wallet) {
     res.status(404);
     throw new Error('Wallet not found');
+  }
+  if (wallet.user_id !== userId && (wallet.scope !== 'SHARED' || wallet.household_id !== targetHouseholdId)) {
+    res.status(403);
+    throw new Error('Anda tidak memiliki akses ke dompet ini');
   }
 
   await ensureDebtCategories();
@@ -118,7 +129,7 @@ export const createDebt = asyncHandler(async (req: AuthRequest, res: Response) =
   const result = await prisma.$transaction(async (tx) => {
     const debt = await tx.debt.create({
       data: {
-        household_id: data.household_id || null, // UI specific
+        household_id: data.household_id || null,
         user_id: data.household_id ? null : userId,
         type: data.type,
         person_name: data.person_name,
@@ -129,8 +140,8 @@ export const createDebt = asyncHandler(async (req: AuthRequest, res: Response) =
       }
     });
 
-    const isBorrow = data.type === 'BORROW'; // Utang
-    const catName = isBorrow ? 'Utang' : 'Piutang';
+    const isBorrow = data.type === 'BORROW';
+    const catName = isBorrow ? 'Terima Pinjaman' : 'Piutang';
     const txType = isBorrow ? 'INCOME' : 'EXPENSE';
     const catId = await getCategoryId(catName);
 
@@ -171,13 +182,18 @@ export const payDebt = asyncHandler(async (req: AuthRequest, res: Response) => {
     throw new Error('Debt not found');
   }
 
+  if (existing.status === 'PAID' || existing.remaining_amount <= 0) {
+    res.status(400);
+    throw new Error('Hutang/piutang ini sudah lunas.');
+  }
+
   // Authorization check
   let targetHouseholdId: string;
   if (existing.household_id) {
     const membership = await prisma.householdMember.findUnique({
       where: { household_id_user_id: { household_id: existing.household_id, user_id: userId } }
     });
-    if (!membership) {
+    if (!membership || membership.status !== 'ACTIVE') {
       res.status(403);
       throw new Error('Access denied');
     }
@@ -193,11 +209,15 @@ export const payDebt = asyncHandler(async (req: AuthRequest, res: Response) => {
     targetHouseholdId = personalHousehold!.id;
   }
 
-  // Check wallet exists
+  // Check wallet exists and user has access
   const wallet = await prisma.wallet.findUnique({ where: { id: data.wallet_id } });
   if (!wallet) {
     res.status(404);
     throw new Error('Wallet not found');
+  }
+  if (wallet.user_id !== userId && (wallet.scope !== 'SHARED' || wallet.household_id !== targetHouseholdId)) {
+    res.status(403);
+    throw new Error('Anda tidak memiliki akses ke dompet ini');
   }
 
   await ensureDebtCategories();
@@ -205,18 +225,19 @@ export const payDebt = asyncHandler(async (req: AuthRequest, res: Response) => {
   const payAmount = data.amount > existing.remaining_amount ? existing.remaining_amount : data.amount;
 
   const result = await prisma.$transaction(async (tx) => {
-    const newRemaining = existing.remaining_amount - payAmount;
+    const newRemaining = Math.max(0, existing.remaining_amount - payAmount);
+    const isPaid = newRemaining <= 0.01;
     
     const updatedDebt = await tx.debt.update({
       where: { id },
       data: {
-        remaining_amount: newRemaining,
-        status: newRemaining <= 0 ? 'PAID' : 'ACTIVE'
+        remaining_amount: isPaid ? 0 : newRemaining,
+        status: isPaid ? 'PAID' : 'ACTIVE'
       }
     });
 
-    const isBorrow = existing.type === 'BORROW'; // Utang
-    const catName = isBorrow ? 'Bayar Utang' : 'Terima Piutang';
+    const isBorrow = existing.type === 'BORROW';
+    const catName = isBorrow ? 'Cicilan & Utang' : 'Terima Piutang';
     const txType = isBorrow ? 'EXPENSE' : 'INCOME';
     const catId = await getCategoryId(catName);
 
@@ -242,8 +263,6 @@ export const payDebt = asyncHandler(async (req: AuthRequest, res: Response) => {
 });
 
 export const updateDebt = asyncHandler(async (req: AuthRequest, res: Response) => {
-  // Hanya melayani pengeditan note/tanggal dll, tidak dengan mutasi nominal.
-  // Untuk mutasi nominal (cicilan) gunakan payDebt
   const userId = req.user?.userId;
   const id = req.params.id as string;
   const updateDebtSchema = z.object({
@@ -258,6 +277,20 @@ export const updateDebt = asyncHandler(async (req: AuthRequest, res: Response) =
   if (!existing) {
     res.status(404);
     throw new Error('Debt not found');
+  }
+
+  // Check authorization
+  if (existing.household_id) {
+    const membership = await prisma.householdMember.findUnique({
+      where: { household_id_user_id: { household_id: existing.household_id, user_id: userId! } }
+    });
+    if (!membership || membership.status !== 'ACTIVE') {
+      res.status(403);
+      throw new Error('Access denied');
+    }
+  } else if (existing.user_id !== userId) {
+    res.status(403);
+    throw new Error('Access denied');
   }
 
   const updated = await prisma.debt.update({
@@ -285,7 +318,7 @@ export const deleteDebt = asyncHandler(async (req: AuthRequest, res: Response) =
     const membership = await prisma.householdMember.findUnique({
       where: { household_id_user_id: { household_id: existing.household_id, user_id: userId! } }
     });
-    if (!membership) {
+    if (!membership || membership.status !== 'ACTIVE') {
       res.status(403);
       throw new Error('Access denied');
     }

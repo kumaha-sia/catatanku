@@ -43,25 +43,28 @@ export const getTransactions = asyncHandler(async (req: AuthRequest, res: Respon
       where: { household_id_user_id: { household_id: householdId, user_id: userId! } }
     });
 
-    if (!membership) {
+    if (!membership || membership.status !== 'ACTIVE') {
       res.status(403);
-      throw new Error('Access denied');
+      throw new Error('Access denied to household');
     }
     
-    // Get all members of this household
+    // Get all active members of this household
     const allMembers = await prisma.householdMember.findMany({
-      where: { household_id: householdId }
+      where: { household_id: householdId, status: 'ACTIVE' }
     });
     const memberIds = allMembers.map(m => m.user_id);
     
+    // Isolate by household_id, created_by in members, and enforce privacy
+    whereClause.household_id = householdId;
     whereClause.created_by = { in: memberIds };
+    whereClause.OR = [
+      { visibility: 'FAMILY' },
+      { created_by: userId } // Creator can always see their own private transactions
+    ];
   } else {
-    // If no household specified, just return the user's own transactions
+    // If no household specified, return the user's own transactions
     whereClause.created_by = userId;
   }
-
-  console.log('QUERY PARAMS:', req.query);
-  console.log('WHERE CLAUSE:', JSON.stringify(whereClause, null, 2));
 
   const transactions = await prisma.transaction.findMany({
     where: whereClause,
@@ -95,22 +98,47 @@ export const createTransaction = asyncHandler(async (req: AuthRequest, res: Resp
     where: { household_id_user_id: { household_id: data.household_id, user_id: userId! } }
   });
 
-  if (!membership) {
+  if (!membership || membership.status !== 'ACTIVE') {
     res.status(403);
     throw new Error('Access denied to household');
   }
 
-  if (data.type === 'TRANSFER' && !data.destination_wallet_id) {
-    res.status(400);
-    throw new Error('destination_wallet_id is required for transfers');
+  // Validate origin wallet ownership
+  const originWallet = await prisma.wallet.findUnique({ where: { id: data.wallet_id } });
+  if (!originWallet) {
+    res.status(404);
+    throw new Error('Dompet asal tidak ditemukan');
+  }
+  if (originWallet.user_id !== userId && (originWallet.scope !== 'SHARED' || originWallet.household_id !== data.household_id)) {
+    res.status(403);
+    throw new Error('Anda tidak memiliki akses ke dompet ini');
+  }
+
+  // Handle transfer validations
+  let destWalletId: string | null = null;
+  if (data.type === 'TRANSFER') {
+    if (!data.destination_wallet_id) {
+      res.status(400);
+      throw new Error('Dompet tujuan wajib diisi untuk transaksi transfer');
+    }
+    if (data.destination_wallet_id === data.wallet_id) {
+      res.status(400);
+      throw new Error('Dompet tujuan tidak boleh sama dengan dompet asal');
+    }
+    const destWallet = await prisma.wallet.findUnique({ where: { id: data.destination_wallet_id } });
+    if (!destWallet) {
+      res.status(404);
+      throw new Error('Dompet tujuan tidak ditemukan');
+    }
+    destWalletId = data.destination_wallet_id;
   }
 
   const transaction = await prisma.transaction.create({
     data: {
       household_id: data.household_id,
       wallet_id: data.wallet_id,
-      destination_wallet_id: data.destination_wallet_id,
-      category_id: data.category_id,
+      destination_wallet_id: destWalletId,
+      category_id: data.type === 'TRANSFER' ? null : data.category_id,
       type: data.type,
       amount: data.amount,
       date: new Date(data.date),

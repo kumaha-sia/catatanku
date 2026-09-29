@@ -66,7 +66,7 @@ export const getWallets = asyncHandler(async (req: AuthRequest, res: Response) =
 
   const destAgg = await prisma.transaction.groupBy({
     by: ['destination_wallet_id'],
-    where: { destination_wallet_id: { in: walletIds }, status: 'COMPLETED' },
+    where: { destination_wallet_id: { in: walletIds }, type: 'TRANSFER', status: 'COMPLETED' },
     _sum: { amount: true }
   });
 
@@ -165,6 +165,21 @@ export const deleteWallet = asyncHandler(async (req: AuthRequest, res: Response)
   if (wallet.user_id !== userId) {
     res.status(403);
     throw new Error('Access denied');
+  }
+
+  // Check if wallet has transactions
+  const txCount = await prisma.transaction.count({
+    where: {
+      OR: [
+        { wallet_id: walletId },
+        { destination_wallet_id: walletId }
+      ]
+    }
+  });
+
+  if (txCount > 0) {
+    res.status(400);
+    throw new Error('Dompet tidak dapat dihapus karena memiliki riwayat transaksi. Anda dapat mengedit nama atau mengarsipkannya.');
   }
 
   await prisma.wallet.delete({ where: { id: walletId } });

@@ -66,13 +66,57 @@ const AdminLayout: React.FC = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto bg-background">
+      <main className="flex-1 overflow-y-auto bg-background pb-20 md:pb-0">
         <div className="p-4 md:p-8 max-w-6xl mx-auto min-h-full">
           <Outlet />
         </div>
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t-4 border-text-primary flex justify-around items-center px-1 py-1 pb-safe z-40">
+        <MobileNavItem to="/admin" icon={<LayoutDashboard size={20} />} label="Dash" location={location} />
+        <MobileNavItem to="/admin/users" icon={<Users size={20} />} label="Users" location={location} />
+        <MobileNavItem to="/admin/households" icon={<UserCog size={20} />} label="Fam" location={location} />
+        <MobileNavItem to="/admin/transactions" icon={<ArrowRightLeft size={20} />} label="Tx" location={location} />
+        <button 
+          onClick={handleLogout}
+          aria-label="Logout"
+          className="flex flex-col items-center justify-center w-[60px] py-1 transition-all group text-error hover:text-error"
+        >
+          <div className="mb-1 p-1.5 flex items-center justify-center border-2 border-transparent">
+            <LogOut size={20} className="stroke-[2] group-hover:stroke-[3]" />
+          </div>
+          <span className="text-[9px] uppercase tracking-wider font-bold truncate w-full text-center">Keluar</span>
+        </button>
+      </nav>
     </div>
+
+  );
+};
+
+
+const MobileNavItem = ({ to, icon, label, location }: { to: string, icon: React.ReactNode, label: string, location: any }) => {
+  const isActive = location.pathname === to;
+  return (
+    <Link
+      to={to}
+      className="flex flex-col items-center justify-center w-[60px] py-1 transition-all group"
+    >
+      <div className={`mb-1 p-1.5 flex items-center justify-center transition-all ${
+        isActive 
+          ? 'bg-accent border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] text-text-primary -translate-y-0.5' 
+          : 'border-2 border-transparent text-text-secondary group-hover:text-text-primary'
+      }`}>
+        {React.cloneElement(icon as React.ReactElement<any>, { strokeWidth: isActive ? 3 : 2 })}
+      </div>
+      <span className={`text-[9px] uppercase tracking-wider transition-all truncate w-full text-center ${
+        isActive ? 'font-black text-text-primary' : 'font-bold text-text-secondary group-hover:text-text-primary'
+      }`}>
+        {label}
+      </span>
+    </Link>
   );
 };
 
 export default AdminLayout;
+

@@ -211,18 +211,18 @@ export const Debts = () => {
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 flex items-center justify-center border-2 border-text-primary font-black text-xl shadow-[2px_2px_0_0_#171B22] ${debt.type === 'LEND' ? 'bg-success' : 'bg-error text-surface'}`}>
+                  <div className={`w-12 h-12 flex items-center justify-center border-2 border-text-primary font-black text-xl shadow-[2px_2px_0_0_#171B22] ${debt.type === 'LEND' ? 'bg-income' : 'bg-error text-surface'}`}>
                     <ArrowRightLeft size={24} strokeWidth={2.5} className={debt.type === 'LEND' ? '' : 'text-surface'} />
                   </div>
                   <div>
                     <h3 className="font-black uppercase tracking-tight text-lg leading-tight">{debt.person_name}</h3>
-                    <span className={`text-xs font-black px-2 py-0.5 border border-text-primary uppercase ${debt.type === 'LEND' ? 'bg-success/20 text-success' : 'bg-error/20 text-error'}`}>
+                    <span className={`text-xs font-black px-2 py-0.5 border border-text-primary uppercase ${debt.type === 'LEND' ? 'bg-income/20 text-income' : 'bg-error/20 text-error'}`}>
                       {debt.type === 'LEND' ? 'Diutangi (Piutang)' : 'Berhutang'}
                     </span>
                   </div>
                 </div>
                 {debt.status === 'PAID' && (
-                  <span className="bg-success text-text-primary border-2 border-text-primary px-2 py-1 text-xs font-black uppercase">LUNAS</span>
+                  <span className="bg-income text-text-primary border-2 border-text-primary px-2 py-1 text-xs font-black uppercase">LUNAS</span>
                 )}
               </div>
               
@@ -233,7 +233,7 @@ export const Debts = () => {
                 </div>
                 <div>
                   <p className="text-text-secondary text-xs font-bold uppercase tracking-wider mb-1">Sisa Belum Dibayar</p>
-                  <p className={`text-2xl font-black tracking-tight ${debt.type === 'LEND' ? 'text-success' : 'text-error'}`}>
+                  <p className={`text-2xl font-black tracking-tight ${debt.type === 'LEND' ? 'text-income' : 'text-error'}`}>
                     {formatRupiah(debt.remaining_amount)}
                   </p>
                 </div>
@@ -288,7 +288,7 @@ export const Debts = () => {
                 type="button"
                 disabled={editMode}
                 onClick={() => setDebtType('LEND')}
-                className={`flex-1 py-3 border-2 border-text-primary font-black uppercase tracking-wider transition-all ${debtType === 'LEND' ? 'bg-success text-text-primary shadow-[4px_4px_0_0_#171B22]' : 'bg-surface text-text-secondary hover:bg-accent hover:text-text-primary'} ${editMode && 'opacity-50 cursor-not-allowed'}`}
+                className={`flex-1 py-3 border-2 border-text-primary font-black uppercase tracking-wider transition-all ${debtType === 'LEND' ? 'bg-income text-text-primary shadow-[4px_4px_0_0_#171B22]' : 'bg-surface text-text-secondary hover:bg-accent hover:text-text-primary'} ${editMode && 'opacity-50 cursor-not-allowed'}`}
               >
                 Piutang (Kita Pinjamkan)
               </button>

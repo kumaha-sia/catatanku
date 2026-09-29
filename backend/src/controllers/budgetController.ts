@@ -30,7 +30,7 @@ export const getBudgets = asyncHandler(async (req: AuthRequest, res: Response) =
   const membership = await prisma.householdMember.findUnique({
     where: { household_id_user_id: { household_id: householdId, user_id: userId! } }
   });
-  if (!membership) {
+  if (!membership || membership.status !== 'ACTIVE') {
     res.status(403);
     throw new Error('Access denied to household');
   }
@@ -47,16 +47,12 @@ export const getBudgets = asyncHandler(async (req: AuthRequest, res: Response) =
   const startDate = new Date(periodYear, periodMonth - 1, 1);
   const endDate = new Date(periodYear, periodMonth, 0, 23, 59, 59, 999);
 
-  const allMembers = await prisma.householdMember.findMany({
-    where: { household_id: householdId }
-  });
-  const memberIds = allMembers.map(m => m.user_id);
-
   const transactions = await prisma.transaction.groupBy({
     by: ['category_id'],
     where: {
-      created_by: { in: memberIds },
+      household_id: householdId,
       type: 'EXPENSE',
+      status: 'COMPLETED',
       date: { gte: startDate, lte: endDate }
     },
     _sum: { amount: true }
@@ -77,7 +73,7 @@ export const getBudgets = asyncHandler(async (req: AuthRequest, res: Response) =
       category_name: b.category.name,
       amount: b.amount,
       spent: spent,
-      percentage: (spent / b.amount) * 100
+      percentage: b.amount > 0 ? (spent / b.amount) * 100 : 0
     };
   });
 
@@ -96,7 +92,7 @@ export const setBudget = asyncHandler(async (req: AuthRequest, res: Response) =>
   const membership = await prisma.householdMember.findUnique({
     where: { household_id_user_id: { household_id: data.household_id, user_id: userId! } }
   });
-  if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
+  if (!membership || membership.status !== 'ACTIVE' || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
     res.status(403);
     throw new Error('Only OWNER or ADMIN can set household budgets');
   }
@@ -147,7 +143,7 @@ export const rolloverBudgets = asyncHandler(async (req: AuthRequest, res: Respon
   const membership = await prisma.householdMember.findUnique({
     where: { household_id_user_id: { household_id, user_id: userId! } }
   });
-  if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
+  if (!membership || membership.status !== 'ACTIVE' || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
     res.status(403);
     throw new Error('Access denied to rollover budgets');
   }

@@ -145,12 +145,12 @@ model Transaction {
   deleted_at            DateTime?
 
   household          Household @relation(fields: [household_id], references: [id], onDelete: Cascade)
-  wallet             Wallet    @relation("OriginWallet", fields: [wallet_id], references: [id], onDelete: Cascade)
+  wallet             Wallet    @relation("OriginWallet", fields: [wallet_id], references: [id], onDelete: Restrict)
   destination_wallet Wallet?   @relation("DestinationWallet", fields: [destination_wallet_id], references: [id], onDelete: SetNull)
   category           Category? @relation(fields: [category_id], references: [id], onDelete: SetNull)
   creator            User      @relation("TransactionCreator", fields: [created_by], references: [id])
   payer              User?     @relation("TransactionPayer", fields: [paid_by_member_id], references: [id])
-  debt               Debt?     @relation(fields: [debt_id], references: [id], onDelete: Cascade)
+  debt               Debt?     @relation(fields: [debt_id], references: [id], onDelete: SetNull)
 
   tags   TransactionTag[]
 }

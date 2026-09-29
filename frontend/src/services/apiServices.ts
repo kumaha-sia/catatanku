@@ -7,6 +7,8 @@ export const uploadAvatar = (formData: FormData) => api.put('/auth/avatar', form
   headers: { 'Content-Type': 'multipart/form-data' }
 }).then(res => res.data);
 export const updateProfile = (data: { name: string, whatsapp?: string, reminder_enabled?: boolean, reminder_time?: string }) => api.put('/auth/profile', data).then(res => res.data);
+export const deleteAvatar = () => api.delete('/auth/avatar').then(res => res.data);
+export const changePassword = (data: { currentPassword: string, newPassword: string }) => api.post('/auth/change-password', data).then(res => res.data);
 
 export const getHouseholds = () => api.get('/households').then(res => res.data.data);
 export const getMembers = (householdId: string) => api.get(`/households/${householdId}/members`).then(res => res.data.data);
@@ -20,7 +22,7 @@ export const leaveHousehold = (householdId: string) => api.post(`/households/${h
 
 // Transactions
 export const getTransactions = (householdId?: string, page = 1, limit = 20, month?: string, year?: string) => 
-  api.get('/transactions', { params: { household_id: householdId, page, limit, month, year } }).then(res => res.data.data);
+  api.get('/transactions', { params: { household_id: householdId, page, limit, month, year } }).then(res => res.data);
 export const createTransaction = (data: any) => api.post('/transactions', data).then(res => res.data.data);
 export const updateTransaction = (id: string, data: any) => api.put(`/transactions/${id}`, data).then(res => res.data.data);
 export const deleteTransaction = (id: string) => api.delete(`/transactions/${id}`).then(res => res.data);

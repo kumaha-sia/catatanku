@@ -33,13 +33,13 @@ export const Layout = () => {
           <h1 className="font-black text-[15px] tracking-widest uppercase text-text-primary mt-0.5">FinBareng</h1>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => setIsNotificationOpen(true)} className="relative w-10 h-10 border-2 border-text-primary bg-surface hover:bg-accent flex items-center justify-center text-text-primary shadow-[2px_2px_0_0_#171B22] transition-colors">
+          <button onClick={() => setIsNotificationOpen(true)} aria-label="Notifikasi" className="relative w-10 h-10 border-2 border-text-primary bg-surface hover:bg-accent flex items-center justify-center text-text-primary shadow-[2px_2px_0_0_#171B22] transition-colors">
             <Bell size={20} strokeWidth={2} />
             {unreadCount > 0 && (
               <div className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error rounded-none border-2 border-text-primary" />
             )}
           </button>
-          <button onClick={() => navigate('/settings')} className="w-10 h-10 border-2 border-text-primary bg-primary hover:bg-accent text-surface flex items-center justify-center font-black text-lg shadow-[2px_2px_0_0_#171B22] transition-colors group overflow-hidden">
+          <button onClick={() => navigate('/settings')} aria-label="Profil" className="w-10 h-10 border-2 border-text-primary bg-primary hover:bg-accent text-surface flex items-center justify-center font-black text-lg shadow-[2px_2px_0_0_#171B22] transition-colors group overflow-hidden">
             {useAuthStore(state => state.user)?.avatarUrl 
               ? <img src={`${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'}${useAuthStore(state => state.user)?.avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
               : <span className="group-hover:text-text-primary">{useAuthStore(state => state.user)?.name?.charAt(0).toUpperCase() || 'U'}</span>
@@ -57,6 +57,7 @@ export const Layout = () => {
           </div>
           <button 
             onClick={() => setIsNotificationOpen(true)} 
+            aria-label="Notifikasi"
             className="relative w-10 h-10 border-2 border-text-primary bg-surface hover:bg-accent flex items-center justify-center text-text-primary shadow-[2px_2px_0_0_#171B22] transition-colors shrink-0"
           >
             <Bell size={20} strokeWidth={2} />
@@ -111,6 +112,7 @@ export const Layout = () => {
         <div className="relative -top-5 px-1">
           <button 
             onClick={openAddTransaction}
+            aria-label="Tambah Transaksi"
             className="w-14 h-14 bg-primary text-surface hover:text-text-primary hover:bg-accent rounded-none border-2 border-text-primary flex items-center justify-center shadow-[4px_4px_0_0_#171B22] active:translate-y-1 active:shadow-[2px_2px_0_0_#171B22] transition-all"
           >
             <Plus size={30} strokeWidth={2.5} />
@@ -124,6 +126,7 @@ export const Layout = () => {
       {/* Desktop Floating Action Button (FAB) */}
       <button 
         onClick={openAddTransaction}
+        aria-label="Tambah Transaksi"
         className="hidden md:flex fixed bottom-12 right-12 z-40 w-16 h-16 items-center justify-center bg-primary text-surface border-4 border-text-primary shadow-[8px_8px_0_0_#171B22] hover:-translate-y-2 hover:shadow-[12px_12px_0_0_#171B22] hover:text-text-primary hover:bg-accent active:translate-y-0 active:shadow-[2px_2px_0_0_#171B22] transition-all group"
         title="Catat Transaksi"
       >
@@ -167,7 +170,7 @@ const MobileNavItem = ({ to, icon, label }: { to: string, icon: React.ReactNode,
               ? 'bg-accent border-2 border-text-primary shadow-[2px_2px_0_0_#171B22] text-text-primary -translate-y-0.5' 
               : 'border-2 border-transparent text-text-secondary group-hover:text-text-primary'
           }`}>
-            {React.cloneElement(icon as React.ReactElement, { strokeWidth: isActive ? 2.5 : 2 })}
+            {React.cloneElement(icon as React.ReactElement<any>, { strokeWidth: isActive ? 2.5 : 2 })}
           </div>
           <span className={`text-[10px] uppercase tracking-wider transition-all ${
             isActive ? 'font-black text-text-primary' : 'font-bold text-text-secondary group-hover:text-text-primary'
